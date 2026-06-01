@@ -169,6 +169,40 @@ document.getElementById("btnReset").addEventListener("click", () => {
   }
 });
 
+// ---- Sincronización automática con Gmail (opcional) ----------------------
+// Si config.js define window.SYNC_URL, traemos las tareas desde el Apps
+// Script que lee los correos etiquetados con "📋 Tarea". Usamos JSONP para
+// que funcione incluso abriendo index.html como archivo local.
+
+function sincronizarConGmail() {
+  if (!window.SYNC_URL) return;
+  const cb = "__onTareasGmail";
+  window[cb] = (data) => {
+    try {
+      aplicarTareasRemotas((data && data.tasks) || []);
+    } finally {
+      delete window[cb];
+      script.remove();
+    }
+  };
+  const sep = window.SYNC_URL.includes("?") ? "&" : "?";
+  const script = document.createElement("script");
+  script.src = window.SYNC_URL + sep + "callback=" + cb;
+  script.onerror = () => { delete window[cb]; script.remove(); };
+  document.body.appendChild(script);
+}
+
+function aplicarTareasRemotas(remotas) {
+  // Conserva el estado "hecha" por id y las tareas creadas a mano (id "u-").
+  const estado = {};
+  tareas.forEach((t) => { estado[t.id] = t.hecha; });
+  const manuales = tareas.filter((t) => t.id.startsWith("u-"));
+  const deGmail = remotas.map((t) => ({ ...t, hecha: estado[t.id] ?? t.hecha ?? false }));
+  tareas = [...manuales, ...deGmail];
+  guardar();
+  render();
+}
+
 // Fecha de hoy en el encabezado
 document.getElementById("today").textContent = new Date().toLocaleDateString("es-CL", {
   weekday: "long", day: "numeric", month: "long", year: "numeric"
@@ -177,3 +211,4 @@ document.getElementById("today").textContent = new Date().toLocaleDateString("es
 // Init
 cargar();
 render();
+sincronizarConGmail();

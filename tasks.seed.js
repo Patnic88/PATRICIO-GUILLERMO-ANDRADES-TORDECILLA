@@ -16,11 +16,11 @@ window.SEED_TASKS = [
   },
   {
     id: "g-19e742c6a68d6e7b",
-    titulo: "Preparar listado de juicios vigentes para Transparencia Activa Mayo 2026",
-    detalle: "Katherine Cisternas solicita, en virtud de la Ley N°20.285, el listado de juicios vigentes del municipio (como demandante, demandado, etc.).",
+    titulo: "Transparencia Activa Mayo 2026: juicios vigentes + informes en derecho",
+    detalle: "Katherine Cisternas (Unidad de Transparencia), en virtud de la Ley N°20.285, solicita: (1) listado de juicios vigentes del municipio (demandante, demandado u otro) y (2) listado y documento de los informes en derecho de mayo 2026. PLAZO: martes 9 de junio de 2026, para subir a la web institucional.",
     categoria: "Transparencia",
     prioridad: "alta",
-    vence: "",
+    vence: "2026-06-09",
     de: "katherine.cisternas@munilosvilos.cl",
     threadId: "19e742c6a68d6e7b",
     hecha: false

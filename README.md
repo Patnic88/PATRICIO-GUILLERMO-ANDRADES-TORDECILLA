@@ -45,9 +45,37 @@ Cada tarea tiene esta forma:
 }
 ```
 
-## Ideas para más adelante
+## 🔄 Sincronización automática con Gmail (opcional)
 
-- Sincronización automática: que una etiqueta de Gmail (p. ej. `📋 Tarea`) genere
-  tareas aquí sin intervención manual.
-- Crear recordatorios en Google Calendar a partir de las tareas con fecha de
-  vencimiento.
+Puedes hacer que la lista se llene **sola** con los correos que etiquetes con
+`📋 Tarea` en Gmail, sin tener que pedirlo. Funciona con un Google Apps Script
+que corre dentro de tu propia cuenta de Google (sin servidores ni contraseñas).
+
+**Configuración (una sola vez, ~5 minutos):**
+
+1. Abre `gmail-sync.gs` y sigue las instrucciones del encabezado: crea el
+   proyecto en <https://script.google.com>, pega el script y publícalo como
+   **Aplicación web**.
+2. Copia la URL que termina en `/exec`.
+3. Pégala en `config.js`:
+   ```js
+   window.SYNC_URL = "https://script.google.com/macros/s/XXXX/exec";
+   ```
+4. Abre `index.html`. La lista se actualizará automáticamente desde tus correos
+   etiquetados cada vez que la abras.
+
+Mientras `SYNC_URL` esté vacío, la app usa las tareas locales de `tasks.seed.js`.
+Al sincronizar, se conserva el estado de las tareas que ya marcaste como
+completadas y las que agregaste a mano.
+
+| Archivo | Rol en la sincronización |
+|---|---|
+| `gmail-sync.gs` | Apps Script que lee la etiqueta `📋 Tarea` y entrega JSON |
+| `config.js` | Donde pegas la URL del Apps Script |
+
+## Integraciones ya configuradas
+
+- ✅ Etiqueta **`📋 Tarea`** creada en Gmail y aplicada a los correos pendientes.
+- ✅ Recordatorios en **Google Calendar** para las tareas de alta prioridad.
+- ✅ Borradores de respuesta guardados en Gmail para los correos que requieren
+  contestación.
