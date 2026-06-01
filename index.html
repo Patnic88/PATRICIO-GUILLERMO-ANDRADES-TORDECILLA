@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Tareas · Patricio Andrades — Dirección Jurídica</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>📋 Mis Tareas</h1>
+        <p class="subtitle">Patricio Andrades · Dirección Jurídica — Municipalidad de Los Vilos</p>
+      </div>
+      <div class="header-meta">
+        <span id="today"></span>
+        <span class="counter" id="counter">0 pendientes</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="toolbar">
+      <div class="filters" id="filters">
+        <button class="chip active" data-filter="todas">Todas</button>
+        <button class="chip" data-filter="pendientes">Pendientes</button>
+        <button class="chip" data-filter="alta">Alta prioridad</button>
+        <button class="chip" data-filter="completadas">Completadas</button>
+      </div>
+      <button class="btn-primary" id="btnNueva">+ Nueva tarea</button>
+    </section>
+
+    <form class="nueva-tarea oculto" id="formNueva" autocomplete="off">
+      <input type="text" id="inputTitulo" placeholder="¿Qué hay que hacer?" required />
+      <div class="form-row">
+        <select id="inputCategoria">
+          <option>Judicial</option>
+          <option>Convenios</option>
+          <option>Transparencia</option>
+          <option>Concejo</option>
+          <option>Administrativo</option>
+          <option>Otro</option>
+        </select>
+        <select id="inputPrioridad">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Media</option>
+          <option value="baja">Baja</option>
+        </select>
+        <input type="date" id="inputVence" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar</button>
+      </div>
+    </form>
+
+    <ul class="lista" id="lista"></ul>
+
+    <p class="empty oculto" id="vacio">No hay tareas que coincidan con este filtro. 🎉</p>
+  </main>
+
+  <footer class="app-footer">
+    <span>Las tareas se guardan en este navegador. Cada 🔗 abre el correo original en Gmail.</span>
+    <button class="btn-ghost" id="btnReset">Restaurar tareas de mis correos</button>
+  </footer>
+
+  <script src="tasks.seed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
