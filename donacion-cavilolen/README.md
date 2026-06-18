@@ -10,6 +10,7 @@ Carpeta para organizar toda la información relacionada con la donación a Cavil
 | Archivo | Descripción |
 |---|---|
 | `README.md` | Este archivo: índice y resumen general |
+| `plan-de-accion.md` | Plan de acción por fases (pasos, responsables, plazos) |
 | `datos-generales.md` | Información general de la campaña de donación |
 | `donantes.csv` | Registro de donantes y aportes |
 | `presupuesto.md` | Detalle de gastos y destino de los fondos |
