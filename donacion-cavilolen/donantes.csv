@@ -1,0 +1,3 @@
+fecha,nombre_donante,tipo_aporte,monto_clp,descripcion_especies,medio,recibido
+dd/mm/aaaa,Ejemplo Donante,dinero,10000,,transferencia,si
+dd/mm/aaaa,Ejemplo Donante 2,especies,,5 cajas de alimentos,acopio,si
