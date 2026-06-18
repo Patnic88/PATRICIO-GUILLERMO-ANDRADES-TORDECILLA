@@ -18,7 +18,7 @@ Carpeta para organizar toda la información relacionada con la donación a Cavil
 ## Resumen
 
 - **Beneficiario:** Cavilolen
-- **Objetivo de la campaña:** [describir el objetivo]
+- **Objetivo de la campaña:** Resolver el problema de financiamiento de terrenos privados a la Municipalidad de Los Vilos
 - **Fecha de inicio:** [dd/mm/aaaa]
 - **Fecha de cierre:** [dd/mm/aaaa]
 - **Meta de recaudación:** [monto]
