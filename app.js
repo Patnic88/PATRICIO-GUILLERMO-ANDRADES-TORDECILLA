@@ -4,6 +4,7 @@
 
 const STORAGE_KEY = "tareas_patricio_v1";
 const GMAIL_BASE = "https://mail.google.com/mail/u/0/#all/";
+const WHATSAPP_NUM_KEY = "tareas_patricio_whatsapp";
 
 let tareas = [];
 let filtroActual = "todas";
@@ -29,6 +30,59 @@ function guardar() {
 
 function clonarSemilla() {
   return (window.SEED_TASKS || []).map((t) => ({ ...t }));
+}
+
+// ---- WhatsApp ------------------------------------------------------------
+// Compartir tareas por WhatsApp sin servidor: armamos el texto y abrimos el
+// enlace oficial "click to chat". Si hay un número guardado (config.js o
+// localStorage) el mensaje va directo a ese chat; si no, WhatsApp deja elegir
+// el contacto.
+
+function numeroWhatsApp() {
+  const guardado = localStorage.getItem(WHATSAPP_NUM_KEY);
+  const num = (guardado ?? window.WHATSAPP_NUMERO ?? "").replace(/[^0-9]/g, "");
+  return num;
+}
+
+function urlWhatsApp(texto) {
+  const num = numeroWhatsApp();
+  const t = encodeURIComponent(texto);
+  return num
+    ? `https://wa.me/${num}?text=${t}`
+    : `https://api.whatsapp.com/send?text=${t}`;
+}
+
+function abrirWhatsApp(texto) {
+  window.open(urlWhatsApp(texto), "_blank", "noopener");
+}
+
+function fechaCorta(vence) {
+  if (!vence) return "";
+  const f = new Date(vence + "T00:00:00");
+  return f.toLocaleDateString("es-CL", { day: "2-digit", month: "short" });
+}
+
+function textoTarea(t) {
+  const lineas = [`📋 *${t.titulo}*`];
+  const meta = [t.categoria, `prioridad ${t.prioridad}`].filter(Boolean).join(" · ");
+  if (meta) lineas.push(meta);
+  if (t.vence) lineas.push(`📅 vence ${fechaCorta(t.vence)}`);
+  if (t.detalle) lineas.push(t.detalle);
+  if (t.threadId) lineas.push(`🔗 ${GMAIL_BASE}${t.threadId}`);
+  return lineas.join("\n");
+}
+
+function textoPendientes(lista) {
+  const pend = lista.filter((t) => !t.hecha);
+  if (!pend.length) return "✅ No tengo tareas pendientes.";
+  const peso = { alta: 0, media: 1, baja: 2 };
+  const orden = [...pend].sort((a, b) => (peso[a.prioridad] ?? 3) - (peso[b.prioridad] ?? 3));
+  const items = orden.map((t, i) => {
+    const vence = t.vence ? ` (vence ${fechaCorta(t.vence)})` : "";
+    return `${i + 1}. ${t.titulo} — ${t.prioridad}${vence}`;
+  });
+  const titulo = pend.length === 1 ? "📋 Tengo 1 tarea pendiente:" : `📋 Tengo ${pend.length} tareas pendientes:`;
+  return [titulo, "", ...items].join("\n");
 }
 
 // ---- Lógica de filtros ---------------------------------------------------
@@ -75,6 +129,7 @@ function render() {
     const link = t.threadId
       ? `<a class="gmail-link" href="${GMAIL_BASE}${escapar(t.threadId)}" target="_blank" rel="noopener">🔗 Ver correo</a>`
       : "";
+    const wa = `<button type="button" class="wa-link" title="Compartir por WhatsApp">💬 WhatsApp</button>`;
     const detalle = t.detalle ? `<div class="detalle">${escapar(t.detalle)}</div>` : "";
     const de = t.de ? `<span class="badge cat">${escapar(t.de)}</span>` : "";
     return `
@@ -89,6 +144,7 @@ function render() {
             ${venceBadge(t.vence)}
             ${de}
             ${link}
+            ${wa}
           </div>
         </div>
         <button class="btn-del" aria-label="Eliminar tarea" title="Eliminar">✕</button>
@@ -115,6 +171,8 @@ document.getElementById("lista").addEventListener("click", (e) => {
     tarea.hecha = e.target.checked;
     guardar();
     render();
+  } else if (e.target.classList.contains("wa-link")) {
+    abrirWhatsApp(textoTarea(tarea));
   } else if (e.target.classList.contains("btn-del")) {
     if (confirm("¿Eliminar esta tarea?")) {
       tareas = tareas.filter((t) => t.id !== tarea.id);
@@ -167,6 +225,29 @@ document.getElementById("btnReset").addEventListener("click", () => {
     guardar();
     render();
   }
+});
+
+// Enviar las tareas pendientes (según el filtro activo) por WhatsApp.
+document.getElementById("btnWhatsApp").addEventListener("click", () => {
+  const visibles = filtrar(tareas);
+  abrirWhatsApp(textoPendientes(visibles.length ? visibles : tareas));
+});
+
+// Configurar / cambiar el número de WhatsApp por defecto.
+document.getElementById("btnWhatsNum").addEventListener("click", () => {
+  const actual = numeroWhatsApp();
+  const valor = prompt(
+    "Número de WhatsApp por defecto (con código de país, solo dígitos).\n" +
+    "Ej. Chile: 56912345678.\n\nDéjalo vacío para elegir el contacto al compartir.",
+    actual
+  );
+  if (valor === null) return; // Canceló
+  const limpio = valor.replace(/[^0-9]/g, "");
+  if (limpio) localStorage.setItem(WHATSAPP_NUM_KEY, limpio);
+  else localStorage.removeItem(WHATSAPP_NUM_KEY);
+  alert(limpio
+    ? `Listo. Las tareas se enviarán a +${limpio}.`
+    : "Listo. Al compartir, WhatsApp te dejará elegir el contacto.");
 });
 
 // ---- Sincronización automática con Gmail (opcional) ----------------------

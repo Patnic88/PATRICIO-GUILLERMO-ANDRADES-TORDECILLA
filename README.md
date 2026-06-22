@@ -73,6 +73,26 @@ completadas y las que agregaste a mano.
 | `gmail-sync.gs` | Apps Script que lee la etiqueta `📋 Tarea` y entrega JSON |
 | `config.js` | Donde pegas la URL del Apps Script |
 
+## 💬 Compartir tareas por WhatsApp
+
+La app puede enviar tus tareas por WhatsApp **sin servidor**: arma el mensaje y
+abre WhatsApp (móvil o WhatsApp Web) con el texto listo para enviar.
+
+- **En cada tarea**: pulsa **💬 WhatsApp** para compartir esa tarea con su
+  categoría, prioridad, fecha de vencimiento y el enlace al correo.
+- **Todas las pendientes**: el botón **💬 Enviar pendientes** (arriba) manda la
+  lista pendiente según el filtro activo, ordenada por prioridad.
+- **Número por defecto** (opcional): pulsa **📱 Número de WhatsApp** en el pie
+  para guardar un número y que los mensajes vayan directo a ese chat. Si lo
+  dejas vacío, WhatsApp te deja elegir el contacto cada vez. También puedes
+  fijarlo en `config.js`:
+  ```js
+  window.WHATSAPP_NUMERO = "56912345678"; // código de país + número, solo dígitos
+  ```
+
+No requiere la API de WhatsApp Business ni ninguna cuenta de pago: usa el enlace
+oficial *click to chat* de WhatsApp.
+
 ## Integraciones ya configuradas
 
 - ✅ Etiqueta **`📋 Tarea`** creada en Gmail y aplicada a los correos pendientes.

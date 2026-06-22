@@ -7,3 +7,11 @@
 //
 // Cómo obtener la URL: ver instrucciones en gmail-sync.gs y README.md.
 window.SYNC_URL = "";
+
+// --- WhatsApp ---------------------------------------------------------------
+// Número de WhatsApp por defecto al que se enviarán las tareas (formato
+// internacional, solo dígitos, con código de país y SIN el "+" ni espacios).
+// Ej. Chile: "56912345678".
+//
+// Si lo dejas vacío, al compartir WhatsApp te dejará elegir el contacto.
+window.WHATSAPP_NUMERO = "";
