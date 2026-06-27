@@ -14,4 +14,4 @@ window.SYNC_URL = "";
 // Ej. Chile: "56912345678".
 //
 // Si lo dejas vacío, al compartir WhatsApp te dejará elegir el contacto.
-window.WHATSAPP_NUMERO = "";
+window.WHATSAPP_NUMERO = "56942208035";
