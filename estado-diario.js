@@ -108,6 +108,11 @@ function render() {
   document.getElementById("counterED").textContent =
     visibles.length === 1 ? "1 movimiento" : `${visibles.length} movimientos`;
   document.getElementById("vacioED").classList.toggle("oculto", visibles.length > 0);
+
+  const hoy = entradas.filter((e) => esHoy(e.fechaIso || e.fecha)).length;
+  const counterHoy = document.getElementById("counterHoy");
+  counterHoy.textContent = hoy === 1 ? "1 hoy" : `${hoy} hoy`;
+  counterHoy.classList.toggle("oculto", hoy === 0);
 }
 
 // ---- Eventos -------------------------------------------------------------

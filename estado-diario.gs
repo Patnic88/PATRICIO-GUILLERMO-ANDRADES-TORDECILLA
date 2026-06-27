@@ -259,9 +259,12 @@ function analyzeMessage(thread, msg) {
 // ---------------------------------------------------------------------------
 
 function extractRol(text) {
-  // Formatos típicos: C-114-2026, RIT O-3-2026, Rol N° 1234-2025, etc.
+  // Formatos típicos del PJUD: C-114-2026, RIT O-3-2026, Rol N° 1234-2025,
+  // Ingreso Corte 12345-2026, Ingreso Causa 999-2025. Permitimos una
+  // palabra intermedia frecuente ("Corte" / "ICA" / "Causa") entre la
+  // keyword y el rol propiamente tal.
   var m = text.match(
-    /\b(?:rol|rit|ric|ingreso)\s*(?:n[°º]?)?\s*[:#]?\s*([A-Z]?-?\s*\d+\s*-\s*\d{4})/i
+    /\b(?:rol|rit|ric|ingreso)\b(?:\s+(?:corte|ica|causa))?\s*(?:n[°º]?)?\s*[:#]?\s*([A-Z]?-?\s*\d+\s*-\s*\d{4})/i
   );
   if (m) return m[1].replace(/\s+/g, "");
   m = text.match(/\b([A-Z])-(\d{1,6})-(\d{4})\b/);
@@ -283,7 +286,9 @@ function extractTipo(text) {
   if (/decret/i.test(text)) return "Decreto";
   if (/audienc/i.test(text)) return "Citación a audiencia";
   if (/recurso\s+de\s+(protecci|apelaci|nulidad|queja)/i.test(text)) return "Recurso";
-  if (/notific/i.test(text)) return "Notificación";
+  // "notif..." cubre "notificación", "notifíquese", "notifico", etc.
+  // (la versión anterior, /notific/, fallaba con "Notifíquese" por el acento).
+  if (/notif/i.test(text)) return "Notificación";
   if (/resoluc/i.test(text)) return "Resolución";
   return "Movimiento";
 }

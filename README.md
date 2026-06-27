@@ -188,6 +188,28 @@ Si prefieres no usar clasp:
 | `estado-diario.gs` | Apps Script (el "agente" que lee Gmail) |
 | `apps-script/appsscript.json` | Manifest del proyecto (scopes de Gmail, Web App, runtime V8) |
 | `scripts/deploy-estado-diario.sh` | Despliegue automatizado con clasp |
+| `tests/extract.test.mjs` | Tests unitarios del extractor del agente |
+| `tests/e2e.test.mjs` | Tests E2E (Chromium + Playwright) |
+| `tests/run.sh` | Runner único (unit + E2E) |
+
+### Pruebas
+
+```bash
+bash tests/run.sh
+```
+
+Corre dos suites:
+
+- **Unit** (`tests/extract.test.mjs`): sandboxea `estado-diario.gs` con mocks
+  mínimos de Apps Script y prueba directamente las funciones puras
+  (`extractRol`, `extractCaratulado`, `extractTipo`, `analyzeMessage`,
+  `ensureDailyTrigger`). Cubre los formatos de rol/RIT/ingreso del PJUD y
+  los falsos positivos (correos del Poder Judicial no vinculados a la
+  Municipalidad o a Patricio Andrades).
+- **E2E** (`tests/e2e.test.mjs`): Chromium contra un servidor local; valida
+  la página de tareas con WhatsApp, la página del Estado Diario, los
+  filtros, la persistencia en `localStorage` y el badge "Hoy" inyectando un
+  movimiento con fecha del día.
 
 ### Estructura de cada entrada
 
