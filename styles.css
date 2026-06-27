@@ -53,6 +53,21 @@ body {
   font-weight: 600;
 }
 
+.nav-link {
+  display: inline-block;
+  margin-top: 6px;
+  margin-left: 8px;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: background 0.15s;
+}
+.nav-link:hover { background: rgba(255, 255, 255, 0.28); }
+
 .container { max-width: 820px; margin: 24px auto; padding: 0 20px; }
 
 .toolbar {
@@ -177,6 +192,37 @@ body {
 .badge.prio-baja { background: #e9f5ee; color: var(--baja); }
 .badge.vence { background: #fff4e5; color: #b9791f; }
 .badge.vence.vencida { background: #fdeaea; color: var(--alta); }
+
+.badge.tribunal.juzgado { background: #e6f0fb; color: var(--brand-dark); }
+.badge.tribunal.corte { background: #efe7f7; color: #5b3a8a; }
+.badge.rol { background: #f3f1ea; color: #6d5a1f; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.badge.tipo { background: #e9f5ee; color: var(--baja); }
+.badge.fecha { background: #eef2f7; color: var(--muted); }
+
+.tarea.estado { border-left-color: #7b5bbf; }
+.tarea.estado.hecha { opacity: 0.55; }
+
+.agent-note {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: #eef4fb;
+  border: 1px solid #d6e3f1;
+  color: var(--brand-dark);
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+.agent-note.aviso {
+  background: #fff4e5;
+  border-color: #f3d9a8;
+  color: #8a5a14;
+}
+.agent-note:empty { display: none; }
+.agent-note code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
 
 .gmail-link {
   text-decoration: none;
