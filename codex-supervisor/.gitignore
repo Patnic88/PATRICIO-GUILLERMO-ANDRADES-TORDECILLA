@@ -1,0 +1,5 @@
+# Archivos que genera el supervisor al ejecutarse (no se versionan)
+logs/
+history.json
+config.json
+tareas.txt

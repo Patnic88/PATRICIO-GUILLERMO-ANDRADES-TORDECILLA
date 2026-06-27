@@ -1,0 +1,11 @@
+# Lista de tareas para el Supervisor de Codex.
+# - Una tarea por línea.
+# - Las líneas que empiezan con # son comentarios y se ignoran.
+# - Las líneas en blanco también se ignoran.
+#
+# Ejecuta:  node supervisor.js --file tareas.ejemplo.txt
+# (o copia este archivo a "tareas.txt" y edítalo a tu gusto)
+
+Revisa el README.md y corrige errores de ortografía
+Agrega comentarios explicativos a las funciones de app.js
+Crea pruebas básicas para la lógica de filtrado de tareas
