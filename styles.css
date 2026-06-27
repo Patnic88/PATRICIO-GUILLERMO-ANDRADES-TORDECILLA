@@ -232,6 +232,36 @@ body {
 }
 .gmail-link:hover { text-decoration: underline; }
 
+/* WhatsApp */
+:root { --wa: #25d366; --wa-dark: #128c7e; }
+
+.toolbar-actions, .footer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn-wa {
+  background: var(--wa);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.btn-wa:hover { background: var(--wa-dark); }
+
+.wa-link {
+  background: transparent;
+  border: none;
+  color: var(--wa-dark);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+.wa-link:hover { text-decoration: underline; }
+
 .btn-del {
   background: transparent;
   border: none;
@@ -265,5 +295,6 @@ body {
 
 @media (max-width: 560px) {
   .toolbar { flex-direction: column; align-items: stretch; }
-  .btn-primary { width: 100%; }
+  .toolbar-actions { flex-direction: column; }
+  .toolbar-actions .btn-primary, .toolbar-actions .btn-wa { width: 100%; }
 }

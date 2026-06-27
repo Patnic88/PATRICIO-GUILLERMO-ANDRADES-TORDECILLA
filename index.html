@@ -29,7 +29,10 @@
         <button class="chip" data-filter="alta">Alta prioridad</button>
         <button class="chip" data-filter="completadas">Completadas</button>
       </div>
-      <button class="btn-primary" id="btnNueva">+ Nueva tarea</button>
+      <div class="toolbar-actions">
+        <button class="btn-wa" id="btnWhatsApp" title="Enviar las tareas pendientes por WhatsApp">💬 Enviar pendientes</button>
+        <button class="btn-primary" id="btnNueva">+ Nueva tarea</button>
+      </div>
     </section>
 
     <form class="nueva-tarea oculto" id="formNueva" autocomplete="off">
@@ -63,7 +66,10 @@
 
   <footer class="app-footer">
     <span>Las tareas se guardan en este navegador. Cada 🔗 abre el correo original en Gmail.</span>
-    <button class="btn-ghost" id="btnReset">Restaurar tareas de mis correos</button>
+    <div class="footer-actions">
+      <button class="btn-ghost" id="btnWhatsNum">📱 Número de WhatsApp</button>
+      <button class="btn-ghost" id="btnReset">Restaurar tareas de mis correos</button>
+    </div>
   </footer>
 
   <script src="config.js"></script>
