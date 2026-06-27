@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estado Diario · Patricio Andrades — Dirección Jurídica</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>⚖️ Estado Diario</h1>
+        <p class="subtitle">Movimientos del Juzgado de Los Vilos y Corte de Apelaciones de La Serena vinculados a la Municipalidad</p>
+      </div>
+      <div class="header-meta">
+        <span id="today"></span>
+        <span class="counter" id="counterED">0 movimientos</span>
+        <a class="nav-link" href="index.html">← Tareas</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="toolbar">
+      <div class="filters" id="filtersED">
+        <button class="chip active" data-filter="todos">Todos</button>
+        <button class="chip" data-filter="hoy">Hoy</button>
+        <button class="chip" data-filter="los-vilos">Juzgado Los Vilos</button>
+        <button class="chip" data-filter="corte-la-serena">Corte La Serena</button>
+        <button class="chip" data-filter="no-revisadas">Sin revisar</button>
+      </div>
+      <button class="btn-ghost" id="btnRefrescarED" title="Volver a leer las notificaciones desde Gmail">⟳ Revisar correo</button>
+    </section>
+
+    <p class="agent-note" id="agentNote"></p>
+
+    <ul class="lista" id="listaED"></ul>
+    <p class="empty oculto" id="vacioED">No hay movimientos que coincidan con este filtro. 🎉</p>
+  </main>
+
+  <footer class="app-footer">
+    <span>El agente lee tu correo de Gmail filtrando remitentes <code>@pjud.cl</code> y palabras clave (Municipalidad de Los Vilos, Patricio Andrades).</span>
+    <button class="btn-ghost" id="btnResetED">Restaurar datos de muestra</button>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="estado-diario.seed.js"></script>
+  <script src="estado-diario.js"></script>
+</body>
+</html>
