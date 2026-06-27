@@ -109,7 +109,43 @@ muestra datos de muestra (`estado-diario.seed.js`). Cuando lo completes con
 la URL del Web App, los datos se vuelven reales y se actualizan cada vez que
 abres la página o pulsas **⟳ Revisar correo**.
 
-### Configuración (una sola vez, ~5 minutos)
+### Despliegue automatizado (recomendado)
+
+Un solo comando para subir el script, desplegarlo como Web App, escribir la
+URL en `config.js`, calentar el endpoint para que se autoinstale el trigger
+diario, y commitear el cambio:
+
+```bash
+bash scripts/deploy-estado-diario.sh
+```
+
+Antes del primer `deploy`, dos pasos manuales (una sola vez en la vida):
+
+1. **Activa la Apps Script API** en
+   <https://script.google.com/home/usersettings> (interruptor *Apps Script
+   API: ON*).
+2. **Autoriza clasp** con tu cuenta de Google:
+   ```bash
+   npx -y @google/clasp@2.4.2 login
+   ```
+   Se abrirá el navegador para pedir permiso. Esta autorización es
+   inevitable: nadie más que tú puede aceptar los scopes de Gmail.
+
+A partir de ahí, cada vez que cambies `estado-diario.gs` basta con volver a
+ejecutar `bash scripts/deploy-estado-diario.sh` y el script:
+
+- empuja la versión nueva al proyecto Apps Script existente,
+- crea un nuevo "deployment" como Web App,
+- actualiza `config.js` con la URL nueva si cambió,
+- y commitea + pushea ese cambio.
+
+El trigger que corre `reviseEstadoDiario` cada día a las 08:00 se instala
+solo en la primera invocación del Web App (ver `ensureDailyTrigger` en
+`estado-diario.gs`).
+
+### Configuración manual (alternativa)
+
+Si prefieres no usar clasp:
 
 1. Abre `estado-diario.gs` y sigue las instrucciones del encabezado: crea el
    proyecto en <https://script.google.com>, pega el script y publícalo como
@@ -119,12 +155,8 @@ abres la página o pulsas **⟳ Revisar correo**.
    ```js
    window.COURT_SYNC_URL = "https://script.google.com/macros/s/YYYY/exec";
    ```
-4. *(Opcional pero recomendado)* en el editor de Apps Script, **Activadores →
-   Añadir activador** y configura `reviseEstadoDiario` para que corra cada día
-   a las 08:00. El agente:
-     - etiquetará los hilos detectados con `⚖️ Estado Diario`, y
-     - puede enviarte un resumen al correo si rellenas `DIGEST_TO` dentro del
-       script.
+4. Abre la página `estado-diario.html` una vez: la primera llamada al Web
+   App instala automáticamente el trigger diario de las 08:00.
 
 ### Archivos
 
@@ -134,6 +166,8 @@ abres la página o pulsas **⟳ Revisar correo**.
 | `estado-diario.js` | Lógica de filtros y sincronización con el agente |
 | `estado-diario.seed.js` | Datos de muestra (se reemplazan al activar el agente) |
 | `estado-diario.gs` | Apps Script (el "agente" que lee Gmail) |
+| `apps-script/appsscript.json` | Manifest del proyecto (scopes de Gmail, Web App, runtime V8) |
+| `scripts/deploy-estado-diario.sh` | Despliegue automatizado con clasp |
 
 ### Estructura de cada entrada
 

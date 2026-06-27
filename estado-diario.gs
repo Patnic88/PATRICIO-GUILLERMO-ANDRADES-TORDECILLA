@@ -91,6 +91,9 @@ function doGet(e) {
   if (isNaN(dias) || dias < 1) dias = 1;
   if (dias > MAX_DAYS) dias = MAX_DAYS;
 
+  // Auto-instalación del trigger diario en la primera invocación del Web App.
+  try { ensureDailyTrigger(); } catch (err) { /* no bloquear la respuesta */ }
+
   var entries = buildEntries(dias);
   var payload = JSON.stringify({
     updated: new Date().toISOString(),
@@ -138,6 +141,33 @@ function reviseEstadoDiario() {
   }
 
   return entries.length;
+}
+
+/**
+ * Crea (si no existe) un trigger basado en tiempo que ejecuta
+ * `reviseEstadoDiario` cada día a las 08:00 hora local del script.
+ * Idempotente: no duplica triggers.
+ */
+function ensureDailyTrigger() {
+  var existing = ScriptApp.getProjectTriggers().some(function (t) {
+    return t.getHandlerFunction() === "reviseEstadoDiario";
+  });
+  if (existing) return false;
+  ScriptApp.newTrigger("reviseEstadoDiario")
+    .timeBased()
+    .atHour(8)
+    .everyDays(1)
+    .create();
+  return true;
+}
+
+/**
+ * Helper manual para borrar todos los triggers asociados a este script.
+ */
+function removeAllTriggers() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    ScriptApp.deleteTrigger(t);
+  });
 }
 
 // ---------------------------------------------------------------------------
