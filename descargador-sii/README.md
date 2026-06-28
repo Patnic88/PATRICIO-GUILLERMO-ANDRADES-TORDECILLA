@@ -36,7 +36,34 @@ El paquete portátil **trae el propio Node.js adentro** y usa el navegador
 
 > El paquete se genera solo en **GitHub Actions** sobre Windows, macOS y Linux
 > reales (ver `.github/workflows/build-portable.yml`), y se prueba antes de
-> publicarse. Para generar una Release descargable, crea un tag `v1.0.0`.
+> publicarse.
+
+### Cómo generar los paquetes descargables (una vez, lo hace el dueño del repo)
+
+Los `.zip` listos para descargar se producen en GitHub. Para crearlos:
+
+1. **Habilita GitHub Actions** (sólo la primera vez):
+   GitHub → repo → **Settings → Actions → General** → marca
+   *"Allow all actions and reusable workflows"* → **Save**.
+
+2. **Genera la versión** de una de estas dos formas:
+
+   - **Con un tag** (publica una *Release* descargable):
+     ```bash
+     git pull
+     git tag -a v1.0.0 -m "Descargador SII v1.0.0 — versión portátil"
+     git push origin v1.0.0
+     ```
+   - **O manualmente desde la web:** pestaña **Actions → "Construir versión
+     portátil" → Run workflow**.
+
+3. **Descarga el paquete** de tu sistema:
+   - Si usaste un tag → pestaña **Releases**.
+   - Si lo corriste manual → pestaña **Actions** → última ejecución → sección
+     *Artifacts* → `DescargarSII-Windows` / `-macOS` / `-Linux`.
+
+> Cada vez que quieras una versión nueva, sube otro tag (`v1.0.1`, `v1.1.0`, …)
+> o vuelve a ejecutar el workflow.
 
 ---
 
