@@ -83,6 +83,94 @@ body {
 .card-kpi.saldo .kpi-valor   { color: var(--brand); }
 .card-kpi.saldo .kpi-valor.negativo { color: var(--gasto); }
 
+.nota-moneda { margin: 0 0 18px; font-size: 0.78rem; color: var(--muted); }
+.nota-moneda.oculto { display: none; }
+
+/* ---------- Presupuesto ---------- */
+.presupuesto {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.pres-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pres-titulo { margin: 0; font-size: 0.98rem; }
+.pres-editar { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted); }
+.pres-editar input {
+  width: 120px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-align: right;
+}
+.pres-moneda { font-weight: 600; }
+.pres-barra { background: var(--line); border-radius: 999px; height: 12px; overflow: hidden; }
+.pres-barra-fill { height: 100%; border-radius: 999px; transition: width 0.3s, background 0.3s; }
+.pres-barra-fill.ok   { background: var(--ingreso); }
+.pres-barra-fill.warn { background: #e8a33d; }
+.pres-barra-fill.over { background: var(--gasto); }
+.pres-detalle { margin-top: 8px; font-size: 0.85rem; color: var(--ink); }
+.pres-mes { color: var(--muted); }
+.pres-alerta {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.pres-alerta.warn { background: #fcf3e3; color: #b9791f; }
+.pres-alerta.over { background: var(--gasto-soft); color: var(--gasto); }
+.pres-alerta.oculto { display: none; }
+
+/* ---------- Paneles análisis (torta + mensual) ---------- */
+.paneles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+.panel-titulo { margin: 0 0 14px; font-size: 0.95rem; }
+.panel-vacio { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
+.panel-vacio.oculto { display: none; }
+
+/* Torta */
+.torta-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+#torta { flex-shrink: 0; }
+.torta-centro-1 { font-size: 12px; fill: var(--muted); }
+.torta-centro-2 { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.torta-leyenda { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 7px; }
+.ley-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+.ley-color { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.ley-cat { flex: 1; color: var(--ink); }
+.ley-val { color: var(--muted); white-space: nowrap; }
+
+/* Resumen mensual */
+.mensual-leyenda { display: flex; gap: 16px; font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+.mensual-leyenda .punto { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+.punto.ingreso, .mes-barra.ingreso { background: var(--ingreso); }
+.punto.gasto, .mes-barra.gasto { background: var(--gasto); }
+.mensual-barras { display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; }
+.mes-grupo { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.mes-barras { display: flex; align-items: flex-end; gap: 3px; }
+.mes-barra { width: 13px; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; }
+.mes-label { font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+
 /* ---------- Toolbar ---------- */
 .toolbar {
   display: flex;
@@ -211,9 +299,11 @@ body {
 .badge { padding: 2px 9px; border-radius: 999px; font-weight: 600; }
 .badge.cat { background: #eef2f7; color: var(--muted); }
 
-.mov-monto { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+.mov-monto-col { text-align: right; white-space: nowrap; }
+.mov-monto { font-weight: 700; font-size: 1rem; }
 .mov-monto.ingreso { color: var(--ingreso); }
 .mov-monto.gasto   { color: var(--gasto); }
+.mov-base { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
 .btn-del {
   background: transparent;
@@ -247,9 +337,14 @@ body {
 
 .oculto { display: none; }
 
+@media (max-width: 760px) {
+  .paneles { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 600px) {
   .resumen { grid-template-columns: 1fr; }
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar-actions { justify-content: stretch; }
   .toolbar-actions .btn-primary, .toolbar-actions .btn-ghost { flex: 1; }
+  .pres-cabecera { flex-direction: column; align-items: stretch; }
 }

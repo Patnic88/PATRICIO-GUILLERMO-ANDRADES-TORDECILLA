@@ -36,6 +36,22 @@
         <span class="kpi-valor" id="kpi-saldo">$0</span>
       </div>
     </section>
+    <p class="nota-moneda" id="nota-moneda"></p>
+
+    <!-- Presupuesto mensual -->
+    <section class="presupuesto" id="presupuesto">
+      <div class="pres-cabecera">
+        <h3 class="pres-titulo">📊 Presupuesto del mes</h3>
+        <div class="pres-editar">
+          <label for="pres-input">Tope de gasto:</label>
+          <input type="number" id="pres-input" min="0" step="10000" />
+          <span class="pres-moneda" id="pres-moneda-base"></span>
+        </div>
+      </div>
+      <div class="pres-barra"><div class="pres-barra-fill" id="pres-fill"></div></div>
+      <div class="pres-detalle" id="pres-detalle"></div>
+      <div class="pres-alerta oculto" id="pres-alerta"></div>
+    </section>
 
     <!-- Barra de herramientas -->
     <div class="toolbar">
@@ -67,7 +83,8 @@
       </div>
       <input type="text" id="mov-desc" placeholder="Descripción (ej: Compra de insumos)" required />
       <div class="form-row">
-        <input type="number" id="mov-monto" placeholder="Monto" min="0" step="1" required />
+        <input type="number" id="mov-monto" placeholder="Monto" min="0" step="0.01" required />
+        <select id="mov-moneda" title="Moneda"></select>
         <select id="mov-categoria"></select>
         <input type="date" id="mov-fecha" required />
       </div>
@@ -77,8 +94,22 @@
       </div>
     </form>
 
-    <!-- Desglose por categoría -->
-    <section class="categorias-resumen" id="cat-resumen"></section>
+    <!-- Paneles de análisis: torta + resumen mensual -->
+    <section class="paneles">
+      <div class="panel" id="panel-torta">
+        <h3 class="panel-titulo">Gastos por categoría</h3>
+        <div class="torta-wrap">
+          <div id="torta"></div>
+          <div class="torta-leyenda" id="torta-leyenda"></div>
+        </div>
+        <p class="panel-vacio oculto" id="torta-vacio">Sin gastos en este filtro.</p>
+      </div>
+      <div class="panel" id="panel-mensual">
+        <h3 class="panel-titulo">Resumen mensual (ingresos vs gastos)</h3>
+        <div id="grafico-mensual"></div>
+        <p class="panel-vacio oculto" id="mensual-vacio">Sin datos suficientes.</p>
+      </div>
+    </section>
 
     <!-- Lista de movimientos -->
     <ul class="lista" id="lista-mov"></ul>
