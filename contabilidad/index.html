@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💰 Contabilidad — Patricio Andrades</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>💰 Contabilidad</h1>
+        <p class="subtitle">Control de ingresos y gastos — sin servidor, en tu navegador</p>
+      </div>
+      <div class="header-meta">
+        <span id="today"></span>
+        <span class="counter" id="saldo-header">$0</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Tarjetas resumen -->
+    <section class="resumen" id="resumen">
+      <div class="card-kpi ingreso">
+        <span class="kpi-label">Ingresos</span>
+        <span class="kpi-valor" id="kpi-ingresos">$0</span>
+      </div>
+      <div class="card-kpi gasto">
+        <span class="kpi-label">Gastos</span>
+        <span class="kpi-valor" id="kpi-gastos">$0</span>
+      </div>
+      <div class="card-kpi saldo">
+        <span class="kpi-label">Saldo</span>
+        <span class="kpi-valor" id="kpi-saldo">$0</span>
+      </div>
+    </section>
+
+    <!-- Barra de herramientas -->
+    <div class="toolbar">
+      <div class="filters" id="filtros-mes">
+        <label class="chip-label">
+          Mes:
+          <select id="filtro-mes"></select>
+        </label>
+        <label class="chip-label">
+          Tipo:
+          <select id="filtro-tipo">
+            <option value="todos">Todos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="gasto">Gastos</option>
+          </select>
+        </label>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-primary" id="btn-nuevo">+ Nuevo movimiento</button>
+        <button class="btn-ghost" id="btn-csv">⬇ Exportar CSV</button>
+      </div>
+    </div>
+
+    <!-- Formulario nuevo movimiento -->
+    <form class="nuevo-mov oculto" id="form-mov">
+      <div class="tipo-toggle">
+        <button type="button" class="toggle-btn active" data-tipo="gasto" id="t-gasto">— Gasto</button>
+        <button type="button" class="toggle-btn" data-tipo="ingreso" id="t-ingreso">+ Ingreso</button>
+      </div>
+      <input type="text" id="mov-desc" placeholder="Descripción (ej: Compra de insumos)" required />
+      <div class="form-row">
+        <input type="number" id="mov-monto" placeholder="Monto" min="0" step="1" required />
+        <select id="mov-categoria"></select>
+        <input type="date" id="mov-fecha" required />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="btn-cancelar">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar movimiento</button>
+      </div>
+    </form>
+
+    <!-- Desglose por categoría -->
+    <section class="categorias-resumen" id="cat-resumen"></section>
+
+    <!-- Lista de movimientos -->
+    <ul class="lista" id="lista-mov"></ul>
+    <p class="empty oculto" id="vacio">No hay movimientos para este filtro. Pulsa <strong>+ Nuevo movimiento</strong> para empezar.</p>
+  </main>
+
+  <footer class="app-footer">
+    <span id="footer-count">0 movimientos</span>
+    <button class="btn-ghost" id="btn-reset">↺ Restaurar datos de ejemplo</button>
+  </footer>
+
+  <script src="data.seed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
