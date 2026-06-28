@@ -75,9 +75,14 @@ var KEYWORDS = [
 // Etiqueta que se aplica a los hilos detectados (se crea si no existe).
 var STATE_LABEL = "⚖️ Estado Diario";
 
-// Resumen diario por correo: dirección a la que enviar el digest (opcional).
+// Resumen diario por correo: dirección a la que enviar el digest.
 // Déjalo vacío para no recibir resumen por correo.
-var DIGEST_TO = "";
+var DIGEST_TO = "pandrades23@gmail.com";
+
+// URL pública de la página `estado-diario.html` (si la publicas, p. ej. en
+// GitHub Pages). El digest incluye un enlace "Ver tablero" cuando está
+// configurada. Déjala vacía si abres la página sólo localmente.
+var DIGEST_DASHBOARD_URL = "";
 
 var MAX_DAYS = 14;
 var MAX_THREADS = 80;
@@ -131,16 +136,115 @@ function reviseEstadoDiario() {
   });
 
   if (DIGEST_TO) {
-    var asunto = "⚖️ Estado Diario (" + entries.length + " movimientos)";
-    var cuerpo = entries.map(function (e) {
-      return "• [" + e.tribunal + "] " + (e.rol || "(sin rol)") + " — "
-        + e.tipoResolucion + "\n  " + e.caratulado + "\n  "
-        + (e.resumen || "").slice(0, 200) + "\n";
-    }).join("\n");
-    GmailApp.sendEmail(DIGEST_TO, asunto, cuerpo);
+    var digest = buildDigest(entries);
+    GmailApp.sendEmail(DIGEST_TO, digest.subject, digest.plain, { htmlBody: digest.html });
   }
 
   return entries.length;
+}
+
+/**
+ * Helper para mandar el resumen del día AHORA mismo (sin esperar al
+ * trigger de las 08:00). Útil para validar que el correo llega bien.
+ * Córrelo desde el editor de Apps Script: "Ejecutar → sendDigestNow".
+ */
+function sendDigestNow() {
+  if (!DIGEST_TO) throw new Error("DIGEST_TO está vacío; edita estado-diario.gs");
+  var entries = buildEntries(1);
+  var digest = buildDigest(entries);
+  GmailApp.sendEmail(DIGEST_TO, digest.subject, digest.plain, { htmlBody: digest.html });
+  return entries.length;
+}
+
+/**
+ * Arma el resumen para el correo a partir de una lista de entradas.
+ * Pura: no toca Gmail ni el reloj — facilita probarla en isolation.
+ * Devuelve { subject, plain, html }.
+ */
+function buildDigest(entries) {
+  var fechaHoy = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd-MM-yyyy");
+  var total = entries.length;
+
+  if (!total) {
+    return {
+      subject: "⚖️ Estado Diario " + fechaHoy + " — sin movimientos",
+      plain: "Sin movimientos hoy en el Juzgado de Los Vilos ni en la Corte de La Serena vinculados a la Municipalidad.",
+      html: "<p>Sin movimientos hoy en el Juzgado de Los Vilos ni en la Corte de La Serena vinculados a la Municipalidad.</p>"
+    };
+  }
+
+  var subject = "⚖️ Estado Diario " + fechaHoy + " — "
+    + total + (total === 1 ? " movimiento" : " movimientos");
+
+  // Agrupar por tribunal para que el correo sea legible.
+  var grupos = {};
+  entries.forEach(function (e) {
+    var k = e.tribunal || "Otro";
+    (grupos[k] = grupos[k] || []).push(e);
+  });
+
+  // Texto plano (fallback para clientes sin HTML)
+  var plainLines = ["Estado Diario del " + fechaHoy, ""];
+  Object.keys(grupos).forEach(function (trib) {
+    plainLines.push("=== " + trib + " (" + grupos[trib].length + ") ===");
+    grupos[trib].forEach(function (e) {
+      plainLines.push("• " + (e.rol || "(sin rol)") + " — " + e.tipoResolucion);
+      plainLines.push("  " + (e.caratulado || ""));
+      if (e.resumen) plainLines.push("  " + e.resumen.slice(0, 220));
+      if (e.threadId) plainLines.push("  https://mail.google.com/mail/u/0/#all/" + e.threadId);
+      plainLines.push("");
+    });
+  });
+
+  // HTML formateado
+  var htmlParts = [
+    '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1f2933;max-width:640px;">',
+    '<h2 style="margin:0 0 12px;color:#1b5e9b;">⚖️ Estado Diario · ' + escapeHtml(fechaHoy) + '</h2>',
+    '<p style="color:#69707d;margin:0 0 18px;">' + total
+      + (total === 1 ? ' movimiento detectado' : ' movimientos detectados')
+      + ' en tu Gmail vinculados a la I. Municipalidad de Los Vilos / Patricio Andrades.</p>'
+  ];
+  Object.keys(grupos).forEach(function (trib) {
+    htmlParts.push('<h3 style="margin:18px 0 8px;color:#14497a;border-bottom:1px solid #e3e8ef;padding-bottom:4px;">'
+      + escapeHtml(trib) + ' <span style="color:#69707d;font-weight:400;">(' + grupos[trib].length + ')</span></h3>');
+    grupos[trib].forEach(function (e) {
+      htmlParts.push('<div style="margin:0 0 14px;padding:10px 12px;background:#f4f6f9;border-left:3px solid #7b5bbf;border-radius:6px;">');
+      htmlParts.push('<div style="font-weight:600;">' + escapeHtml(e.caratulado || "(sin carátula)") + '</div>');
+      htmlParts.push('<div style="font-size:13px;color:#69707d;margin:4px 0;">'
+        + '<span style="font-family:ui-monospace,monospace;background:#f3f1ea;color:#6d5a1f;padding:1px 8px;border-radius:999px;">'
+        + escapeHtml(e.rol || "sin rol") + '</span> '
+        + '<span style="background:#e9f5ee;color:#4a9d6a;padding:1px 8px;border-radius:999px;margin-left:4px;">'
+        + escapeHtml(e.tipoResolucion || "Movimiento") + '</span></div>');
+      if (e.resumen) {
+        htmlParts.push('<div style="font-size:13px;color:#1f2933;margin-top:6px;">'
+          + escapeHtml(e.resumen.slice(0, 280)) + '</div>');
+      }
+      if (e.threadId) {
+        htmlParts.push('<div style="margin-top:6px;"><a href="https://mail.google.com/mail/u/0/#all/'
+          + encodeURIComponent(e.threadId)
+          + '" style="font-size:12px;color:#1b5e9b;text-decoration:none;">🔗 Ver correo original</a></div>');
+      }
+      htmlParts.push('</div>');
+    });
+  });
+  if (DIGEST_DASHBOARD_URL) {
+    htmlParts.push('<p style="margin:20px 0 0;"><a href="' + escapeHtml(DIGEST_DASHBOARD_URL)
+      + '" style="background:#1b5e9b;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;">Ver tablero completo</a></p>');
+  }
+  htmlParts.push('<p style="margin:24px 0 0;font-size:11px;color:#a0a8b3;">Generado por estado-diario.gs ejecutándose en tu cuenta de Google.</p>');
+  htmlParts.push('</div>');
+
+  return {
+    subject: subject,
+    plain: plainLines.join("\n"),
+    html: htmlParts.join("")
+  };
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 /**

@@ -57,7 +57,7 @@ const ContentService = {
 const sandbox = new Function(
   "Utilities", "Session", "GmailApp", "ScriptApp", "ContentService",
   gsCode +
-  "\nreturn { extractRol, extractCaratulado, extractTipo, analyzeMessage, buildEntries, ensureDailyTrigger };"
+  "\nreturn { extractRol, extractCaratulado, extractTipo, analyzeMessage, buildEntries, ensureDailyTrigger, buildDigest, escapeHtml, DIGEST_TO };"
 );
 const fns = sandbox(Utilities, Session, GmailApp, ScriptApp, ContentService);
 
@@ -270,6 +270,108 @@ test("ensureDailyTrigger: no duplica si ya existe", () => {
   )(Utilities, Session, GmailApp, ScriptAppLocal, ContentService);
   fnsLocal.ensureDailyTrigger();
   assert.equal(creados, 0, "no debe crear trigger nuevo");
+});
+
+// ---------------------------------------------------------------------------
+// DIGEST — el correo diario a pandrades23@gmail.com
+// ---------------------------------------------------------------------------
+
+test("DIGEST_TO apunta a pandrades23@gmail.com", () => {
+  assert.equal(fns.DIGEST_TO, "pandrades23@gmail.com");
+});
+
+test("escapeHtml escapa <, >, &, comillas", () => {
+  assert.equal(fns.escapeHtml('<a href="x">Y & "Z"\'s</a>'),
+    "&lt;a href=&quot;x&quot;&gt;Y &amp; &quot;Z&quot;&#39;s&lt;/a&gt;");
+});
+
+test("buildDigest: sin entradas → asunto 'sin movimientos'", () => {
+  const d = fns.buildDigest([]);
+  assert.match(d.subject, /sin movimientos/i);
+  assert.match(d.plain, /Sin movimientos/);
+  assert.ok(d.html.includes("<p>"));
+});
+
+test("buildDigest: una entrada → asunto '1 movimiento'", () => {
+  const d = fns.buildDigest([{
+    rol: "C-114-2026",
+    caratulado: "Pérez con I. Municipalidad de Los Vilos",
+    tribunal: "Juzgado de Letras y Garantía de Los Vilos",
+    tipoTribunal: "los-vilos",
+    tipoResolucion: "Provee escrito",
+    resumen: "Téngase por contestada la demanda.",
+    threadId: "abc123"
+  }]);
+  assert.match(d.subject, /1 movimiento\b/);
+  assert.ok(d.html.includes("Juzgado de Letras y Garantía de Los Vilos"));
+  assert.ok(d.html.includes("C-114-2026"));
+  assert.ok(d.html.includes("Pérez con I. Municipalidad de Los Vilos"));
+  assert.ok(d.html.includes("Provee escrito"));
+  assert.ok(d.html.includes("https://mail.google.com/mail/u/0/#all/abc123"));
+});
+
+test("buildDigest: agrupa por tribunal", () => {
+  const entries = [
+    { rol: "A-1-2026", caratulado: "X con Muni", tribunal: "Juzgado de Letras y Garantía de Los Vilos", tipoTribunal: "los-vilos", tipoResolucion: "Provee escrito", resumen: "...", threadId: "t1" },
+    { rol: "B-2-2026", caratulado: "Y con Muni", tribunal: "Corte de Apelaciones de La Serena", tipoTribunal: "corte-la-serena", tipoResolucion: "Recurso", resumen: "...", threadId: "t2" },
+    { rol: "A-3-2026", caratulado: "Z con Muni", tribunal: "Juzgado de Letras y Garantía de Los Vilos", tipoTribunal: "los-vilos", tipoResolucion: "Sentencia", resumen: "...", threadId: "t3" }
+  ];
+  const d = fns.buildDigest(entries);
+  assert.match(d.subject, /3 movimientos/);
+  // El cabezal del Juzgado debería decir "(2)" y el de la Corte "(1)"
+  assert.match(d.html, /Juzgado de Letras y Garantía de Los Vilos[\s\S]*\(2\)/);
+  assert.match(d.html, /Corte de Apelaciones de La Serena[\s\S]*\(1\)/);
+});
+
+test("buildDigest: escapa HTML en la carátula (anti-XSS)", () => {
+  const d = fns.buildDigest([{
+    rol: "X-1-2026",
+    caratulado: "<script>alert(1)</script>",
+    tribunal: "Juzgado de Letras y Garantía de Los Vilos",
+    tipoResolucion: "Notificación",
+    resumen: "",
+    threadId: ""
+  }]);
+  assert.ok(!d.html.includes("<script>alert"), "no debe inyectar script");
+  assert.ok(d.html.includes("&lt;script&gt;alert(1)&lt;/script&gt;"));
+});
+
+test("reviseEstadoDiario: usa htmlBody al enviar el correo", () => {
+  // Simulamos GmailApp.search devolviendo un mensaje real vinculado.
+  const calls = [];
+  const fakeMsg = {
+    getId: () => "m-1",
+    getFrom: () => "notifica_jl_losvilos@pjud.cl",
+    getSubject: () => "Causa Rol C-44-2026",
+    getPlainBody: () => "Caratulado: X con I. Municipalidad de Los Vilos. Provee escrito.",
+    getDate: () => new Date()
+  };
+  const fakeThread = {
+    getId: () => "t-1",
+    getMessages: () => [fakeMsg],
+    addLabel: () => {}
+  };
+  const GmailMock = {
+    search: () => [fakeThread],
+    getUserLabelByName: () => ({ getName: () => "x" }),
+    createLabel: () => ({ getName: () => "x" }),
+    getThreadById: () => fakeThread,
+    sendEmail: (to, subject, plain, opts) => {
+      calls.push({ to, subject, plain, opts });
+    }
+  };
+  const fnsLocal = new Function(
+    "Utilities", "Session", "GmailApp", "ScriptApp", "ContentService",
+    gsCode + "\nreturn { reviseEstadoDiario };"
+  )(Utilities, Session, GmailMock, ScriptApp, ContentService);
+
+  const n = fnsLocal.reviseEstadoDiario();
+  assert.equal(n, 1, "debe procesar 1 entrada");
+  assert.equal(calls.length, 1, "debe enviar 1 correo");
+  assert.equal(calls[0].to, "pandrades23@gmail.com");
+  assert.match(calls[0].subject, /Estado Diario/);
+  assert.ok(calls[0].opts && calls[0].opts.htmlBody, "debe incluir htmlBody");
+  assert.ok(calls[0].opts.htmlBody.includes("C-44-2026"));
 });
 
 // ---------------------------------------------------------------------------

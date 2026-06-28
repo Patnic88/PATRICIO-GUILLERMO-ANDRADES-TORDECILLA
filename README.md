@@ -163,6 +163,23 @@ El trigger que corre `reviseEstadoDiario` cada día a las 08:00 se instala
 solo en la primera invocación del Web App (ver `ensureDailyTrigger` en
 `estado-diario.gs`).
 
+### 📧 Resumen diario por correo
+
+Cuando `reviseEstadoDiario` corre cada mañana, además de etiquetar los
+hilos con `⚖️ Estado Diario`, **envía un resumen del día a
+`pandrades23@gmail.com`** (configurable en `DIGEST_TO` dentro de
+`estado-diario.gs`). El correo:
+
+- viene desde tu propia cuenta de Google (Apps Script usa `GmailApp.sendEmail`),
+- llega en formato HTML, agrupado por tribunal,
+- muestra rol/RIT, carátula, tipo de resolución y un resumen,
+- incluye un link directo al hilo original en Gmail,
+- y se omite por completo si no hubo movimientos ese día (no genera ruido).
+
+Para probar el envío sin esperar al trigger diario, abre el editor de
+Apps Script y ejecuta la función **`sendDigestNow`** — manda el resumen
+del día actual al instante.
+
 ### Configuración manual (alternativa)
 
 Si prefieres no usar clasp:
