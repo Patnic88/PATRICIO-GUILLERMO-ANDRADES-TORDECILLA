@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consultor Laboral y Tributario · Chile — Patricio Andrades</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="consultas.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>⚖️ Consultor Laboral y Tributario</h1>
+        <p class="subtitle">Chile · Patricio Andrades — Dirección Jurídica, Municipalidad de Los Vilos</p>
+      </div>
+      <div class="header-meta">
+        <span id="today"></span>
+        <span class="counter" id="vigencia">valores referenciales</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="subnav">
+      <a class="subnav-link" href="index.html">← Mis tareas</a>
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="consultas">📚 Consultas</button>
+        <button class="tab" data-tab="finiquito">🧮 Finiquito</button>
+        <button class="tab" data-tab="liquidacion">💼 Liquidación</button>
+        <button class="tab" data-tab="impuesto">📊 Impuesto único</button>
+        <button class="tab" data-tab="valores">📌 Valores</button>
+      </div>
+    </nav>
+
+    <!-- ====================== BANCO DE CONSULTAS ====================== -->
+    <section class="panel" id="panel-consultas">
+      <div class="toolbar">
+        <div class="filters" id="areaFilters">
+          <button class="chip active" data-area="todas">Todas</button>
+          <button class="chip" data-area="Laboral">Laboral</button>
+          <button class="chip" data-area="Municipal">Municipal</button>
+          <button class="chip" data-area="Previsional">Previsional</button>
+          <button class="chip" data-area="Tributaria">Tributaria</button>
+        </div>
+        <input type="search" id="buscar" class="search-input" placeholder="Buscar consulta…" />
+      </div>
+
+      <div class="toolbar">
+        <button class="btn-primary" id="btnNuevaConsulta">+ Nueva consulta</button>
+        <button class="btn-ghost" id="btnResetConsultas">Restaurar banco original</button>
+      </div>
+
+      <form class="card-form oculto" id="formConsulta" autocomplete="off">
+        <input type="text" id="cPregunta" placeholder="Pregunta / situación a resolver" required />
+        <textarea id="cRespuesta" rows="3" placeholder="Respuesta o criterio aplicable"></textarea>
+        <div class="form-row">
+          <select id="cArea">
+            <option>Laboral</option>
+            <option>Municipal</option>
+            <option>Previsional</option>
+            <option>Tributaria</option>
+          </select>
+          <input type="text" id="cTema" placeholder="Tema (ej. Jornada)" />
+          <input type="text" id="cFundamento" placeholder="Fundamento legal (ej. Art. 22 CT)" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="cCancelar">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar consulta</button>
+        </div>
+      </form>
+
+      <ul class="lista" id="listaConsultas"></ul>
+      <p class="empty oculto" id="consultasVacio">No hay consultas que coincidan con la búsqueda.</p>
+    </section>
+
+    <!-- ====================== CALCULADORA FINIQUITO ====================== -->
+    <section class="panel oculto" id="panel-finiquito">
+      <div class="calc-card">
+        <h2>🧮 Calculadora de finiquito e indemnizaciones</h2>
+        <p class="calc-note">
+          Estima indemnización por años de servicio (tope 11 años y 90 UF),
+          sustitutiva del aviso previo y feriado proporcional.
+        </p>
+        <div class="calc-grid">
+          <label>Última remuneración mensual ($)
+            <input type="number" id="fRemuneracion" min="0" step="1000" value="800000" />
+          </label>
+          <label>Fecha de ingreso
+            <input type="date" id="fIngreso" />
+          </label>
+          <label>Fecha de término
+            <input type="date" id="fTermino" />
+          </label>
+          <label>Causal de término
+            <select id="fCausal">
+              <option value="161">Necesidades de la empresa (art. 161)</option>
+              <option value="injustificado">Despido injustificado declarado</option>
+              <option value="160">Conducta del trabajador (art. 160)</option>
+              <option value="159">Renuncia / mutuo acuerdo (art. 159)</option>
+            </select>
+          </label>
+          <label class="check-line">
+            <input type="checkbox" id="fAviso" />
+            Se dio aviso previo con 30 días de anticipación
+          </label>
+          <label>Días de feriado pendientes (hábiles)
+            <input type="number" id="fFeriado" min="0" step="0.5" value="0" />
+          </label>
+        </div>
+        <button class="btn-primary" id="fCalcular">Calcular finiquito</button>
+        <div class="resultado oculto" id="fResultado"></div>
+      </div>
+    </section>
+
+    <!-- ====================== LIQUIDACIÓN DE SUELDO ====================== -->
+    <section class="panel oculto" id="panel-liquidacion">
+      <div class="calc-card">
+        <h2>💼 Liquidación de sueldo (estimación)</h2>
+        <p class="calc-note">
+          Calcula descuentos previsionales e impuesto único sobre el sueldo bruto
+          imponible. Estimación referencial; no incluye asignaciones no imponibles.
+        </p>
+        <div class="calc-grid">
+          <label>Sueldo bruto imponible ($)
+            <input type="number" id="lBruto" min="0" step="1000" value="800000" />
+          </label>
+          <label>Sistema de salud
+            <select id="lSalud">
+              <option value="fonasa">Fonasa (7%)</option>
+              <option value="isapre">Isapre (mínimo 7%)</option>
+            </select>
+          </label>
+          <label class="check-line">
+            <input type="checkbox" id="lIndefinido" checked />
+            Contrato indefinido (incluye 0,6% seguro de cesantía)
+          </label>
+        </div>
+        <button class="btn-primary" id="lCalcular">Calcular liquidación</button>
+        <div class="resultado oculto" id="lResultado"></div>
+      </div>
+    </section>
+
+    <!-- ====================== IMPUESTO ÚNICO ====================== -->
+    <section class="panel oculto" id="panel-impuesto">
+      <div class="calc-card">
+        <h2>📊 Impuesto Único de Segunda Categoría</h2>
+        <p class="calc-note">
+          Aplica la tabla mensual del SII (en UTM) sobre la base tributable
+          (remuneración imponible menos cotizaciones previsionales).
+        </p>
+        <div class="calc-grid">
+          <label>Base tributable mensual ($)
+            <input type="number" id="iBase" min="0" step="1000" value="700000" />
+          </label>
+        </div>
+        <button class="btn-primary" id="iCalcular">Calcular impuesto</button>
+        <div class="resultado oculto" id="iResultado"></div>
+        <h3 class="tabla-titulo">Tabla vigente (mensual, en UTM)</h3>
+        <div class="tabla-wrap"><table class="tabla-iusc" id="tablaIusc"></table></div>
+      </div>
+    </section>
+
+    <!-- ====================== VALORES VIGENTES ====================== -->
+    <section class="panel oculto" id="panel-valores">
+      <div class="calc-card">
+        <h2>📌 Valores e indicadores</h2>
+        <p class="calc-note" id="valoresVigencia"></p>
+        <div class="valores-grid" id="valoresGrid"></div>
+        <p class="calc-note">
+          Estos valores son referenciales y se editan en <code>referencias.js</code>.
+          Verifica siempre el monto vigente en la fuente oficial (SII, DT, Banco Central,
+          Superintendencia de Pensiones) antes de usarlos en un caso real.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>⚠️ Herramienta de apoyo. Los cálculos son estimaciones referenciales y no reemplazan el análisis del caso ni la normativa vigente.</span>
+  </footer>
+
+  <script src="referencias.js"></script>
+  <script src="consultas.js"></script>
+</body>
+</html>

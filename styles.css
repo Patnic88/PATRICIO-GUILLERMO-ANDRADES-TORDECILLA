@@ -66,6 +66,9 @@ body {
 
 .filters { display: flex; gap: 8px; flex-wrap: wrap; }
 
+.toolbar-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.toolbar-actions a.btn-ghost { text-decoration: none; }
+
 .chip {
   border: 1px solid var(--line);
   background: var(--card);

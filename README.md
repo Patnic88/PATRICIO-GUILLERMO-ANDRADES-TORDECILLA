@@ -79,3 +79,52 @@ completadas y las que agregaste a mano.
 - ✅ Recordatorios en **Google Calendar** para las tareas de alta prioridad.
 - ✅ Borradores de respuesta guardados en Gmail para los correos que requieren
   contestación.
+
+---
+
+# ⚖️ Consultor Laboral y Tributario · Chile
+
+Proyecto especial de apoyo para **consultas laborales y tributarias de Chile**.
+Es una herramienta web autocontenida (sin servidor, igual que la lista de
+tareas) pensada para resolver consultas frecuentes y hacer estimaciones rápidas
+en la Dirección Jurídica.
+
+**Ábrelo desde `consultas.html`** (o con el botón *"⚖️ Consultor laboral y
+tributario"* en la lista de tareas).
+
+## Qué incluye
+
+| Pestaña | Para qué sirve |
+|---|---|
+| 📚 **Consultas** | Banco de preguntas frecuentes (laborales, **municipales** —Ley 18.883 y Transparencia—, previsionales y tributarias) con respuesta y **fundamento legal** (artículos del Código del Trabajo, Estatuto Administrativo Municipal y normas tributarias). Buscable, filtrable por área y ampliable. |
+| 🧮 **Finiquito** | Calcula indemnización por años de servicio (tope 11 años / 90 UF), sustitutiva del aviso previo y feriado proporcional, según la causal de término. |
+| 💼 **Liquidación** | Estima descuentos previsionales (AFP, salud, cesantía) e impuesto único sobre el sueldo bruto, y el líquido aproximado. |
+| 📊 **Impuesto único** | Aplica la tabla del Impuesto Único de 2ª Categoría (SII) y muestra el tramo aplicable. |
+| 📌 **Valores** | Indicadores y topes vigentes (UF, UTM, ingreso mínimo, topes imponibles, etc.). |
+
+El banco de consultas se guarda en el navegador (`localStorage`): puedes agregar
+consultas propias y restaurar el banco original cuando quieras.
+
+## Archivos del módulo
+
+| Archivo | Descripción |
+|---|---|
+| `consultas.html` | Página del consultor (pestañas y formularios) |
+| `consultas.css` | Estilos propios (reutiliza `styles.css`) |
+| `consultas.js` | Lógica: calculadoras, banco de consultas, persistencia |
+| `referencias.js` | **Valores vigentes, tabla de impuesto y banco de consultas** (datos editables) |
+
+## ⚠️ Cómo mantenerlo al día
+
+Los montos de `referencias.js` (UF, UTM, ingreso mínimo, topes, tabla de
+impuesto) son **referenciales** y cambian con el tiempo. Antes de usar un
+cálculo en un caso real, **verifica el valor vigente** en la fuente oficial y
+edita `referencias.js`:
+
+- UF / UTM / tabla de impuesto → <https://www.sii.cl>
+- Ingreso mínimo y normas laborales → <https://www.dt.gob.cl>
+- Topes imponibles → <https://www.spensiones.cl>
+
+Todos los cálculos se recalculan solos al editar esos valores. Esta herramienta
+es de **apoyo**: no reemplaza el análisis jurídico del caso ni la normativa
+vigente.
