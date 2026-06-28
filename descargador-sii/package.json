@@ -1,0 +1,21 @@
+{
+  "name": "descargador-sii",
+  "version": "1.0.0",
+  "description": "Descarga automática del Registro de Compras y Ventas (RCV) y documentos del SII (Chile). Multiplataforma: Windows, macOS y Linux.",
+  "type": "module",
+  "bin": {
+    "descargar-sii": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "descargar": "node src/index.js",
+    "postinstall": "playwright install chromium"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  },
+  "license": "MIT"
+}

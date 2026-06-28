@@ -1,0 +1,15 @@
+# Dependencias
+node_modules/
+
+# Configuración con datos sensibles (credenciales)
+config.json
+
+# Sesión persistente del navegador (cookies del SII) — NUNCA subir
+.perfil-navegador/
+user-data/
+
+# Documentos descargados
+descargas/
+
+# Logs
+*.log

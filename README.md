@@ -1,3 +1,7 @@
+> 🧾 **¿Buscas el descargador automático de facturas del SII?** Está en la carpeta
+> [`descargador-sii/`](descargador-sii/README.md): baja el RCV (CSV) de compras y
+> ventas del mes anterior para los RUT de `ruts.txt`, en Windows, Mac o Linux.
+
 # 📋 Lista de Tareas — Patricio Andrades
 
 Lista de tareas web, sin servidor, **conectada a tu correo de Gmail**. Las tareas

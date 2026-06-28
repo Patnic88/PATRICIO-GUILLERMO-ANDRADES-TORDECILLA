@@ -1,0 +1,27 @@
+{
+  "//": "Copia este archivo como config.json y ajústalo. config.json NO se sube al repositorio.",
+
+  "periodo": "mes-anterior",
+  "//periodo": "Opciones: 'mes-anterior', 'mes-actual', o un valor fijo 'AAAA-MM' (ej: '2026-05').",
+
+  "carpetaDescargas": "descargas",
+  "//carpetaDescargas": "Carpeta donde se guardan los archivos. Relativa a esta carpeta o ruta absoluta.",
+
+  "descargarCompras": true,
+  "descargarVentas": true,
+  "descargarPDFs": false,
+  "//descargarPDFs": "true intenta bajar también los PDF de cada documento (más lento y experimental).",
+
+  "headless": false,
+  "//headless": "false muestra el navegador (necesario para el login asistido). true lo oculta (sólo si la sesión ya está guardada).",
+
+  "timeoutMs": 60000,
+  "//timeoutMs": "Tiempo máximo de espera por cada paso, en milisegundos.",
+
+  "credenciales": {
+    "//": "OPCIONAL. Si lo dejas vacío, el login es 100% manual (recomendado para Clave Única / 2FA).",
+    "//modo": "Si completas rut y clave, intenta el login automático con Clave Tributaria del SII.",
+    "rut": "",
+    "clave": ""
+  }
+}

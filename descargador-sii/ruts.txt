@@ -1,0 +1,10 @@
+# Lista de RUT a procesar — uno por línea.
+# Formato: RUT con guion y dígito verificador, ej: 76123456-7
+# Las líneas que empiezan con # se ignoran (son comentarios).
+# Puedes agregar un nombre después del RUT separado por una coma, ej:
+#   76123456-7, Empresa Ejemplo SpA
+#
+# Reemplaza los ejemplos por tus RUT reales:
+
+76123456-7, Empresa Ejemplo SpA
+77987654-3, Otra Empresa Ltda
