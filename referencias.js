@@ -201,4 +201,86 @@ window.CONSULTAS_SEED = [
     fundamento: "Art. 84 LIR · Ley 21.133 (cotización independientes)",
     etiquetas: ["honorarios", "retención", "independiente"],
   },
+
+  // ---- Ámbito municipal (funcionarios y Transparencia) -------------------
+  {
+    id: "c-mun-vinculos",
+    area: "Municipal",
+    tema: "Tipos de vínculo",
+    pregunta: "¿Qué diferencia hay entre planta, contrata y honorarios en un municipio?",
+    respuesta:
+      "Los funcionarios de PLANTA tienen un empleo de carácter permanente y carrera funcionaria (Estatuto Administrativo para Funcionarios Municipales, Ley 18.883). Los a CONTRATA son transitorios, duran como máximo hasta el 31 de diciembre de cada año (salvo prórroga) y no pueden exceder, en conjunto, el 40% de los cargos de la planta. Los a HONORARIOS se rigen por su contrato (no son funcionarios), para labores accidentales y no habituales o cometidos específicos; la jurisprudencia ha advertido contra su uso para funciones permanentes.",
+    fundamento: "Arts. 1, 2 y 4 Ley 18.883 (Estatuto Administrativo Municipal)",
+    etiquetas: ["planta", "contrata", "honorarios", "municipal"],
+  },
+  {
+    id: "c-mun-feriado",
+    area: "Municipal",
+    tema: "Feriado del funcionario",
+    pregunta: "¿Cuántos días de feriado tiene un funcionario municipal?",
+    respuesta:
+      "El feriado del funcionario municipal es: 15 días hábiles con menos de 15 años de servicio; 20 días hábiles entre 15 y menos de 20 años; y 25 días hábiles con 20 o más años de servicio. Para este cómputo el sábado se considera inhábil. Es distinto del feriado del Código del Trabajo: los funcionarios se rigen por la Ley 18.883, no por el CT.",
+    fundamento: "Arts. 96 y siguientes Ley 18.883",
+    etiquetas: ["feriado", "vacaciones", "funcionario"],
+  },
+  {
+    id: "c-mun-permiso",
+    area: "Municipal",
+    tema: "Permisos administrativos",
+    pregunta: "¿A cuántos días de permiso administrativo tiene derecho el funcionario?",
+    respuesta:
+      "El funcionario puede solicitar permisos para ausentarse por motivos particulares hasta por 6 días hábiles al año, con goce de remuneraciones. Estos permisos son fraccionables por días o medios días y su concesión queda sujeta a las necesidades del servicio (jefatura). Son independientes del feriado legal y de las licencias médicas.",
+    fundamento: "Arts. 108 y siguientes Ley 18.883",
+    etiquetas: ["permiso", "administrativo", "funcionario"],
+  },
+  {
+    id: "c-mun-sumario",
+    area: "Municipal",
+    tema: "Responsabilidad administrativa",
+    pregunta: "¿Cuándo procede una investigación sumaria y cuándo un sumario administrativo?",
+    respuesta:
+      "Ante hechos que puedan comprometer la responsabilidad administrativa de un funcionario, la autoridad ordena investigar. La INVESTIGACIÓN SUMARIA es un procedimiento breve (plazo aprox. 5 días, prorrogable) para faltas de menor entidad; sus sanciones máximas son acotadas. El SUMARIO ADMINISTRATIVO es un procedimiento formal y escrito, con fiscal, para hechos graves, y permite aplicar hasta la destitución. Ambos deben respetar el debido proceso (formulación de cargos, descargos, prueba) y la sanción es reclamable ante la Contraloría.",
+    fundamento: "Arts. 118 y siguientes Ley 18.883 · Ley 10.336 (Contraloría)",
+    etiquetas: ["sumario", "investigación", "responsabilidad"],
+  },
+  {
+    id: "c-mun-sanciones",
+    area: "Municipal",
+    tema: "Medidas disciplinarias",
+    pregunta: "¿Cuáles son las medidas disciplinarias aplicables a un funcionario municipal?",
+    respuesta:
+      "Las medidas disciplinarias son, de menor a mayor gravedad: censura, multa, suspensión del empleo (de 30 días a 3 meses, con goce parcial) y destitución. Deben ser proporcionales a la gravedad de los hechos y aplicarse mediante el procedimiento respectivo (investigación sumaria o sumario). La destitución exige sumario administrativo y procede solo en las causales que la ley señala.",
+    fundamento: "Arts. 120 y siguientes Ley 18.883",
+    etiquetas: ["sanciones", "destitución", "disciplina"],
+  },
+  {
+    id: "c-mun-probidad",
+    area: "Municipal",
+    tema: "Probidad",
+    pregunta: "¿Qué obligaciones de probidad y declaración pesan sobre las autoridades municipales?",
+    respuesta:
+      "El principio de probidad obliga a observar una conducta funcionaria intachable y un desempeño honesto y leal, con preeminencia del interés general. Las autoridades y funcionarios señalados por la ley deben presentar Declaración de Intereses y Patrimonio (Ley 20.880), actualizable y pública. Se prohíbe intervenir en asuntos en que exista conflicto de interés y se regulan las inhabilidades e incompatibilidades.",
+    fundamento: "Ley 20.880 (probidad) · Art. 8 Constitución · Ley 18.575",
+    etiquetas: ["probidad", "conflicto de interés", "declaración"],
+  },
+  {
+    id: "c-transp-pasiva",
+    area: "Municipal",
+    tema: "Transparencia",
+    pregunta: "¿Qué plazo tiene el municipio para responder una solicitud de acceso a la información?",
+    respuesta:
+      "El órgano debe pronunciarse sobre la solicitud de acceso a información pública en un plazo de 20 días hábiles desde su recepción, prorrogable excepcionalmente por otros 10 días hábiles cuando concurran circunstancias que dificulten reunir la información (debe comunicarse al solicitante). La denegación solo procede por las causales de reserva o secreto del art. 21. La decisión es reclamable ante el Consejo para la Transparencia.",
+    fundamento: "Arts. 14, 16 y 21 Ley 20.285 (Transparencia)",
+    etiquetas: ["transparencia", "acceso", "plazo"],
+  },
+  {
+    id: "c-transp-activa",
+    area: "Municipal",
+    tema: "Transparencia activa",
+    pregunta: "¿Qué es la transparencia activa que debe mantener el municipio?",
+    respuesta:
+      "La transparencia activa es la obligación de mantener a disposición permanente del público, en el sitio web institucional, información actualizada al menos una vez al mes: estructura orgánica, facultades, planta y personal (con remuneraciones), contrataciones, transferencias, actos con efectos sobre terceros, trámites, subsidios y mecanismos de participación. Su incumplimiento puede ser fiscalizado y sancionado por el Consejo para la Transparencia.",
+    fundamento: "Art. 7 Ley 20.285 (Transparencia)",
+    etiquetas: ["transparencia", "activa", "publicación"],
+  },
 ];

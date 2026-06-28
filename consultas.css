@@ -75,6 +75,7 @@
   box-shadow: var(--shadow);
 }
 .consulta.area-Laboral { border-left-color: var(--brand); }
+.consulta.area-Municipal { border-left-color: var(--alta); }
 .consulta.area-Previsional { border-left-color: var(--media); }
 .consulta.area-Tributaria { border-left-color: var(--baja); }
 
@@ -107,6 +108,7 @@
 .consulta-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 0.74rem; }
 
 .badge.area-Laboral { background: #eef4fa; color: var(--brand-dark); }
+.badge.area-Municipal { background: #fdeaea; color: var(--alta); }
 .badge.area-Previsional { background: #fcf3e3; color: #b9791f; }
 .badge.area-Tributaria { background: #e9f5ee; color: var(--baja); }
 

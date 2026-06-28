@@ -96,7 +96,7 @@ tributario"* en la lista de tareas).
 
 | Pestaña | Para qué sirve |
 |---|---|
-| 📚 **Consultas** | Banco de preguntas frecuentes (laborales, previsionales y tributarias) con respuesta y **fundamento legal** (artículos del Código del Trabajo y normas tributarias). Buscable, filtrable por área y ampliable. |
+| 📚 **Consultas** | Banco de preguntas frecuentes (laborales, **municipales** —Ley 18.883 y Transparencia—, previsionales y tributarias) con respuesta y **fundamento legal** (artículos del Código del Trabajo, Estatuto Administrativo Municipal y normas tributarias). Buscable, filtrable por área y ampliable. |
 | 🧮 **Finiquito** | Calcula indemnización por años de servicio (tope 11 años / 90 UF), sustitutiva del aviso previo y feriado proporcional, según la causal de término. |
 | 💼 **Liquidación** | Estima descuentos previsionales (AFP, salud, cesantía) e impuesto único sobre el sueldo bruto, y el líquido aproximado. |
 | 📊 **Impuesto único** | Aplica la tabla del Impuesto Único de 2ª Categoría (SII) y muestra el tramo aplicable. |
