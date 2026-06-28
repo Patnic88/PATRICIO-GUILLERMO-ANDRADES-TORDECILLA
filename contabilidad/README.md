@@ -5,6 +5,19 @@ nada**. Registra ingresos y gastos, calcula tu saldo, te muestra en qué se va e
 dinero por categoría y exporta todo a CSV (Excel). Tus datos se guardan en tu
 propio navegador.
 
+### Funciones
+
+- 💵 **Ingresos y gastos** con categorías personalizables.
+- 📊 **Presupuesto mensual** de gastos con barra de progreso y **alertas**
+  (aviso al llegar al 80% y al sobrepasar el 100% del tope).
+- 🥧 **Gráfico de torta** de gastos por categoría, con leyenda y porcentajes.
+- 📈 **Resumen mensual**: barras comparativas de ingresos vs gastos de los
+  últimos meses.
+- 🌎 **Multi-moneda** (CLP, USD, EUR): cada movimiento guarda su moneda y los
+  totales se convierten a la moneda base (peso chileno).
+- ⬇ **Exportar a CSV** (UTF-8, listo para Excel / Google Sheets).
+- 💾 **Guardado automático** en el navegador (`localStorage`).
+
 ## Cómo usarla
 
 1. Abre `index.html` en tu navegador (doble clic, o arrástralo a una pestaña).
@@ -25,8 +38,25 @@ cargar los datos de demostración (reemplaza lo que tengas).
 |---|---|
 | `index.html` | Estructura de la página |
 | `styles.css` | Estilos |
-| `app.js` | Lógica: KPIs, filtros, alta/baja, categorías, CSV, persistencia |
-| `data.seed.js` | Categorías y datos de ejemplo (editables) |
+| `app.js` | Lógica: KPIs, presupuesto, torta, resumen mensual, multi-moneda, CSV, persistencia |
+| `data.seed.js` | Monedas, categorías, presupuesto y datos de ejemplo (editables) |
+
+## Configurar monedas y tipo de cambio
+
+Abre `data.seed.js` y edita `window.MONEDAS`. La moneda base es el peso chileno
+(`CLP`); `tasaCLP` es cuántos pesos vale 1 unidad de esa moneda:
+
+```js
+window.MONEDAS = {
+  CLP: { simbolo: "$",   nombre: "Peso chileno", tasaCLP: 1,    decimales: 0 },
+  USD: { simbolo: "US$", nombre: "Dólar",        tasaCLP: 980,  decimales: 2 },
+  EUR: { simbolo: "€",   nombre: "Euro",         tasaCLP: 1050, decimales: 2 }
+};
+```
+
+Actualiza los valores de `tasaCLP` cuando cambie el tipo de cambio. El
+presupuesto mensual por defecto se define en `window.PRESUPUESTO_DEFAULT`
+(también editable desde la propia app, donde queda guardado).
 
 ## Personalizar las categorías
 
