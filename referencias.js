@@ -283,4 +283,76 @@ window.CONSULTAS_SEED = [
     fundamento: "Art. 7 Ley 20.285 (Transparencia)",
     etiquetas: ["transparencia", "activa", "publicación"],
   },
+
+  // ---- Contratación administrativa, obras y patentes ---------------------
+  {
+    id: "c-mun-compras",
+    area: "Municipal",
+    tema: "Contratación administrativa",
+    pregunta: "¿Cómo debe contratar bienes y servicios un municipio?",
+    respuesta:
+      "Por regla general mediante LICITACIÓN PÚBLICA a través del sistema de Compras Públicas (www.mercadopublico.cl / ChileCompra), garantizando libre concurrencia, igualdad de los oferentes y estricta sujeción a las bases. Excepcionalmente procede licitación privada o trato directo, solo en los casos calificados que señala la ley y mediante resolución fundada. Los contratos deben formalizarse y publicarse. La adjudicación se hace al oferente que mejor cumpla las bases (no necesariamente el más barato).",
+    fundamento: "Ley 19.886 y su Reglamento (DS 250) · Ley 18.695",
+    etiquetas: ["licitación", "contratación", "ChileCompra"],
+  },
+  {
+    id: "c-mun-trato-directo",
+    area: "Municipal",
+    tema: "Trato directo",
+    pregunta: "¿Cuándo procede el trato directo en una contratación municipal?",
+    respuesta:
+      "El trato o contratación directa es excepcional y procede solo en las causales del art. 8 de la Ley 19.886 y art. 10 de su Reglamento: licitaciones públicas o privadas declaradas desiertas, proveedor único, emergencia/urgencia/imprevisto calificado por resolución fundada, montos menores, confianza o seguridad, entre otras. Siempre requiere resolución fundada que acredite la causal y, según el caso, cotizaciones previas. Su uso indebido genera responsabilidad administrativa y observaciones de Contraloría.",
+    fundamento: "Art. 8 Ley 19.886 · Art. 10 DS 250",
+    etiquetas: ["trato directo", "licitación", "excepción"],
+  },
+  {
+    id: "c-mun-edificacion",
+    area: "Municipal",
+    tema: "Permiso de edificación",
+    pregunta: "¿Quién otorga el permiso de edificación y qué lo regula?",
+    respuesta:
+      "El permiso de edificación lo otorga la Dirección de Obras Municipales (DOM), previa revisión del cumplimiento de la normativa urbanística y técnica. Se rige por la Ley General de Urbanismo y Construcciones (LGUC, DFL 458) y su Ordenanza General (OGUC, DS 47), además del instrumento de planificación territorial vigente. Toda obra de construcción, ampliación, reparación o demolición requiere permiso, salvo las excepciones que la OGUC señala. El Director de Obras debe pronunciarse dentro de los plazos legales.",
+    fundamento: "DFL 458 (LGUC) · DS 47 (OGUC) · Art. 24 Ley 18.695",
+    etiquetas: ["edificación", "DOM", "permiso de obra"],
+  },
+  {
+    id: "c-mun-recepcion",
+    area: "Municipal",
+    tema: "Recepción de obras",
+    pregunta: "¿Qué es la recepción definitiva de obras y para qué sirve?",
+    respuesta:
+      "Concluida la construcción, el interesado solicita a la DOM la recepción definitiva (total o parcial). La DOM verifica que la obra se ejecutó conforme al permiso y la normativa, y emite el certificado de recepción. Sin recepción definitiva no puede habitarse ni destinarse al uso proyectado, ni obtenerse regularizaciones o ciertos servicios. Es requisito, además, para tramitar patentes y otros permisos asociados al inmueble.",
+    fundamento: "Arts. 144 y 145 LGUC (DFL 458) · OGUC",
+    etiquetas: ["recepción", "obras", "DOM"],
+  },
+  {
+    id: "c-mun-patente",
+    area: "Municipal",
+    tema: "Patente municipal",
+    pregunta: "¿Qué es la patente municipal y cómo se determina?",
+    respuesta:
+      "La patente municipal es el permiso que habilita el ejercicio de una actividad lucrativa (comercial, industrial o profesional) en la comuna. La patente comercial e industrial se calcula sobre el capital propio del contribuyente, con una tasa que la municipalidad fija entre el 2,5 por mil y el 5 por mil anual, dentro de los límites legales (con un tope máximo en UTM). Se paga normalmente en dos cuotas semestrales. La patente profesional tiene un valor fijo en UTM. Las patentes de alcoholes tienen regulación propia.",
+    fundamento: "DL 3.063 (Ley de Rentas Municipales), arts. 23 y siguientes",
+    etiquetas: ["patente", "capital propio", "rentas municipales"],
+  },
+  {
+    id: "c-mun-derechos",
+    area: "Municipal",
+    tema: "Derechos municipales y ordenanzas",
+    pregunta: "¿Qué son los derechos municipales y cómo se fijan?",
+    respuesta:
+      "Los derechos municipales son las prestaciones que pagan quienes obtienen del municipio una concesión, permiso o servicio (p. ej. permisos de obra, ocupación de bien nacional de uso público, ferias, propaganda). Se establecen y actualizan mediante ORDENANZA LOCAL de derechos, dictada por el alcalde con acuerdo del concejo, dentro de los marcos del DL 3.063. Las ordenanzas son normas generales y obligatorias dentro de la comuna y deben publicarse para su entrada en vigencia.",
+    fundamento: "DL 3.063, arts. 40 y siguientes · Arts. 12 y 65 Ley 18.695",
+    etiquetas: ["derechos", "ordenanza", "concejo"],
+  },
+  {
+    id: "c-mun-concesion",
+    area: "Municipal",
+    tema: "Bienes municipales",
+    pregunta: "¿Cómo se entregan permisos y concesiones sobre bienes municipales o de uso público?",
+    respuesta:
+      "Sobre los bienes municipales o nacionales de uso público que administra el municipio, la ley distingue PERMISOS (precarios, esencialmente revocables, sin indemnización) y CONCESIONES (otorgan derechos por un plazo, normalmente vía licitación, y dan más estabilidad al concesionario). Las concesiones y la disposición de bienes inmuebles municipales requieren, según el caso, acuerdo del concejo. Todo debe ajustarse a la ley orgánica municipal y a la ordenanza respectiva.",
+    fundamento: "Arts. 32, 36 y 65 Ley 18.695 (LOC Municipalidades)",
+    etiquetas: ["concesión", "permiso", "bienes", "uso público"],
+  },
 ];
