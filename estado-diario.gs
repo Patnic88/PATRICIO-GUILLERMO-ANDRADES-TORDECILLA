@@ -79,6 +79,9 @@ var STATE_LABEL = "⚖️ Estado Diario";
 // Déjalo vacío para no recibir resumen por correo.
 var DIGEST_TO = "pandrades23@gmail.com";
 
+// Destinatarios en copia (CC), separados por coma. Vacío = sin copia.
+var DIGEST_CC = "andradestordecilla.abogado@gmail.com";
+
 // URL pública de la página `estado-diario.html` (si la publicas, p. ej. en
 // GitHub Pages). El digest incluye un enlace "Ver tablero" cuando está
 // configurada. Déjala vacía si abres la página sólo localmente.
@@ -137,7 +140,7 @@ function reviseEstadoDiario() {
 
   if (DIGEST_TO) {
     var digest = buildDigest(entries);
-    GmailApp.sendEmail(DIGEST_TO, digest.subject, digest.plain, { htmlBody: digest.html });
+    GmailApp.sendEmail(DIGEST_TO, digest.subject, digest.plain, digestMailOptions(digest));
   }
 
   return entries.length;
@@ -154,6 +157,16 @@ function sendDigestNow() {
   var digest = buildDigest(entries);
   GmailApp.sendEmail(DIGEST_TO, digest.subject, digest.plain, { htmlBody: digest.html });
   return entries.length;
+}
+
+/**
+ * Opciones que se pasan a GmailApp.sendEmail para el digest.
+ * Pura: facilita testearla sin tocar Gmail.
+ */
+function digestMailOptions(digest) {
+  var opts = { htmlBody: digest.html };
+  if (DIGEST_CC) opts.cc = DIGEST_CC;
+  return opts;
 }
 
 /**

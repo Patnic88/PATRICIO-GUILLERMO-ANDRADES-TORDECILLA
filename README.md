@@ -168,7 +168,8 @@ solo en la primera invocación del Web App (ver `ensureDailyTrigger` en
 Cuando `reviseEstadoDiario` corre cada mañana, además de etiquetar los
 hilos con `⚖️ Estado Diario`, **envía un resumen del día a
 `pandrades23@gmail.com`** (configurable en `DIGEST_TO` dentro de
-`estado-diario.gs`). El correo:
+`estado-diario.gs`), con copia (CC) a
+`andradestordecilla.abogado@gmail.com` (configurable en `DIGEST_CC`). El correo:
 
 - viene desde tu propia cuenta de Google (Apps Script usa `GmailApp.sendEmail`),
 - llega en formato HTML, agrupado por tribunal,

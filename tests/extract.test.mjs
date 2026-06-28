@@ -57,7 +57,7 @@ const ContentService = {
 const sandbox = new Function(
   "Utilities", "Session", "GmailApp", "ScriptApp", "ContentService",
   gsCode +
-  "\nreturn { extractRol, extractCaratulado, extractTipo, analyzeMessage, buildEntries, ensureDailyTrigger, buildDigest, escapeHtml, DIGEST_TO };"
+  "\nreturn { extractRol, extractCaratulado, extractTipo, analyzeMessage, buildEntries, ensureDailyTrigger, buildDigest, escapeHtml, digestMailOptions, DIGEST_TO, DIGEST_CC };"
 );
 const fns = sandbox(Utilities, Session, GmailApp, ScriptApp, ContentService);
 
@@ -280,6 +280,16 @@ test("DIGEST_TO apunta a pandrades23@gmail.com", () => {
   assert.equal(fns.DIGEST_TO, "pandrades23@gmail.com");
 });
 
+test("DIGEST_CC incluye andradestordecilla.abogado@gmail.com", () => {
+  assert.ok(fns.DIGEST_CC.includes("andradestordecilla.abogado@gmail.com"));
+});
+
+test("digestMailOptions incluye htmlBody y cc", () => {
+  const opts = fns.digestMailOptions({ html: "<p>x</p>" });
+  assert.equal(opts.htmlBody, "<p>x</p>");
+  assert.equal(opts.cc, "andradestordecilla.abogado@gmail.com");
+});
+
 test("escapeHtml escapa <, >, &, comillas", () => {
   assert.equal(fns.escapeHtml('<a href="x">Y & "Z"\'s</a>'),
     "&lt;a href=&quot;x&quot;&gt;Y &amp; &quot;Z&quot;&#39;s&lt;/a&gt;");
@@ -371,6 +381,8 @@ test("reviseEstadoDiario: usa htmlBody al enviar el correo", () => {
   assert.equal(calls[0].to, "pandrades23@gmail.com");
   assert.match(calls[0].subject, /Estado Diario/);
   assert.ok(calls[0].opts && calls[0].opts.htmlBody, "debe incluir htmlBody");
+  assert.equal(calls[0].opts.cc, "andradestordecilla.abogado@gmail.com",
+    "debe incluir CC al correo del abogado");
   assert.ok(calls[0].opts.htmlBody.includes("C-44-2026"));
 });
 
