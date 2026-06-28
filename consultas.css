@@ -1,0 +1,209 @@
+/* Estilos propios del Consultor Laboral y Tributario.
+   Reutiliza las variables y componentes de styles.css. */
+
+.subnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.subnav-link {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.subnav-link:hover { text-decoration: underline; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all 0.15s;
+}
+.tab:hover { border-color: var(--brand); color: var(--brand); }
+.tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+.search-input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  min-width: 200px;
+  flex: 1;
+}
+.search-input:focus { outline: none; border-color: var(--brand); }
+
+/* ---- Formulario genérico de tarjeta ---- */
+.card-form {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.card-form input[type="text"],
+.card-form textarea {
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: inherit;
+  width: 100%;
+}
+.card-form textarea { resize: vertical; }
+
+/* ---- Tarjeta de consulta ---- */
+.consulta {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--brand);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.consulta.area-Laboral { border-left-color: var(--brand); }
+.consulta.area-Previsional { border-left-color: var(--media); }
+.consulta.area-Tributaria { border-left-color: var(--baja); }
+
+.consulta-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.consulta .pregunta { font-weight: 600; font-size: 0.98rem; cursor: pointer; }
+.consulta .pregunta::before { content: "▸ "; color: var(--muted); }
+.consulta.abierta .pregunta::before { content: "▾ "; }
+.consulta .respuesta {
+  color: var(--ink);
+  font-size: 0.9rem;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.consulta .fundamento {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--brand-dark);
+  background: #eef4fa;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.consulta-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 0.74rem; }
+
+.badge.area-Laboral { background: #eef4fa; color: var(--brand-dark); }
+.badge.area-Previsional { background: #fcf3e3; color: #b9791f; }
+.badge.area-Tributaria { background: #e9f5ee; color: var(--baja); }
+
+.consulta .btn-del { float: right; }
+
+/* ---- Calculadoras ---- */
+.calc-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.calc-card h2 { margin: 0 0 4px; font-size: 1.2rem; }
+.calc-card h3 { font-size: 1rem; }
+.calc-note { color: var(--muted); font-size: 0.85rem; margin: 0 0 16px; }
+.calc-note code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.calc-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.calc-grid input,
+.calc-grid select {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+.calc-grid label.check-line {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1 / -1;
+  font-weight: 500;
+  color: var(--ink);
+}
+.calc-grid label.check-line input { width: auto; }
+
+.resultado {
+  margin-top: 18px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+}
+.resultado h3 { margin: 0 0 10px; font-size: 1rem; }
+.resultado table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.resultado td { padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.resultado td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.resultado tr.total td {
+  border-top: 2px solid var(--ink);
+  border-bottom: none;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding-top: 10px;
+}
+.resultado tr.resta td:last-child { color: var(--alta); }
+.resultado .nota { margin: 12px 0 0; font-size: 0.78rem; color: var(--muted); }
+
+/* ---- Tabla impuesto único ---- */
+.tabla-titulo { margin-top: 22px; }
+.tabla-wrap { overflow-x: auto; }
+.tabla-iusc { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
+.tabla-iusc th, .tabla-iusc td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--line); }
+.tabla-iusc th { background: #eef2f7; color: var(--muted); font-weight: 600; text-align: right; }
+.tabla-iusc th:first-child, .tabla-iusc td:first-child { text-align: left; }
+.tabla-iusc tr.activo td { background: #eef4fa; font-weight: 600; }
+
+/* ---- Valores ---- */
+.valores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.valor-card {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.valor-card .etq { font-size: 0.76rem; color: var(--muted); }
+.valor-card .num { font-size: 1.15rem; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 560px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .tabs { width: 100%; }
+}
