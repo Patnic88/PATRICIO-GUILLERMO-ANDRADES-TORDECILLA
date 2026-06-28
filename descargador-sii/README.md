@@ -5,23 +5,51 @@ del **mes anterior** — desde el portal del **SII (Chile)**, para todos los RUT
 pongas en `ruts.txt`. Funciona en **Windows, macOS y Linux** y guarda todo
 ordenado por RUT y periodo.
 
-> Está pensado para correr en **cualquier computador**: trae su propio navegador
-> (Chromium, vía Playwright) y guarda tu sesión del SII localmente, así que
-> inicias sesión **una sola vez**.
+> Está pensado para correr en **cualquier computador** y guarda tu sesión del SII
+> localmente, así que inicias sesión **una sola vez**.
+
+Hay dos formas de usarlo. Elige una:
+
+| | **Opción A — Sin instalar nada** ⭐ | **Opción B — Con Node.js** |
+|---|---|---|
+| Para quién | Cualquier persona, cualquier PC | Si ya programas o quieres editar el código |
+| Requisitos | Ninguno | Instalar Node.js una vez |
+| Cómo | Descomprimir y doble clic | `npm install` + doble clic |
 
 ---
 
-## 1. Requisitos (una vez por computador)
+## 1A. Opción A — Sin instalar nada (recomendada) ⭐
 
-1. Instala **Node.js LTS** desde <https://nodejs.org> (cualquier versión 18 o superior).
-2. Descarga/clona esta carpeta `descargador-sii` en el computador.
+El paquete portátil **trae el propio Node.js adentro** y usa el navegador
+**Microsoft Edge o Google Chrome** que ya viene en el computador. No instalas nada.
+
+1. Descarga el paquete de tu sistema:
+   - **GitHub → pestaña _Actions_ → "Construir versión portátil"** → última ejecución →
+     descarga el artefacto `DescargarSII-Windows` / `-macOS` / `-Linux`.
+   - O, si hay una _Release_ publicada, descárgalo desde **_Releases_**.
+2. **Descomprime** el `.zip`.
+3. Edita `ruts.txt` con tus RUT.
+4. Doble clic en el lanzador:
+   - **Windows:** `Descargar-SII.bat`
+   - **macOS:** `Descargar-SII.command` *(la 1ª vez: clic derecho → Abrir)*
+   - **Linux:** `descargar-sii.sh`
+
+> El paquete se genera solo en **GitHub Actions** sobre Windows, macOS y Linux
+> reales (ver `.github/workflows/build-portable.yml`), y se prueba antes de
+> publicarse. Para generar una Release descargable, crea un tag `v1.0.0`.
+
+---
+
+## 1B. Opción B — Con Node.js instalado
+
+1. Instala **Node.js LTS** desde <https://nodejs.org> (versión 18 o superior).
+2. Descarga/clona esta carpeta `descargador-sii`.
 
 La primera vez que ejecutes el lanzador, se instalan solas las dependencias.
 
-> **Navegador:** el programa intenta usar su propio Chromium (se descarga solo la
-> primera vez). Si no se puede descargar — sin internet, proxy, etc. — **usa
-> automáticamente Google Chrome o Microsoft Edge** que ya tengas instalado. Por
-> eso funciona en prácticamente cualquier computador sin pasos extra.
+> **Navegador:** intenta usar su propio Chromium (se descarga solo la primera
+> vez). Si no se puede descargar — sin internet, proxy, etc. — **usa
+> automáticamente Google Chrome o Microsoft Edge** instalado.
 
 Para confirmar que un computador está listo, ejecuta:
 

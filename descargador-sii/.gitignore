@@ -13,3 +13,9 @@ descargas/
 
 # Logs
 *.log
+
+# Paquete portátil (Node incluido) y artefactos de construcción
+runtime/
+dist/
+DescargarSII-*/
+*.zip

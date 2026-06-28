@@ -6,6 +6,13 @@
 
 import { execSync } from "node:child_process";
 
+// En la construcción del paquete portátil usamos el navegador del sistema
+// (Edge/Chrome), así que no descargamos Chromium.
+if (process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD) {
+  console.log("Omitiendo la descarga de Chromium (se usará Chrome/Edge del sistema).");
+  process.exit(0);
+}
+
 try {
   console.log("Descargando el navegador Chromium (sólo la primera vez)…");
   execSync("npx playwright install chromium", { stdio: "inherit" });

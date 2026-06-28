@@ -1,0 +1,128 @@
+name: Construir versión portátil (sin instalar Node)
+
+# Construye un paquete listo para usar en cada sistema operativo: incluye el
+# propio Node.js, así el usuario sólo descomprime y hace doble clic (cero
+# instalación). El navegador es el Edge/Chrome del sistema, por lo que tampoco
+# descarga Chromium.
+#
+# - Manual: pestaña Actions -> "Construir versión portátil" -> Run workflow.
+# - Automático: al crear un tag que empiece con "v" (ej: v1.0.0) publica los
+#   paquetes en una Release descargable.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    working-directory: descargador-sii
+
+jobs:
+  build:
+    name: Empaquetar (${{ matrix.nombre }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            nombre: Windows
+          - os: macos-latest
+            nombre: macOS
+          - os: ubuntu-latest
+            nombre: Linux
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js (para construir)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar dependencias (sin navegador)
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm install --omit=dev
+
+      - name: Verificar sintaxis
+        run: |
+          node --check src/index.js
+          node --check src/sii.js
+          node --check src/config.js
+          node --check src/verificar.js
+
+      - name: Armar carpeta portátil
+        shell: bash
+        env:
+          NOMBRE: ${{ matrix.nombre }}
+        run: |
+          set -e
+          DEST="DescargarSII-${NOMBRE}"
+          rm -rf "$DEST"
+          mkdir -p "$DEST/runtime"
+
+          # Incluir el binario de Node del runner (es autónomo) para no exigir
+          # que el usuario instale Node.
+          NODE_BIN="$(command -v node)"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp "$NODE_BIN" "$DEST/runtime/node.exe"
+          else
+            cp "$NODE_BIN" "$DEST/runtime/node"
+            chmod +x "$DEST/runtime/node"
+          fi
+
+          # Copiar la aplicación y sus dependencias.
+          cp -R src scripts node_modules package.json ruts.txt config.example.json README.md "$DEST"/
+          cp Descargar-SII.bat "$DEST"/ 2>/dev/null || true
+          cp Descargar-SII.command "$DEST"/ 2>/dev/null || true
+          cp descargar-sii.sh "$DEST"/ 2>/dev/null || true
+          chmod +x "$DEST"/descargar-sii.sh "$DEST"/Descargar-SII.command 2>/dev/null || true
+
+      - name: Probar que el paquete funciona (Node incluido + código + Playwright)
+        shell: bash
+        env:
+          NOMBRE: ${{ matrix.nombre }}
+        run: |
+          set -e
+          DEST="DescargarSII-${NOMBRE}"
+          if [ "${{ runner.os }}" = "Windows" ]; then NODE="$DEST/runtime/node.exe"; else NODE="$DEST/runtime/node"; fi
+          echo "Versión de Node incluido:"
+          "$NODE" -v
+          echo "Comprobando que el código se ejecuta con el Node incluido..."
+          "$NODE" --check "$DEST/src/index.js"
+          test -d "$DEST/node_modules/playwright" || { echo "Falta playwright en el paquete"; exit 1; }
+          echo "OK: el paquete portátil ejecuta el código correctamente."
+
+      - name: Comprimir el paquete
+        shell: bash
+        env:
+          NOMBRE: ${{ matrix.nombre }}
+        run: |
+          set -e
+          DEST="DescargarSII-${NOMBRE}"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            powershell -Command "Compress-Archive -Path '$DEST' -DestinationPath '$DEST.zip' -Force"
+          else
+            zip -qr "$DEST.zip" "$DEST"
+          fi
+          echo "Creado $DEST.zip"
+
+      - name: Subir el paquete como artefacto descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: DescargarSII-${{ matrix.nombre }}
+          path: descargador-sii/DescargarSII-${{ matrix.nombre }}.zip
+          if-no-files-found: error
+
+      - name: Publicar en la Release (sólo en tags v*)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: descargador-sii/DescargarSII-${{ matrix.nombre }}.zip
