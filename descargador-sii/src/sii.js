@@ -65,17 +65,52 @@ async function rellenarPrimero(page, selectores, valor, { timeout = 4000 } = {})
   return null;
 }
 
-export async function abrirNavegador(cfg, perfilDir) {
+export async function abrirNavegador(cfg, perfilDir, log = () => {}) {
   mkdirSync(perfilDir, { recursive: true });
-  const contexto = await chromium.launchPersistentContext(perfilDir, {
+  const opcionesBase = {
     headless: cfg.headless,
     acceptDownloads: true,
     viewport: { width: 1280, height: 900 },
     locale: "es-CL",
     args: ["--start-maximized"],
-  });
-  contexto.setDefaultTimeout(cfg.timeoutMs);
-  return contexto;
+  };
+
+  // Para funcionar "en cualquier computadora" probamos varios navegadores en
+  // orden: el Chromium que trae Playwright y, si no está, Google Chrome o
+  // Microsoft Edge ya instalados en el equipo. Así no es obligatorio descargar
+  // Chromium (que pesa y requiere internet la primera vez).
+  const todos = [
+    { nombre: "Chromium (Playwright)", id: "chromium", extra: {} },
+    { nombre: "Google Chrome del sistema", id: "chrome", extra: { channel: "chrome" } },
+    { nombre: "Microsoft Edge del sistema", id: "msedge", extra: { channel: "msedge" } },
+  ];
+  // Si el usuario forzó un navegador en config.json (navegador: "chrome"|"msedge"|"chromium"),
+  // lo ponemos primero.
+  const preferido = (cfg.navegador || "auto").toLowerCase();
+  const intentos =
+    preferido === "auto"
+      ? todos
+      : [...todos.filter((t) => t.id === preferido), ...todos.filter((t) => t.id !== preferido)];
+
+  let ultimoError;
+  for (const intento of intentos) {
+    try {
+      const contexto = await chromium.launchPersistentContext(perfilDir, {
+        ...opcionesBase,
+        ...intento.extra,
+      });
+      contexto.setDefaultTimeout(cfg.timeoutMs);
+      log(`✓ Navegador: ${intento.nombre}`);
+      return contexto;
+    } catch (e) {
+      ultimoError = e;
+    }
+  }
+  throw new Error(
+    "No se pudo abrir ningún navegador. Instala Google Chrome (https://google.com/chrome) " +
+      "o ejecuta una vez: npx playwright install chromium\nDetalle: " +
+      (ultimoError?.message?.split("\n")[0] || "desconocido")
+  );
 }
 
 // Devuelve true si la página actual ya está dentro del RCV (sesión activa).

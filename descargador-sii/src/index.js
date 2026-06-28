@@ -47,7 +47,7 @@ async function main() {
   log(`  Carpeta: ${cfg.carpetaDescargasAbs}`);
   log("════════════════════════════════════════════════════════════════");
 
-  const contexto = await abrirNavegador(cfg, PERFIL_DIR);
+  const contexto = await abrirNavegador(cfg, PERFIL_DIR, log);
   const page = contexto.pages()[0] || (await contexto.newPage());
 
   let totalArchivos = 0;

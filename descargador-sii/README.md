@@ -16,8 +16,20 @@ ordenado por RUT y periodo.
 1. Instala **Node.js LTS** desde <https://nodejs.org> (cualquier versión 18 o superior).
 2. Descarga/clona esta carpeta `descargador-sii` en el computador.
 
-La primera vez que ejecutes el lanzador, se instalan solas las dependencias y el
-navegador Chromium. No necesitas instalar nada más a mano.
+La primera vez que ejecutes el lanzador, se instalan solas las dependencias.
+
+> **Navegador:** el programa intenta usar su propio Chromium (se descarga solo la
+> primera vez). Si no se puede descargar — sin internet, proxy, etc. — **usa
+> automáticamente Google Chrome o Microsoft Edge** que ya tengas instalado. Por
+> eso funciona en prácticamente cualquier computador sin pasos extra.
+
+Para confirmar que un computador está listo, ejecuta:
+
+```bash
+npm run verificar
+```
+
+Te dirá si tienes Node, las dependencias y un navegador disponible.
 
 ---
 
@@ -82,6 +94,7 @@ npm start
 | `descargarCompras` | `true` | Bajar el detalle de compras. |
 | `descargarVentas` | `true` | Bajar el detalle de ventas. |
 | `descargarPDFs` | `false` | (Experimental) intentar bajar PDFs de cada documento. |
+| `navegador` | `"auto"` | `"auto"` (Chromium → Chrome → Edge), o forzar `"chromium"` / `"chrome"` / `"msedge"`. |
 | `headless` | `false` | `false` muestra el navegador (necesario para login). `true` lo oculta. |
 | `timeoutMs` | `60000` | Espera máxima por paso (ms). |
 | `credenciales.rut` / `.clave` | vacío | Si los completas, intenta login automático con Clave Tributaria. |
@@ -115,7 +128,30 @@ Para que corra solo cada mes:
 
 ---
 
-## 7. Estructura del proyecto
+## 7. Llevarlo a otro computador
+
+El proyecto es **portátil**: puedes copiarlo a un pendrive, a Google Drive o
+clonarlo desde GitHub en cualquier equipo.
+
+**Pasos en el computador nuevo:**
+
+1. Instala **Node.js LTS** (<https://nodejs.org>) — único requisito del sistema.
+2. Copia la carpeta `descargador-sii` (o clónala desde GitHub).
+3. Ejecuta el lanzador de tu sistema (`Descargar-SII.bat` / `.command` / `.sh`).
+   La primera vez instala dependencias solo.
+
+**Consejos de portabilidad:**
+
+- **No copies** las carpetas `node_modules/`, `.perfil-navegador/` ni `descargas/`
+  entre computadores: son pesadas y específicas de cada equipo. Se regeneran solas.
+  (Ya están excluidas en `.gitignore`.)
+- Cada computador inicia sesión en el SII **una vez** (su sesión queda en su
+  propia carpeta `.perfil-navegador/`).
+- Si un equipo **no tiene internet** para descargar Chromium pero sí tiene
+  **Google Chrome o Edge**, igual funciona (los detecta automáticamente).
+- ¿Dudas si un equipo está listo? Corre `npm run verificar`.
+
+## 8. Estructura del proyecto
 
 ```
 descargador-sii/
@@ -125,15 +161,18 @@ descargador-sii/
 ├── ruts.txt                # Lista de RUT a procesar
 ├── config.example.json     # Plantilla de configuración
 ├── package.json
+├── scripts/
+│   └── postinstall.js      # Descarga Chromium sin abortar si falla (usa Chrome/Edge)
 └── src/
     ├── index.js            # Orquestador: lee config, recorre RUT, resume
     ├── config.js           # Carga config.json, ruts.txt, calcula el periodo
+    ├── verificar.js        # Comprueba requisitos (npm run verificar)
     └── sii.js              # Automatización del portal (login + descargas)
 ```
 
 ---
 
-## 8. Notas y límites
+## 9. Notas y límites
 
 - **No se pudo probar contra el sitio real del SII** desde el entorno donde se
   generó este código (requiere tu sesión y datos tributarios privados). Los

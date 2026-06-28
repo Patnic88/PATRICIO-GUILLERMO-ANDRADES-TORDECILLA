@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node src/index.js",
     "descargar": "node src/index.js",
-    "postinstall": "playwright install chromium"
+    "verificar": "node src/verificar.js",
+    "postinstall": "node scripts/postinstall.js"
   },
   "engines": {
     "node": ">=18"

@@ -15,6 +15,7 @@ const POR_DEFECTO = {
   descargarCompras: true,
   descargarVentas: true,
   descargarPDFs: false,
+  navegador: "auto",
   headless: false,
   timeoutMs: 60000,
   credenciales: { rut: "", clave: "" },

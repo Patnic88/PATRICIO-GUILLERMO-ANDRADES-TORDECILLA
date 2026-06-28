@@ -12,6 +12,9 @@
   "descargarPDFs": false,
   "//descargarPDFs": "true intenta bajar también los PDF de cada documento (más lento y experimental).",
 
+  "navegador": "auto",
+  "//navegador": "Qué navegador usar: 'auto' (Chromium, si no Chrome, si no Edge), o forzar 'chromium' / 'chrome' / 'msedge'.",
+
   "headless": false,
   "//headless": "false muestra el navegador (necesario para el login asistido). true lo oculta (sólo si la sesión ya está guardada).",
 
