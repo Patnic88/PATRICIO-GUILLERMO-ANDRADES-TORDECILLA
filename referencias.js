@@ -355,4 +355,54 @@ window.CONSULTAS_SEED = [
     fundamento: "Arts. 32, 36 y 65 Ley 18.695 (LOC Municipalidades)",
     etiquetas: ["concesión", "permiso", "bienes", "uso público"],
   },
+  {
+    id: "c-mun-subvenciones",
+    area: "Municipal",
+    tema: "Subvenciones",
+    pregunta: "¿Puede el municipio otorgar subvenciones y bajo qué condiciones?",
+    respuesta:
+      "Sí. La municipalidad puede otorgar subvenciones y aportes a personas jurídicas de carácter público o privado, sin fines de lucro, que colaboren directamente en el cumplimiento de sus funciones. El total de subvenciones no puede exceder el 7% del presupuesto municipal. Se otorgan por decreto alcaldicio, con acuerdo del concejo, y el beneficiario debe rendir cuenta documentada del uso de los fondos ante el municipio y la Contraloría; los fondos no rendidos o mal usados deben restituirse.",
+    fundamento: "Art. 5 letra g) y 65 Ley 18.695 · Resolución 30/2015 CGR (rendición)",
+    etiquetas: ["subvención", "rendición", "organizaciones"],
+  },
+  {
+    id: "c-mun-convenios",
+    area: "Municipal",
+    tema: "Convenios",
+    pregunta: "¿Cómo se celebran convenios de colaboración con otros órganos del Estado?",
+    respuesta:
+      "Los municipios pueden celebrar convenios de colaboración o de transferencia de recursos con otros servicios públicos (ministerios, gobiernos regionales, SUBDERE, etc.) para ejecutar programas o proyectos. El convenio debe identificar objeto, aportes, obligaciones, plazos y mecanismos de rendición y control. Su suscripción puede requerir acuerdo del concejo según su naturaleza y monto, y los recursos transferidos se rinden conforme a las normas de la Contraloría.",
+    fundamento: "Arts. 8, 65 y 8 bis Ley 18.695 · Resolución 30/2015 CGR",
+    etiquetas: ["convenio", "transferencia", "colaboración"],
+  },
+  {
+    id: "c-iva-servicios",
+    area: "Tributaria",
+    tema: "IVA en servicios",
+    pregunta: "¿Los servicios quedaron afectos a IVA?",
+    respuesta:
+      "Sí. Con la modernización tributaria (Ley 21.420), desde el 1 de enero de 2023 los servicios quedaron, por regla general, AFECTOS a IVA (19%), sin importar la actividad económica de origen. Subsisten exenciones relevantes, como los servicios de salud, los educacionales y los prestados por sociedades de profesionales que tributen en Segunda Categoría. Antes de la reforma solo se gravaban los servicios provenientes de ciertas actividades (comercio, industria, etc.).",
+    fundamento: "DL 825 (modificado por Ley 21.420)",
+    etiquetas: ["IVA", "servicios", "exención"],
+  },
+  {
+    id: "c-ppm",
+    area: "Tributaria",
+    tema: "PPM",
+    pregunta: "¿Qué son los Pagos Provisionales Mensuales (PPM)?",
+    respuesta:
+      "Los PPM son anticipos mensuales obligatorios que los contribuyentes de Primera Categoría enteran a cuenta de los impuestos anuales a la renta. Se calculan aplicando una tasa variable sobre los ingresos brutos del mes y se declaran en el Formulario 29 junto al IVA. En la declaración anual (Formulario 22) se imputan como crédito contra el impuesto a pagar; si exceden el impuesto, generan una devolución.",
+    fundamento: "Art. 84 Ley sobre Impuesto a la Renta (DL 824)",
+    etiquetas: ["PPM", "anticipo", "renta"],
+  },
+  {
+    id: "c-f29-f22",
+    area: "Tributaria",
+    tema: "Declaraciones (F29 y F22)",
+    pregunta: "¿Cuál es la diferencia entre el Formulario 29 y el Formulario 22?",
+    respuesta:
+      "El FORMULARIO 29 es la declaración MENSUAL: en él se declaran y pagan el IVA (débito menos crédito fiscal), los PPM y las retenciones (por ejemplo, de honorarios). Vence, en general, dentro de los primeros días del mes siguiente (con plazo ampliado para facturadores electrónicos). El FORMULARIO 22 es la declaración ANUAL de renta, que se presenta en abril y determina los impuestos del año comercial anterior (Global Complementario, Primera Categoría, etc.), imputando como créditos el Impuesto Único, los PPM y las retenciones ya enteradas.",
+    fundamento: "DL 824 y DL 825 · Instrucciones SII",
+    etiquetas: ["F29", "F22", "declaración"],
+  },
 ];
