@@ -14,6 +14,12 @@ on:
   push:
     tags:
       - "v*"
+  # También se construye y prueba automáticamente en los Pull Requests que
+  # toquen el descargador, para verificar que el paquete arma bien en los 3 SO.
+  pull_request:
+    paths:
+      - "descargador-sii/**"
+      - ".github/workflows/build-portable.yml"
 
 permissions:
   contents: write
