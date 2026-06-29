@@ -104,15 +104,32 @@ caso con tu propia base de jurisprudencia.
 **Análisis ampliado con IA (opcional):**
 
 Si pegas una URL en `window.IA_URL` (en `config.js`) apuntando a un proxy que
-reenvíe al modelo (p. ej. la API de Claude), aparece un botón **🤖 Análisis
-ampliado con IA** que genera un análisis razonado en lenguaje natural a partir de
-los fallos citados. Usar un proxy evita exponer tu clave de API en el navegador.
+reenvíe al modelo (la API de Claude), aparece un botón **🤖 Análisis ampliado
+con IA** que genera un análisis razonado en lenguaje natural a partir de los
+fallos citados. Usar un proxy evita exponer tu clave de API en el navegador.
+
+El proxy ya está listo en `ia-proxy.gs` (Google Apps Script). Configuración
+(una sola vez, ~5 minutos):
+
+1. Consigue una clave de API de Anthropic en <https://console.anthropic.com>.
+2. Abre `ia-proxy.gs` y sigue las instrucciones del encabezado: crea el
+   proyecto en <https://script.google.com>, pega el script, guarda tu clave en
+   la propiedad de script `ANTHROPIC_API_KEY` y publícalo como **Aplicación
+   web**.
+3. Copia la URL que termina en `/exec` y pégala en `config.js`:
+   ```js
+   window.IA_URL = "https://script.google.com/macros/s/XXXX/exec";
+   ```
+
+Mientras `IA_URL` esté vacío, la predicción funciona igual, solo sin el
+análisis en lenguaje natural.
 
 | Archivo | Rol en la predicción |
 |---|---|
 | `prediccion.html` | Página del módulo |
 | `prediccion.js` | Lógica: similitud, ponderación, estimación |
 | `jurisprudencia.seed.js` | Base inicial de fallos (ejemplos a reemplazar) |
+| `ia-proxy.gs` | Proxy de Apps Script hacia la API de Claude (opcional) |
 
 ## Integraciones ya configuradas
 

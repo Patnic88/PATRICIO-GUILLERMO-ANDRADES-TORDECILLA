@@ -249,16 +249,25 @@ async function analizarConIA(caso, res, btn) {
     probabilidad: res.probabilidad
   };
   try {
+    // Content-Type text/plain evita el "preflight" CORS: así el POST funciona
+    // contra el Web App de Apps Script (que no responde a peticiones OPTIONS).
     const r = await fetch(window.IA_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
     const data = await r.json();
+    const texto = data.analisis || data.text;
+    if (!texto) {
+      btn.disabled = false;
+      btn.textContent = "🤖 Reintentar análisis con IA";
+      alert("El servicio de IA respondió con un problema: " + (data.error || "respuesta vacía."));
+      return;
+    }
     const div = document.createElement("div");
     div.className = "pred-card ia-card";
     div.innerHTML = `<h3 class="seccion-tit">🤖 Análisis de IA</h3>
-      <div class="ia-texto">${escapar(data.analisis || data.text || JSON.stringify(data))}</div>
+      <div class="ia-texto">${escapar(texto)}</div>
       <p class="aviso">Generado por IA a partir de los fallos citados. Verifica antes de usar.</p>`;
     btn.replaceWith(div);
   } catch (err) {
