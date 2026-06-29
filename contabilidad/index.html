@@ -53,6 +53,21 @@
       <div class="pres-alerta oculto" id="pres-alerta"></div>
     </section>
 
+    <!-- Meta de ahorro -->
+    <section class="meta" id="meta">
+      <div class="pres-cabecera">
+        <h3 class="pres-titulo">🎯 Meta de ahorro</h3>
+        <div class="pres-editar">
+          <input type="text" id="meta-nombre" placeholder="Nombre (ej: Vacaciones)" />
+          <label for="meta-objetivo">Objetivo:</label>
+          <input type="number" id="meta-objetivo" min="0" step="50000" />
+          <span class="pres-moneda" id="meta-moneda-base"></span>
+        </div>
+      </div>
+      <div class="pres-barra"><div class="pres-barra-fill ok" id="meta-fill"></div></div>
+      <div class="pres-detalle" id="meta-detalle"></div>
+    </section>
+
     <!-- Barra de herramientas -->
     <div class="toolbar">
       <div class="filters" id="filtros-mes">
@@ -71,12 +86,15 @@
       </div>
       <div class="toolbar-actions">
         <button class="btn-primary" id="btn-nuevo">+ Nuevo movimiento</button>
+        <button class="btn-ghost" id="btn-importar">⬆ Importar CSV</button>
         <button class="btn-ghost" id="btn-csv">⬇ Exportar CSV</button>
+        <input type="file" id="file-csv" accept=".csv,text/csv" class="oculto" />
       </div>
     </div>
 
-    <!-- Formulario nuevo movimiento -->
+    <!-- Formulario nuevo / editar movimiento -->
     <form class="nuevo-mov oculto" id="form-mov">
+      <h3 class="form-titulo" id="form-titulo">Nuevo movimiento</h3>
       <div class="tipo-toggle">
         <button type="button" class="toggle-btn active" data-tipo="gasto" id="t-gasto">— Gasto</button>
         <button type="button" class="toggle-btn" data-tipo="ingreso" id="t-ingreso">+ Ingreso</button>
@@ -90,7 +108,7 @@
       </div>
       <div class="form-actions">
         <button type="button" class="btn-ghost" id="btn-cancelar">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar movimiento</button>
+        <button type="submit" class="btn-primary" id="btn-guardar">Guardar movimiento</button>
       </div>
     </form>
 

@@ -2,11 +2,13 @@
    Bot de Contabilidad — lógica de la aplicación
    Sin servidor. Los datos se guardan en localStorage.
    Funciones: KPIs multi-moneda, presupuesto con alertas,
-   gráfico de torta (gastos por categoría) y resumen mensual.
+   gráfico de torta, resumen mensual, meta de ahorro,
+   edición de movimientos e importación de CSV del banco.
    ============================================================ */
 
 const STORAGE_KEY = "contabilidad.movimientos.v1";
 const PRES_KEY = "contabilidad.presupuesto.v1";
+const META_KEY = "contabilidad.meta.v1";
 
 /* ---------- Configuración de monedas (debe ir antes de cargar datos) ---------- */
 const BASE = window.MONEDA_BASE || "CLP";
@@ -15,7 +17,9 @@ const MONEDAS = window.MONEDAS || { CLP: { simbolo: "$", nombre: "Peso", tasaCLP
 /* ---------- Estado ---------- */
 let movimientos = cargar();
 let presupuesto = cargarPresupuesto();
+let meta = cargarMeta();
 let tipoNuevo = "gasto"; // tipo seleccionado en el formulario
+let editandoId = null;   // id del movimiento que se está editando (null = alta nueva)
 
 /* ---------- Utilidades ---------- */
 const $ = (sel) => document.querySelector(sel);
@@ -52,9 +56,19 @@ function cargarPresupuesto() {
 }
 
 function guardarPresupuesto() {
+  try { localStorage.setItem(PRES_KEY, String(presupuesto)); } catch (e) { /* ignore */ }
+}
+
+function cargarMeta() {
   try {
-    localStorage.setItem(PRES_KEY, String(presupuesto));
+    const v = localStorage.getItem(META_KEY);
+    if (v) return JSON.parse(v);
   } catch (e) { /* ignore */ }
+  return { nombre: "", objetivo: 0 };
+}
+
+function guardarMeta() {
+  try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch (e) { /* ignore */ }
 }
 
 // Convierte un monto de su moneda a la moneda base (CLP)
@@ -63,13 +77,11 @@ function aBase(m) {
   return m.monto * (info ? info.tasaCLP : 1);
 }
 
-// Formatea un monto en la moneda base
 function pesos(n) {
   const info = MONEDAS[BASE];
   return info.simbolo + Math.round(n).toLocaleString("es-CL");
 }
 
-// Formatea un monto en una moneda específica (para cada movimiento)
 function fmtMoneda(monto, moneda) {
   const info = MONEDAS[moneda] || MONEDAS[BASE];
   const dec = info.decimales || 0;
@@ -107,12 +119,16 @@ function movimientosFiltrados() {
     .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 }
 
-// Mes activo para el presupuesto: el del filtro, o el más reciente con datos
 function mesActivo() {
   const mes = $("#filtro-mes").value;
   if (mes && mes !== "todos") return mes;
   const meses = mesesDisponibles();
   return meses[0] || null;
+}
+
+// Saldo global (todos los movimientos) en moneda base
+function saldoGlobal() {
+  return movimientos.reduce((s, m) => s + (m.tipo === "ingreso" ? aBase(m) : -aBase(m)), 0);
 }
 
 /* ---------- Render principal ---------- */
@@ -121,6 +137,7 @@ function render() {
   const lista = movimientosFiltrados();
   renderKPIs(lista);
   renderPresupuesto();
+  renderMeta();
   renderTorta(lista);
   renderMensual();
   renderLista(lista);
@@ -151,7 +168,6 @@ function renderKPIs(lista) {
   $("#saldo-header").textContent = "Saldo " + pesos(saldo);
   $("#kpi-saldo").classList.toggle("negativo", saldo < 0);
 
-  // Nota de monedas si hay movimientos en moneda distinta a la base
   const otras = [...new Set(lista.map((m) => m.moneda).filter((c) => c !== BASE))];
   const nota = $("#nota-moneda");
   if (otras.length) {
@@ -197,6 +213,33 @@ function renderPresupuesto() {
   }
 }
 
+/* ---------- Meta de ahorro ---------- */
+function renderMeta() {
+  $("#meta-nombre").value = meta.nombre || "";
+  $("#meta-objetivo").value = meta.objetivo || 0;
+  $("#meta-moneda-base").textContent = BASE;
+
+  const ahorrado = Math.max(0, saldoGlobal());
+  const obj = meta.objetivo || 0;
+  const pct = obj > 0 ? (ahorrado / obj) * 100 : 0;
+
+  const fill = $("#meta-fill");
+  fill.style.width = Math.min(pct, 100) + "%";
+  fill.classList.remove("ok", "warn", "over");
+  fill.classList.add(pct >= 100 ? "over" : "ok"); // 'over' aquí = meta cumplida (verde fuerte vía clase)
+
+  if (obj > 0) {
+    const falta = obj - ahorrado;
+    $("#meta-detalle").innerHTML = pct >= 100
+      ? `🎉 ¡Meta cumplida! Tienes <strong>${pesos(ahorrado)}</strong>` + (meta.nombre ? ` para «${escapar(meta.nombre)}»` : "")
+      : `Llevas <strong>${pesos(ahorrado)}</strong> de <strong>${pesos(obj)}</strong> · ${Math.round(pct)}%`
+        + ` · te faltan <strong>${pesos(falta)}</strong>`
+        + (meta.nombre ? ` para «${escapar(meta.nombre)}»` : "");
+  } else {
+    $("#meta-detalle").innerHTML = "Define un objetivo de ahorro para seguir tu progreso (se mide con tu saldo total).";
+  }
+}
+
 /* ---------- Gráfico de torta (gastos por categoría) ---------- */
 function renderTorta(lista) {
   const gastos = lista.filter((m) => m.tipo === "gasto");
@@ -219,9 +262,8 @@ function renderTorta(lista) {
 
   const colores = ["#1b5e9b", "#d64541", "#2e9e5b", "#e8a33d", "#7b5ea7", "#3aa0a0", "#c2557a", "#6b7280"];
 
-  // Construir los sectores del pie con SVG (radio 80, centro 100,100)
   const cx = 100, cy = 100, r = 80;
-  let ang = -Math.PI / 2; // empezar arriba
+  let ang = -Math.PI / 2;
   let paths = "";
   entradas.forEach(([cat, val], i) => {
     const frac = val / total;
@@ -261,14 +303,13 @@ function renderMensual() {
   const cont = $("#grafico-mensual");
   const vacio = $("#mensual-vacio");
 
-  // Agrupar TODOS los movimientos por mes (no depende del filtro de mes)
   const porMes = {};
   movimientos.forEach((m) => {
     const ym = m.fecha.slice(0, 7);
     if (!porMes[ym]) porMes[ym] = { ingreso: 0, gasto: 0 };
     porMes[ym][m.tipo] += aBase(m);
   });
-  const meses = Object.keys(porMes).sort().slice(-6); // últimos 6 meses con datos
+  const meses = Object.keys(porMes).sort().slice(-6);
 
   if (!meses.length) {
     cont.innerHTML = "";
@@ -324,7 +365,10 @@ function renderLista(lista) {
           <div class="mov-monto ${m.tipo}">${signo} ${fmtMoneda(m.monto, m.moneda)}</div>
           ${enBase}
         </div>
-        <button class="btn-del" title="Eliminar" data-del="${m.id}">×</button>
+        <div class="mov-acciones">
+          <button class="btn-icono" title="Editar" data-edit="${m.id}">✎</button>
+          <button class="btn-del" title="Eliminar" data-del="${m.id}">×</button>
+        </div>
       </li>`;
   }).join("");
 }
@@ -340,8 +384,8 @@ function formatoFecha(iso) {
   return `${d}/${m}/${a}`;
 }
 
-/* ---------- Acciones ---------- */
-function agregarMovimiento(e) {
+/* ---------- Alta / edición de movimientos ---------- */
+function guardarMovimiento(e) {
   e.preventDefault();
   const desc = $("#mov-desc").value.trim();
   const monto = parseFloat($("#mov-monto").value);
@@ -351,26 +395,55 @@ function agregarMovimiento(e) {
 
   if (!desc || !monto || monto <= 0 || !fecha) return;
 
-  movimientos.push({
-    id: nuevoId(),
-    tipo: tipoNuevo,
-    descripcion: desc,
-    monto: monto,
-    moneda: moneda || BASE,
-    categoria: categoria,
-    fecha: fecha
-  });
+  if (editandoId) {
+    const m = movimientos.find((x) => x.id === editandoId);
+    if (m) {
+      Object.assign(m, { tipo: tipoNuevo, descripcion: desc, monto, moneda: moneda || BASE, categoria, fecha });
+    }
+  } else {
+    movimientos.push({
+      id: nuevoId(), tipo: tipoNuevo, descripcion: desc, monto,
+      moneda: moneda || BASE, categoria, fecha
+    });
+  }
   guardar();
   cerrarFormulario();
   render();
 }
 
+function editar(id) {
+  const m = movimientos.find((x) => x.id === id);
+  if (!m) return;
+  editandoId = id;
+  $("#form-mov").classList.remove("oculto");
+  $("#form-titulo").textContent = "Editar movimiento";
+  $("#btn-guardar").textContent = "Guardar cambios";
+  poblarMonedas();
+  setTipoNuevo(m.tipo);
+  $("#mov-desc").value = m.descripcion;
+  $("#mov-monto").value = m.monto;
+  $("#mov-moneda").value = m.moneda;
+  poblarCategorias();
+  // asegurar que la categoría exista en el select (si no, agregarla)
+  if (![...$("#mov-categoria").options].some((o) => o.value === m.categoria)) {
+    const opt = document.createElement("option");
+    opt.value = m.categoria; opt.textContent = m.categoria;
+    $("#mov-categoria").appendChild(opt);
+  }
+  $("#mov-categoria").value = m.categoria;
+  $("#mov-fecha").value = m.fecha;
+  $("#form-mov").scrollIntoView({ behavior: "smooth", block: "center" });
+  $("#mov-desc").focus();
+}
+
 function eliminar(id) {
   movimientos = movimientos.filter((m) => m.id !== id);
+  if (editandoId === id) cerrarFormulario();
   guardar();
   render();
 }
 
+/* ---------- Presupuesto / meta: edición ---------- */
 function actualizarPresupuesto() {
   const v = parseFloat($("#pres-input").value);
   presupuesto = isNaN(v) || v < 0 ? 0 : v;
@@ -378,6 +451,14 @@ function actualizarPresupuesto() {
   renderPresupuesto();
 }
 
+function actualizarMeta() {
+  const v = parseFloat($("#meta-objetivo").value);
+  meta = { nombre: $("#meta-nombre").value.trim(), objetivo: isNaN(v) || v < 0 ? 0 : v };
+  guardarMeta();
+  renderMeta();
+}
+
+/* ---------- Exportar CSV ---------- */
 function exportarCSV() {
   const lista = movimientosFiltrados();
   const filas = [["Fecha", "Tipo", "Descripción", "Categoría", "Monto", "Moneda", "Monto " + BASE]];
@@ -396,18 +477,165 @@ function exportarCSV() {
   URL.revokeObjectURL(url);
 }
 
+/* ---------- Importar CSV del banco ---------- */
+function importarArchivo(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const nuevos = parsearCSVBanco(ev.target.result);
+      if (!nuevos.length) {
+        alert("No se reconocieron movimientos en el archivo. Revisa que tenga columnas de fecha, descripción y monto.");
+        return;
+      }
+      if (confirm(`Se encontraron ${nuevos.length} movimientos. ¿Importarlos?`)) {
+        movimientos.push(...nuevos);
+        guardar();
+        render();
+        alert(`✅ ${nuevos.length} movimientos importados.`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo leer el archivo: " + err.message);
+    } finally {
+      e.target.value = ""; // permitir re-importar el mismo archivo
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
+// Divide una línea CSV respetando comillas. Soporta separador , o ;
+function dividirLinea(linea, sep) {
+  const out = [];
+  let cur = "", dentro = false;
+  for (let i = 0; i < linea.length; i++) {
+    const c = linea[i];
+    if (c === '"') {
+      if (dentro && linea[i + 1] === '"') { cur += '"'; i++; }
+      else dentro = !dentro;
+    } else if (c === sep && !dentro) {
+      out.push(cur); cur = "";
+    } else { cur += c; }
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+// Convierte una fecha en varios formatos a AAAA-MM-DD; null si no reconoce
+function parsearFecha(s) {
+  s = s.trim();
+  let m;
+  if ((m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/))) {
+    return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+  }
+  if ((m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/))) {
+    return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  }
+  if ((m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2})$/))) {
+    return `20${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  }
+  return null;
+}
+
+// Convierte un texto de monto (formatos CL/US) a número; NaN si no hay dígitos
+function parsearMonto(s) {
+  if (s == null) return NaN;
+  let t = String(s).replace(/[^\d.,-]/g, "").trim();
+  if (!/\d/.test(t)) return NaN;
+  const tieneComa = t.includes(","), tienePunto = t.includes(".");
+  if (tieneComa && tienePunto) {
+    // el último separador es el decimal
+    if (t.lastIndexOf(",") > t.lastIndexOf(".")) t = t.replace(/\./g, "").replace(",", ".");
+    else t = t.replace(/,/g, "");
+  } else if (tieneComa) {
+    // coma como decimal sólo si hay 1-2 dígitos después; si no, es separador de miles
+    t = /,\d{1,2}$/.test(t) ? t.replace(",", ".") : t.replace(/,/g, "");
+  } else if (tienePunto) {
+    if (!/\.\d{1,2}$/.test(t)) t = t.replace(/\./g, "");
+  }
+  return parseFloat(t);
+}
+
+function parsearCSVBanco(texto) {
+  const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== "");
+  if (!lineas.length) return [];
+
+  // separador: el que más aparezca en la primera línea
+  const sep = (lineas[0].split(";").length > lineas[0].split(",").length) ? ";" : ",";
+
+  // ¿la primera fila es encabezado? (no parece tener una fecha)
+  const primera = dividirLinea(lineas[0], sep);
+  const hayEncabezado = !primera.some((c) => parsearFecha(c));
+  const filas = (hayEncabezado ? lineas.slice(1) : lineas).map((l) => dividirLinea(l, sep));
+
+  // detectar índices de columnas usando una muestra de filas
+  const muestra = filas.slice(0, 10);
+  const nCols = Math.max(...filas.map((f) => f.length));
+  let idxFecha = -1, idxMonto = -1;
+  for (let c = 0; c < nCols; c++) {
+    const valores = muestra.map((f) => f[c]).filter((v) => v != null && v !== "");
+    if (idxFecha === -1 && valores.length && valores.every((v) => parsearFecha(v))) idxFecha = c;
+  }
+  // monto: columna numérica (que no sea la de fecha) con mayor cantidad de números
+  let mejorConteo = 0;
+  for (let c = 0; c < nCols; c++) {
+    if (c === idxFecha) continue;
+    const valores = muestra.map((f) => f[c]).filter((v) => v != null && v !== "");
+    const numericos = valores.filter((v) => !isNaN(parsearMonto(v))).length;
+    if (numericos > mejorConteo && numericos >= Math.ceil(valores.length / 2)) {
+      mejorConteo = numericos; idxMonto = c;
+    }
+  }
+  // descripción: la columna de texto más larga en promedio (no fecha ni monto)
+  let idxDesc = -1, mejorLargo = -1;
+  for (let c = 0; c < nCols; c++) {
+    if (c === idxFecha || c === idxMonto) continue;
+    const largos = muestra.map((f) => (f[c] || "").length);
+    const prom = largos.reduce((a, b) => a + b, 0) / (largos.length || 1);
+    if (prom > mejorLargo) { mejorLargo = prom; idxDesc = c; }
+  }
+
+  if (idxFecha === -1 || idxMonto === -1) return [];
+
+  const resultado = [];
+  filas.forEach((f) => {
+    const fecha = parsearFecha(f[idxFecha] || "");
+    const monto = parsearMonto(f[idxMonto] || "");
+    if (!fecha || isNaN(monto) || monto === 0) return;
+    const tipo = monto < 0 ? "gasto" : "ingreso";
+    resultado.push({
+      id: nuevoId(),
+      tipo,
+      descripcion: (idxDesc !== -1 && f[idxDesc]) ? f[idxDesc] : "Movimiento importado",
+      monto: Math.abs(monto),
+      moneda: BASE,
+      categoria: tipo === "gasto" ? "Otros gastos" : "Otros ingresos",
+      fecha
+    });
+  });
+  return resultado;
+}
+
 function restaurar() {
   if (!confirm("¿Restaurar los datos de ejemplo? Se reemplazarán tus movimientos actuales.")) return;
   movimientos = normalizar((window.MOVIMIENTOS_SEED || []).map((m) => ({ ...m })));
   presupuesto = window.PRESUPUESTO_DEFAULT || 0;
+  meta = { nombre: "", objetivo: 0 };
   guardar();
   guardarPresupuesto();
+  guardarMeta();
+  cerrarFormulario();
   render();
 }
 
 /* ---------- Formulario ---------- */
 function abrirFormulario() {
+  editandoId = null;
   $("#form-mov").classList.remove("oculto");
+  $("#form-titulo").textContent = "Nuevo movimiento";
+  $("#btn-guardar").textContent = "Guardar movimiento";
+  setTipoNuevo("gasto");
   $("#mov-fecha").value = hoyISO();
   poblarMonedas();
   poblarCategorias();
@@ -415,15 +643,16 @@ function abrirFormulario() {
 }
 
 function cerrarFormulario() {
+  editandoId = null;
   $("#form-mov").classList.add("oculto");
   $("#form-mov").reset();
+  $("#form-titulo").textContent = "Nuevo movimiento";
+  $("#btn-guardar").textContent = "Guardar movimiento";
 }
 
 function poblarMonedas() {
   const select = $("#mov-moneda");
-  select.innerHTML = Object.keys(MONEDAS)
-    .map((c) => `<option value="${c}">${c}</option>`)
-    .join("");
+  select.innerHTML = Object.keys(MONEDAS).map((c) => `<option value="${c}">${c}</option>`).join("");
   select.value = BASE;
 }
 
@@ -455,18 +684,24 @@ function init() {
 
   $("#btn-nuevo").addEventListener("click", abrirFormulario);
   $("#btn-cancelar").addEventListener("click", cerrarFormulario);
-  $("#form-mov").addEventListener("submit", agregarMovimiento);
+  $("#form-mov").addEventListener("submit", guardarMovimiento);
   $("#btn-csv").addEventListener("click", exportarCSV);
+  $("#btn-importar").addEventListener("click", () => $("#file-csv").click());
+  $("#file-csv").addEventListener("change", importarArchivo);
   $("#btn-reset").addEventListener("click", restaurar);
   $("#filtro-mes").addEventListener("change", render);
   $("#filtro-tipo").addEventListener("change", render);
   $("#t-gasto").addEventListener("click", () => setTipoNuevo("gasto"));
   $("#t-ingreso").addEventListener("click", () => setTipoNuevo("ingreso"));
   $("#pres-input").addEventListener("input", actualizarPresupuesto);
+  $("#meta-nombre").addEventListener("input", actualizarMeta);
+  $("#meta-objetivo").addEventListener("input", actualizarMeta);
 
   $("#lista-mov").addEventListener("click", (e) => {
-    const id = e.target.getAttribute("data-del");
-    if (id) eliminar(id);
+    const del = e.target.getAttribute("data-del");
+    const edit = e.target.getAttribute("data-edit");
+    if (del) eliminar(del);
+    else if (edit) editar(edit);
   });
 
   render();

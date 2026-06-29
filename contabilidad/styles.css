@@ -131,6 +131,24 @@ body {
 .pres-alerta.over { background: var(--gasto-soft); color: var(--gasto); }
 .pres-alerta.oculto { display: none; }
 
+/* ---------- Meta de ahorro ---------- */
+.meta {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.meta .pres-editar input[type="text"] {
+  width: 160px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.meta .pres-barra-fill.ok   { background: var(--brand); }
+.meta .pres-barra-fill.over { background: var(--ingreso); }
+
 /* ---------- Paneles análisis (torta + mensual) ---------- */
 .paneles {
   display: grid;
@@ -228,6 +246,7 @@ body {
   flex-direction: column;
   gap: 12px;
 }
+.form-titulo { margin: 0 0 4px; font-size: 1rem; }
 .tipo-toggle { display: flex; gap: 8px; }
 .toggle-btn {
   flex: 1;
@@ -305,6 +324,18 @@ body {
 .mov-monto.gasto   { color: var(--gasto); }
 .mov-base { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
+.mov-acciones { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.btn-icono {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px 7px;
+  border-radius: 6px;
+}
+.btn-icono:hover { color: var(--brand); background: #eef2f7; }
 .btn-del {
   background: transparent;
   border: none;

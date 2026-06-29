@@ -15,6 +15,11 @@ propio navegador.
   últimos meses.
 - 🌎 **Multi-moneda** (CLP, USD, EUR): cada movimiento guarda su moneda y los
   totales se convierten a la moneda base (peso chileno).
+- ✏️ **Editar movimientos**: botón ✎ en cada fila para corregir cualquier dato.
+- 🎯 **Meta de ahorro**: defines un objetivo y la app sigue tu progreso (medido
+  con tu saldo total acumulado).
+- ⬆ **Importar CSV del banco**: carga la cartola y los movimientos se agregan
+  solos (montos negativos → gastos, positivos → ingresos).
 - ⬇ **Exportar a CSV** (UTF-8, listo para Excel / Google Sheets).
 - 💾 **Guardado automático** en el navegador (`localStorage`).
 
@@ -32,14 +37,41 @@ Tu información se guarda automáticamente en el navegador (`localStorage`), as�
 se conserva entre visitas. El botón **"Restaurar datos de ejemplo"** vuelve a
 cargar los datos de demostración (reemplaza lo que tengas).
 
+## Crear un acceso directo en el Escritorio
+
+Para abrir la app con un ícono en tu escritorio (sin buscar la carpeta cada vez),
+ejecuta **una sola vez** el script según tu sistema. Crea un acceso "Contabilidad"
+en el escritorio que abre `index.html` en tu navegador:
+
+| Sistema | Qué ejecutar |
+|---|---|
+| 🪟 **Windows** | Doble clic en `crear-acceso-directo-windows.bat` |
+| 🍎 **macOS** | Doble clic en `crear-acceso-directo-mac.command` (si pide permisos: `chmod +x crear-acceso-directo-mac.command`) |
+| 🐧 **Linux** | Ejecuta `./crear-acceso-directo-linux.sh` |
+
+> Los scripts no instalan nada ni piden permisos de administrador: solo crean un
+> enlace al archivo `index.html` que ya tienes.
+
+## Importar la cartola del banco
+
+1. Descarga el movimiento de tu cuenta en formato **CSV** desde el sitio del banco.
+2. En la app, pulsa **⬆ Importar CSV** y elige el archivo.
+3. La app detecta automáticamente las columnas de fecha, descripción y monto.
+   Confirma y los movimientos se agregan (negativos como gasto, positivos como
+   ingreso, categoría "Otros" que luego puedes editar con el botón ✎).
+
+Incluye un archivo `ejemplo-banco.csv` para que pruebes cómo funciona.
+
 ## Archivos
 
 | Archivo | Descripción |
 |---|---|
 | `index.html` | Estructura de la página |
 | `styles.css` | Estilos |
-| `app.js` | Lógica: KPIs, presupuesto, torta, resumen mensual, multi-moneda, CSV, persistencia |
+| `app.js` | Lógica: KPIs, presupuesto, meta, torta, resumen mensual, multi-moneda, edición, import/export CSV, persistencia |
 | `data.seed.js` | Monedas, categorías, presupuesto y datos de ejemplo (editables) |
+| `ejemplo-banco.csv` | Cartola de ejemplo para probar la importación |
+| `crear-acceso-directo-*` | Scripts para crear el ícono en el escritorio (Windows/Mac/Linux) |
 
 ## Configurar monedas y tipo de cambio
 
@@ -77,7 +109,8 @@ Cada movimiento tiene esta forma:
   id: "m-001",            // identificador único
   tipo: "gasto",          // "ingreso" | "gasto"
   descripcion: "...",     // qué fue el movimiento
-  monto: 12000,           // valor en pesos (número entero, sin puntos ni símbolos)
+  monto: 12000,           // valor en la moneda indicada (sin puntos ni símbolos)
+  moneda: "CLP",          // "CLP" | "USD" | "EUR" (ver MONEDAS)
   categoria: "Insumos",   // debe existir en CATEGORIAS
   fecha: "2026-06-10"     // formato AAAA-MM-DD
 }
