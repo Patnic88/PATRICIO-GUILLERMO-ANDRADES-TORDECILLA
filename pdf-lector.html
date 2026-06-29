@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lector de PDF en voz alta · Patricio Andrades</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="pdf-lector.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>🔊 Lector de PDF</h1>
+        <p class="subtitle">Lee tus documentos PDF en voz alta · Patricio Andrades — Dirección Jurídica</p>
+      </div>
+      <div class="header-meta">
+        <a class="volver" href="index.html">← Volver a Mis Tareas</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Carga del archivo -->
+    <section class="dropzone" id="dropzone">
+      <input type="file" id="inputPdf" accept="application/pdf,.pdf" hidden />
+      <div class="dropzone-inner">
+        <div class="dropzone-icon">📄</div>
+        <p><strong>Arrastra aquí un PDF</strong> o haz clic para elegir uno</p>
+        <p class="dropzone-hint">El archivo se procesa en tu navegador. No se sube a ningún servidor.</p>
+      </div>
+    </section>
+
+    <div class="estado oculto" id="estado"></div>
+
+    <!-- Panel de lectura -->
+    <section class="lector oculto" id="lector">
+      <div class="doc-info">
+        <span id="docNombre" class="doc-nombre"></span>
+        <button class="btn-ghost" id="btnOtro">Cargar otro PDF</button>
+      </div>
+
+      <!-- Controles de reproducción -->
+      <div class="controles">
+        <div class="botonera">
+          <button class="btn-primary" id="btnPlay">▶︎ Reproducir</button>
+          <button class="btn-ghost" id="btnPausa" disabled>⏸ Pausar</button>
+          <button class="btn-ghost" id="btnStop" disabled>⏹ Detener</button>
+        </div>
+        <div class="progreso-wrap">
+          <div class="progreso"><div class="progreso-barra" id="progresoBarra"></div></div>
+          <span class="progreso-txt" id="progresoTxt">0 / 0</span>
+        </div>
+      </div>
+
+      <!-- Ajustes de voz -->
+      <details class="ajustes">
+        <summary>⚙️ Ajustes de voz</summary>
+        <div class="ajustes-grid">
+          <label>
+            Voz
+            <select id="selVoz"></select>
+          </label>
+          <label>
+            Velocidad <span id="valVel">1.0×</span>
+            <input type="range" id="rngVel" min="0.5" max="2" step="0.1" value="1" />
+          </label>
+          <label>
+            Tono <span id="valTono">1.0</span>
+            <input type="range" id="rngTono" min="0" max="2" step="0.1" value="1" />
+          </label>
+        </div>
+      </details>
+
+      <!-- Texto extraído -->
+      <article class="texto" id="texto" aria-live="polite"></article>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Lectura por voz del navegador (Web Speech). Funciona mejor en Chrome, Edge y Safari.</span>
+  </footer>
+
+  <!-- pdf.js para extraer el texto del PDF (se carga desde CDN en el navegador) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="pdf-lector.js"></script>
+</body>
+</html>

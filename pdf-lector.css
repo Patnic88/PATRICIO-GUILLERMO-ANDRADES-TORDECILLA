@@ -1,0 +1,140 @@
+/* Estilos propios del lector de PDF. Reutiliza las variables de styles.css */
+
+.volver {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+.volver:hover { text-decoration: underline; opacity: 1; }
+
+/* Zona de carga / arrastrar */
+.dropzone {
+  background: var(--card);
+  border: 2px dashed var(--line);
+  border-radius: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dropzone:hover { border-color: var(--brand); }
+.dropzone.dragover { border-color: var(--brand); background: #eef4fb; }
+.dropzone-icon { font-size: 2.4rem; }
+.dropzone p { margin: 8px 0 0; }
+.dropzone-hint { color: var(--muted); font-size: 0.82rem; }
+
+/* Estado / mensajes */
+.estado {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #eef4fb;
+  color: var(--brand-dark);
+  font-size: 0.9rem;
+}
+.estado.error { background: #fdeaea; color: var(--alta); }
+
+/* Panel de lectura */
+.lector { display: flex; flex-direction: column; gap: 16px; }
+
+.doc-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.doc-nombre { font-weight: 600; word-break: break-word; }
+
+.controles {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.botonera { display: flex; gap: 8px; flex-wrap: wrap; }
+.botonera button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.progreso-wrap { display: flex; align-items: center; gap: 10px; }
+.progreso {
+  flex: 1;
+  height: 8px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progreso-barra { height: 100%; width: 0; background: var(--brand); transition: width 0.2s; }
+.progreso-txt { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+/* Ajustes */
+.ajustes {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 16px;
+  box-shadow: var(--shadow);
+}
+.ajustes summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.ajustes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  padding: 4px 0 16px;
+}
+.ajustes-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.ajustes-grid select,
+.ajustes-grid input[type="range"] { width: 100%; }
+.ajustes-grid select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* Texto extraído */
+.texto {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  max-height: 55vh;
+  overflow-y: auto;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+.texto .frase { transition: background 0.15s; border-radius: 4px; }
+.texto .frase.activa {
+  background: #fff3cd;
+  box-shadow: 0 0 0 3px #fff3cd;
+}
+.texto .pagina-sep {
+  display: block;
+  margin: 18px 0 10px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+@media (max-width: 560px) {
+  .botonera button { flex: 1; }
+}
