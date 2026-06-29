@@ -71,6 +71,16 @@
 .progreso-barra { height: 100%; width: 0; background: var(--brand); transition: width 0.2s; }
 .progreso-txt { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 
+.atajos { margin: 0; font-size: 0.75rem; color: var(--muted); }
+.atajos kbd {
+  background: #eef2f7;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: 0.72rem;
+}
+
 /* Ajustes */
 .ajustes {
   background: var(--card);
@@ -119,10 +129,13 @@
   line-height: 1.7;
   font-size: 1rem;
 }
-.texto .frase { transition: background 0.15s; border-radius: 4px; }
-.texto .frase.activa {
-  background: #fff3cd;
-  box-shadow: 0 0 0 3px #fff3cd;
+.texto .frase { border-radius: 4px; }
+.texto .frase.activa { background: #fef6dc; }
+.texto .palabra { border-radius: 3px; transition: background 0.1s; }
+.texto .palabra.activa {
+  background: #ffd84d;
+  box-shadow: 0 0 0 2px #ffd84d;
+  font-weight: 600;
 }
 .texto .pagina-sep {
   display: block;

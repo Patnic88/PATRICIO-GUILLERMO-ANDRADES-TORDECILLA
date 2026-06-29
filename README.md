@@ -35,9 +35,14 @@ lista de tareas) para hacer que tu navegador lea documentos PDF en voz alta.
 
 1. Arrastra un PDF a la zona de carga (o haz clic para elegirlo).
 2. El texto se extrae en tu propio navegador con [`pdf.js`](https://mozilla.github.io/pdf.js/) — **el archivo no se sube a ningún servidor**.
-3. Pulsa **▶︎ Reproducir**. La frase que se está leyendo se resalta en amarillo.
+3. Pulsa **▶︎ Reproducir**. La **palabra** que se está leyendo se resalta en amarillo y la frase completa queda sombreada.
 4. Puedes **pausar**, **reanudar** o **detener**, y hacer clic en cualquier frase para empezar a leer desde ahí.
 5. En **⚙️ Ajustes de voz** eliges la voz (las de español aparecen primero), la velocidad y el tono.
+
+**Atajos de teclado:** <kbd>Espacio</kbd> reproducir/pausar · <kbd>Esc</kbd> detener · <kbd>←</kbd> / <kbd>→</kbd> frase anterior / siguiente.
+
+> El resaltado palabra por palabra usa el evento `boundary` de la voz del
+> navegador. En navegadores que no lo emiten, se resalta la frase completa.
 
 > La lectura usa la API de voz del navegador (Web Speech). Funciona mejor en
 > **Chrome, Edge y Safari**. Si un PDF está escaneado (solo imágenes, sin texto

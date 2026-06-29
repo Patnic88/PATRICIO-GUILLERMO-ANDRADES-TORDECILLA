@@ -13,9 +13,10 @@ if (window.pdfjsLib) {
 const synth = window.speechSynthesis;
 
 // Estado
-let frases = [];          // [{ texto, el }]
+let frases = [];          // [{ texto, el, palabras: [{ el, start }] }]
 let indiceActual = 0;     // frase que se está leyendo
 let leyendo = false;      // hay una lectura en curso (aunque esté en pausa)
+let palabraActual = null; // span de la palabra resaltada en curso
 
 // ---- Referencias al DOM --------------------------------------------------
 const $ = (id) => document.getElementById(id);
@@ -175,24 +176,67 @@ function construirFrases(paginas) {
     dividirEnFrases(textoPag).forEach((t) => {
       const span = document.createElement("span");
       span.className = "frase";
-      span.textContent = t + " ";
+      const palabras = construirPalabras(t, span);
       span.addEventListener("click", () => {
         // Clic en una frase = empezar a leer desde ahí.
         indiceActual = frases.findIndex((fr) => fr.el === span);
         reproducirDesde(indiceActual);
       });
       textoEl.appendChild(span);
-      frases.push({ texto: t, el: span });
+      frases.push({ texto: t, el: span, palabras });
     });
   });
 
   actualizarProgreso();
 }
 
+// Envuelve cada palabra de la frase en un <span> y guarda el desplazamiento de
+// caracteres donde empieza, para poder resaltarla con el evento "boundary".
+function construirPalabras(texto, parent) {
+  const palabras = [];
+  const re = /\S+/g;
+  let m, last = 0;
+  while ((m = re.exec(texto)) !== null) {
+    if (m.index > last) parent.appendChild(document.createTextNode(texto.slice(last, m.index)));
+    const w = document.createElement("span");
+    w.className = "palabra";
+    w.textContent = m[0];
+    parent.appendChild(w);
+    palabras.push({ el: w, start: m.index });
+    last = m.index + m[0].length;
+  }
+  if (last < texto.length) parent.appendChild(document.createTextNode(texto.slice(last)));
+  parent.appendChild(document.createTextNode(" "));
+  return palabras;
+}
+
 function resaltar(i) {
+  limpiarPalabra();
   frases.forEach((fr, idx) => fr.el.classList.toggle("activa", idx === i));
   const activa = frases[i] && frases[i].el;
   if (activa) activa.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function limpiarPalabra() {
+  if (palabraActual) palabraActual.classList.remove("activa");
+  palabraActual = null;
+}
+
+// Resalta la palabra que corresponde al carácter `charIndex` dentro de la frase.
+function resaltarPalabra(i, charIndex) {
+  const fr = frases[i];
+  if (!fr) return;
+  let elegido = null;
+  for (const p of fr.palabras) {
+    if (charIndex >= p.start) elegido = p;
+    else break;
+  }
+  limpiarPalabra();
+  if (elegido) {
+    elegido.el.classList.add("activa");
+    palabraActual = elegido.el;
+    elegido.el.scrollIntoView({ block: "nearest" });
+  }
 }
 
 function actualizarProgreso() {
@@ -229,6 +273,13 @@ function hablarFrase(i) {
   }
   u.rate = parseFloat(rngVel.value);
   u.pitch = parseFloat(rngTono.value);
+
+  // Resalta palabra por palabra mientras la voz avanza (donde el navegador
+  // lo soporte; si no, queda el resaltado de la frase completa).
+  u.onboundary = (e) => {
+    if (e.name && e.name !== "word") return;
+    resaltarPalabra(i, e.charIndex);
+  };
 
   u.onend = () => {
     if (leyendo && !synth.paused) hablarFrase(i + 1);
@@ -269,6 +320,7 @@ function pausar() {
 function detener() {
   leyendo = false;
   synth.cancel();
+  limpiarPalabra();
   if (frases.length) frases.forEach((fr) => fr.el.classList.remove("activa"));
   indiceActual = 0;
   actualizarBotones();
@@ -317,6 +369,33 @@ rngTono.addEventListener("input", () => { valTono.textContent = parseFloat(rngTo
 if (!synth) {
   mostrarEstado("Tu navegador no soporta lectura por voz (Web Speech). Prueba con Chrome, Edge o Safari.", true);
 }
+
+// ---- Atajos de teclado ---------------------------------------------------
+// Espacio: reproducir/pausar · Esc: detener · ← →: frase anterior/siguiente
+document.addEventListener("keydown", (e) => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
+  if (lector.classList.contains("oculto") || !frases.length) return;
+
+  switch (e.key) {
+    case " ":
+      e.preventDefault();
+      if (leyendo && !synth.paused) pausar();
+      else reproducir();
+      break;
+    case "Escape":
+      detener();
+      break;
+    case "ArrowRight":
+      e.preventDefault();
+      reproducirDesde(Math.min(indiceActual + 1, frases.length - 1));
+      break;
+    case "ArrowLeft":
+      e.preventDefault();
+      reproducirDesde(Math.max(indiceActual - 1, 0));
+      break;
+  }
+});
 
 // Algunos navegadores pausan la síntesis en segundo plano; al cerrar la
 // página detenemos cualquier lectura en curso.
