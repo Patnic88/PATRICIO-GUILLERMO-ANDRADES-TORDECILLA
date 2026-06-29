@@ -1,0 +1,7 @@
+# Datos contables del usuario (se generan localmente, no se versionan)
+contabilidad.json
+*.json.tmp
+
+# Temporales de Python
+__pycache__/
+*.pyc

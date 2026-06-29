@@ -22,6 +22,55 @@ cargar la lista original.
 | `styles.css` | Estilos |
 | `app.js` | Lógica: filtros, alta/baja, persistencia |
 | `tasks.seed.js` | Tareas extraídas de tus correos (datos editables) |
+| `contabilidad.py` | Programa de balances contables automáticos (ver más abajo) |
+
+## 🧮 Balances contables automáticos (`contabilidad.py`)
+
+Programa de línea de comandos, **en Python y sin dependencias externas**, que lleva
+contabilidad por **partida doble** y genera los balances automáticamente. Los montos
+se manejan con precisión decimal y los datos se guardan en un archivo `contabilidad.json`.
+
+Genera de forma automática:
+
+- **Libro Diario** — todos los asientos en orden.
+- **Libro Mayor** — movimientos y saldo por cuenta.
+- **Balance de Comprobación** (sumas y saldos) — verifica que debe = haber.
+- **Balance General** (Estado de Situación) — verifica que Activo = Pasivo + Patrimonio.
+- **Estado de Resultados** — utilidad o pérdida del ejercicio.
+- **Ingresos vs. Gastos** (caja simple) — superávit/déficit y resumen por concepto.
+
+### Cómo usarlo
+
+```bash
+# 1. Crear el plan de cuentas base (una sola vez)
+python3 contabilidad.py init --empresa "Mi entidad" --moneda CLP
+
+# 2. Registrar asientos (debe = haber; si no cuadra, el programa lo rechaza)
+python3 contabilidad.py asiento --fecha 2026-06-01 \
+    --glosa "Aporte de capital" \
+    --linea 1.1.02:5000000:0 \
+    --linea 3.1.01:0:5000000
+
+# 3. Ver los balances
+python3 contabilidad.py comprobacion   # balance de comprobación
+python3 contabilidad.py balance        # balance general
+python3 contabilidad.py resultados     # estado de resultados
+python3 contabilidad.py caja           # ingresos vs. gastos
+python3 contabilidad.py diario         # libro diario
+python3 contabilidad.py mayor 1.1.02   # libro mayor de una cuenta
+
+# Sin argumentos abre un menú interactivo en español:
+python3 contabilidad.py
+```
+
+Cada línea de un asiento usa el formato `CUENTA:DEBE:HABER` (un monto en cero del lado
+que no corresponde). El programa **no deja registrar un asiento que no cuadre**, así que
+los balances siempre salen correctos.
+
+Otros comandos útiles: `cuentas` (ver el plan), `cuenta-add CODIGO "Nombre" TIPO`
+(agregar una cuenta), `eliminar N` (borrar un asiento). Los tipos válidos son
+`ACTIVO`, `PASIVO`, `PATRIMONIO`, `INGRESO` y `GASTO`. Para usar otro archivo de datos:
+`python3 contabilidad.py --data otra.json ...` (o la variable de entorno `CONTAB_DATA`).
 
 ## Actualizar las tareas desde el correo
 
