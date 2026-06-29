@@ -178,6 +178,15 @@ body {
 .ley-cat { flex: 1; color: var(--ink); }
 .ley-val { color: var(--muted); white-space: nowrap; }
 
+/* Panel ancho (evolución del saldo) */
+.panel-ancho { margin-bottom: 20px; }
+.ev-linea { fill: none; stroke: #1b5e9b; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.ev-area { fill: rgba(27, 94, 155, 0.10); stroke: none; }
+.ev-cero { stroke: #cdd5df; stroke-width: 1; stroke-dasharray: 4 4; }
+.ev-eje { fill: var(--muted); font-size: 11px; }
+.ev-label { fill: var(--muted); font-size: 11px; }
+.ev-pie { margin: 8px 0 0; font-size: 0.78rem; color: var(--muted); }
+
 /* Resumen mensual */
 .mensual-leyenda { display: flex; gap: 16px; font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
 .mensual-leyenda .punto { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
@@ -365,6 +374,7 @@ body {
   font-size: 0.8rem;
   border-top: 1px solid var(--line);
 }
+.footer-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .oculto { display: none; }
 

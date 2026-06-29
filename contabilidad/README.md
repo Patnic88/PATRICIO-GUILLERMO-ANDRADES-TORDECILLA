@@ -16,11 +16,17 @@ propio navegador.
 - 🌎 **Multi-moneda** (CLP, USD, EUR): cada movimiento guarda su moneda y los
   totales se convierten a la moneda base (peso chileno).
 - ✏️ **Editar movimientos**: botón ✎ en cada fila para corregir cualquier dato.
+- 🗂️ **Subcategorías**: clasifica con más detalle (ej. dentro de "Servicios
+  básicos": Luz, Agua, Internet). Son opcionales y editables.
 - 🎯 **Meta de ahorro**: defines un objetivo y la app sigue tu progreso (medido
   con tu saldo total acumulado).
+- 📉 **Evolución del saldo**: gráfico de línea con tu saldo acumulado mes a mes.
 - ⬆ **Importar CSV del banco**: carga la cartola y los movimientos se agregan
   solos (montos negativos → gastos, positivos → ingresos).
 - ⬇ **Exportar a CSV** (UTF-8, listo para Excel / Google Sheets).
+- 💾 **Respaldo y restauración**: guarda todos tus datos en un archivo `.json`
+  y vuelve a cargarlos cuando quieras (ideal para mover tus datos a otro PC o
+  no depender solo del navegador).
 - 💾 **Guardado automático** en el navegador (`localStorage`).
 
 ## Cómo usarla
@@ -61,6 +67,31 @@ en el escritorio que abre `index.html` en tu navegador:
    ingreso, categoría "Otros" que luego puedes editar con el botón ✎).
 
 Incluye un archivo `ejemplo-banco.csv` para que pruebes cómo funciona.
+
+## Respaldar y restaurar tus datos
+
+Como los datos viven en tu navegador, conviene respaldarlos de vez en cuando:
+
+- **💾 Respaldar datos** (pie de página): descarga un archivo
+  `respaldo-contabilidad-AAAA-MM-DD.json` con todos tus movimientos, el
+  presupuesto y la meta.
+- **📂 Restaurar respaldo**: carga ese archivo en cualquier momento o en otro
+  computador para recuperar exactamente tus datos.
+
+## Subcategorías
+
+Edita `window.SUBCATEGORIAS` en `data.seed.js` para definir, por cada categoría,
+una lista de subcategorías opcionales:
+
+```js
+window.SUBCATEGORIAS = {
+  "Servicios básicos": ["Luz", "Agua", "Gas", "Internet", "Teléfono"],
+  "Transporte": ["Bencina", "Estacionamiento", "Peajes"]
+};
+```
+
+Si una categoría no aparece en esa lista, el selector de subcategoría queda
+deshabilitado (es totalmente opcional).
 
 ## Archivos
 

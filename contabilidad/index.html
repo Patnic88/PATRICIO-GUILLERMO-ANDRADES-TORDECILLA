@@ -104,6 +104,7 @@
         <input type="number" id="mov-monto" placeholder="Monto" min="0" step="0.01" required />
         <select id="mov-moneda" title="Moneda"></select>
         <select id="mov-categoria"></select>
+        <select id="mov-subcategoria" title="Subcategoría"></select>
         <input type="date" id="mov-fecha" required />
       </div>
       <div class="form-actions">
@@ -129,6 +130,13 @@
       </div>
     </section>
 
+    <!-- Evolución del saldo acumulado -->
+    <section class="panel panel-ancho" id="panel-evolucion">
+      <h3 class="panel-titulo">Evolución del saldo acumulado</h3>
+      <div id="grafico-evolucion"></div>
+      <p class="panel-vacio oculto" id="evolucion-vacio">Sin datos suficientes.</p>
+    </section>
+
     <!-- Lista de movimientos -->
     <ul class="lista" id="lista-mov"></ul>
     <p class="empty oculto" id="vacio">No hay movimientos para este filtro. Pulsa <strong>+ Nuevo movimiento</strong> para empezar.</p>
@@ -136,7 +144,12 @@
 
   <footer class="app-footer">
     <span id="footer-count">0 movimientos</span>
-    <button class="btn-ghost" id="btn-reset">↺ Restaurar datos de ejemplo</button>
+    <div class="footer-acciones">
+      <button class="btn-ghost" id="btn-respaldar">💾 Respaldar datos</button>
+      <button class="btn-ghost" id="btn-restaurar-resp">📂 Restaurar respaldo</button>
+      <button class="btn-ghost" id="btn-reset">↺ Datos de ejemplo</button>
+      <input type="file" id="file-respaldo" accept=".json,application/json" class="oculto" />
+    </div>
   </footer>
 
   <script src="data.seed.js"></script>

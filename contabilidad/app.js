@@ -82,6 +82,16 @@ function pesos(n) {
   return info.simbolo + Math.round(n).toLocaleString("es-CL");
 }
 
+// Versión compacta para ejes de gráficos: $1,0M / $45K / $-3K
+function pesosCorto(n) {
+  const s = MONEDAS[BASE].simbolo;
+  const a = Math.abs(n);
+  const signo = n < 0 ? "-" : "";
+  if (a >= 1e6) return `${signo}${s}${(a / 1e6).toLocaleString("es-CL", { maximumFractionDigits: 1 })}M`;
+  if (a >= 1e3) return `${signo}${s}${Math.round(a / 1e3)}K`;
+  return `${signo}${s}${Math.round(a)}`;
+}
+
 function fmtMoneda(monto, moneda) {
   const info = MONEDAS[moneda] || MONEDAS[BASE];
   const dec = info.decimales || 0;
@@ -140,6 +150,7 @@ function render() {
   renderMeta();
   renderTorta(lista);
   renderMensual();
+  renderEvolucion();
   renderLista(lista);
   $("#footer-count").textContent =
     `${movimientos.length} movimiento${movimientos.length === 1 ? "" : "s"} en total`;
@@ -342,6 +353,62 @@ function renderMensual() {
      <div class="mensual-barras">${barras}</div>`;
 }
 
+/* ---------- Evolución del saldo acumulado ---------- */
+function renderEvolucion() {
+  const cont = $("#grafico-evolucion");
+  const vacio = $("#evolucion-vacio");
+
+  // Agrupar por mes el flujo neto (ingresos - gastos) y acumular
+  const porMes = {};
+  movimientos.forEach((m) => {
+    const ym = m.fecha.slice(0, 7);
+    porMes[ym] = (porMes[ym] || 0) + (m.tipo === "ingreso" ? aBase(m) : -aBase(m));
+  });
+  const meses = Object.keys(porMes).sort();
+
+  if (meses.length < 2) {
+    cont.innerHTML = "";
+    vacio.classList.remove("oculto");
+    return;
+  }
+  vacio.classList.add("oculto");
+
+  let acum = 0;
+  const puntos = meses.map((ym) => { acum += porMes[ym]; return { ym, saldo: acum }; });
+
+  // Dimensiones del gráfico
+  const W = 640, H = 200, padX = 50, padY = 24;
+  const min = Math.min(0, ...puntos.map((p) => p.saldo));
+  const max = Math.max(0, ...puntos.map((p) => p.saldo));
+  const rango = (max - min) || 1;
+  const x = (i) => padX + (i * (W - padX - 20)) / (puntos.length - 1);
+  const y = (v) => padY + (1 - (v - min) / rango) * (H - padY * 2);
+
+  const linea = puntos.map((p, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p.saldo).toFixed(1)}`).join(" ");
+  const area = `M${x(0).toFixed(1)},${y(0).toFixed(1)} ` +
+    puntos.map((p, i) => `L${x(i).toFixed(1)},${y(p.saldo).toFixed(1)}`).join(" ") +
+    ` L${x(puntos.length - 1).toFixed(1)},${y(0).toFixed(1)} Z`;
+
+  const ceroY = y(0).toFixed(1);
+  const circulos = puntos.map((p, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(p.saldo).toFixed(1)}" r="3.5" fill="#1b5e9b">
+       <title>${nombreMes(p.ym)}: ${pesos(p.saldo)}</title></circle>`).join("");
+  const etiquetasX = puntos.map((p, i) =>
+    `<text x="${x(i).toFixed(1)}" y="${H - 4}" text-anchor="middle" class="ev-label">${mesCorto(p.ym)}</text>`).join("");
+
+  cont.innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Evolución del saldo">
+       <line x1="${padX}" y1="${ceroY}" x2="${W - 20}" y2="${ceroY}" class="ev-cero"></line>
+       <text x="${padX - 6}" y="${(+padY + 4)}" text-anchor="end" class="ev-eje">${pesosCorto(max)}</text>
+       <text x="${padX - 6}" y="${(H - padY + 4)}" text-anchor="end" class="ev-eje">${pesosCorto(min)}</text>
+       <path d="${area}" class="ev-area"></path>
+       <path d="${linea}" class="ev-linea"></path>
+       ${circulos}
+       ${etiquetasX}
+     </svg>
+     <p class="ev-pie">Saldo acumulado al cierre de cada mes (todos los movimientos).</p>`;
+}
+
 /* ---------- Lista de movimientos ---------- */
 function renderLista(lista) {
   const ul = $("#lista-mov");
@@ -357,7 +424,7 @@ function renderLista(lista) {
         <div class="mov-cuerpo">
           <div class="mov-desc">${escapar(m.descripcion)}</div>
           <div class="mov-meta">
-            <span class="badge cat">${escapar(m.categoria)}</span>
+            <span class="badge cat">${escapar(m.categoria)}${m.subcategoria ? " · " + escapar(m.subcategoria) : ""}</span>
             <span class="mov-fecha">${formatoFecha(m.fecha)}</span>
           </div>
         </div>
@@ -391,6 +458,7 @@ function guardarMovimiento(e) {
   const monto = parseFloat($("#mov-monto").value);
   const moneda = $("#mov-moneda").value;
   const categoria = $("#mov-categoria").value;
+  const subcategoria = $("#mov-subcategoria").value;
   const fecha = $("#mov-fecha").value;
 
   if (!desc || !monto || monto <= 0 || !fecha) return;
@@ -398,12 +466,12 @@ function guardarMovimiento(e) {
   if (editandoId) {
     const m = movimientos.find((x) => x.id === editandoId);
     if (m) {
-      Object.assign(m, { tipo: tipoNuevo, descripcion: desc, monto, moneda: moneda || BASE, categoria, fecha });
+      Object.assign(m, { tipo: tipoNuevo, descripcion: desc, monto, moneda: moneda || BASE, categoria, subcategoria, fecha });
     }
   } else {
     movimientos.push({
       id: nuevoId(), tipo: tipoNuevo, descripcion: desc, monto,
-      moneda: moneda || BASE, categoria, fecha
+      moneda: moneda || BASE, categoria, subcategoria, fecha
     });
   }
   guardar();
@@ -431,6 +499,14 @@ function editar(id) {
     $("#mov-categoria").appendChild(opt);
   }
   $("#mov-categoria").value = m.categoria;
+  poblarSubcategorias();
+  if (m.subcategoria && ![...$("#mov-subcategoria").options].some((o) => o.value === m.subcategoria)) {
+    const opt = document.createElement("option");
+    opt.value = m.subcategoria; opt.textContent = m.subcategoria;
+    $("#mov-subcategoria").appendChild(opt);
+    $("#mov-subcategoria").disabled = false;
+  }
+  $("#mov-subcategoria").value = m.subcategoria || "";
   $("#mov-fecha").value = m.fecha;
   $("#form-mov").scrollIntoView({ behavior: "smooth", block: "center" });
   $("#mov-desc").focus();
@@ -617,6 +693,55 @@ function parsearCSVBanco(texto) {
   return resultado;
 }
 
+/* ---------- Respaldo y restauración (archivo .json) ---------- */
+function respaldar() {
+  const datos = {
+    app: "contabilidad",
+    version: 1,
+    exportado: hoyISO(),
+    movimientos,
+    presupuesto,
+    meta
+  };
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `respaldo-contabilidad-${hoyISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function restaurarRespaldo(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const datos = JSON.parse(ev.target.result);
+      if (!datos || !Array.isArray(datos.movimientos)) {
+        throw new Error("El archivo no tiene el formato esperado.");
+      }
+      if (!confirm(`Vas a restaurar ${datos.movimientos.length} movimientos. Esto reemplaza tus datos actuales. ¿Continuar?`)) return;
+      movimientos = normalizar(datos.movimientos);
+      if (typeof datos.presupuesto === "number") presupuesto = datos.presupuesto;
+      if (datos.meta && typeof datos.meta === "object") meta = datos.meta;
+      guardar();
+      guardarPresupuesto();
+      guardarMeta();
+      cerrarFormulario();
+      render();
+      alert("✅ Respaldo restaurado correctamente.");
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo restaurar el respaldo: " + err.message);
+    } finally {
+      e.target.value = "";
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+}
+
 function restaurar() {
   if (!confirm("¿Restaurar los datos de ejemplo? Se reemplazarán tus movimientos actuales.")) return;
   movimientos = normalizar((window.MOVIMIENTOS_SEED || []).map((m) => ({ ...m })));
@@ -660,6 +785,21 @@ function poblarCategorias() {
   const select = $("#mov-categoria");
   const cats = (window.CATEGORIAS && window.CATEGORIAS[tipoNuevo]) || [];
   select.innerHTML = cats.map((c) => `<option value="${c}">${c}</option>`).join("");
+  poblarSubcategorias();
+}
+
+function poblarSubcategorias() {
+  const select = $("#mov-subcategoria");
+  const cat = $("#mov-categoria").value;
+  const subs = (window.SUBCATEGORIAS && window.SUBCATEGORIAS[cat]) || [];
+  if (!subs.length) {
+    select.innerHTML = '<option value="">(sin subcategoría)</option>';
+    select.disabled = true;
+  } else {
+    select.disabled = false;
+    select.innerHTML = '<option value="">(sin subcategoría)</option>' +
+      subs.map((s) => `<option value="${s}">${s}</option>`).join("");
+  }
 }
 
 function setTipoNuevo(tipo) {
@@ -688,7 +828,11 @@ function init() {
   $("#btn-csv").addEventListener("click", exportarCSV);
   $("#btn-importar").addEventListener("click", () => $("#file-csv").click());
   $("#file-csv").addEventListener("change", importarArchivo);
+  $("#btn-respaldar").addEventListener("click", respaldar);
+  $("#btn-restaurar-resp").addEventListener("click", () => $("#file-respaldo").click());
+  $("#file-respaldo").addEventListener("change", restaurarRespaldo);
   $("#btn-reset").addEventListener("click", restaurar);
+  $("#mov-categoria").addEventListener("change", poblarSubcategorias);
   $("#filtro-mes").addEventListener("change", render);
   $("#filtro-tipo").addEventListener("change", render);
   $("#t-gasto").addEventListener("click", () => setTipoNuevo("gasto"));

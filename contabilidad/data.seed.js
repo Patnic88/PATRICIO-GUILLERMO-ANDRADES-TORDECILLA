@@ -42,6 +42,18 @@ window.CATEGORIAS = {
   ]
 };
 
+/* Subcategorías (opcionales) por cada categoría. Si una categoría no aparece
+   aquí, simplemente no ofrece subcategorías. Edítalas a tu gusto. */
+window.SUBCATEGORIAS = {
+  "Servicios básicos": ["Luz", "Agua", "Gas", "Internet", "Teléfono"],
+  "Transporte": ["Bencina", "Estacionamiento", "Peajes", "Transporte público", "Mantención"],
+  "Alimentación": ["Supermercado", "Restaurante", "Café", "Delivery"],
+  "Salud": ["Farmacia", "Consulta médica", "Exámenes", "Dental"],
+  "Insumos": ["Oficina", "Tecnología", "Aseo"],
+  "Sueldo": ["Base", "Horas extra", "Aguinaldo"],
+  "Honorarios": ["Asesoría", "Proyecto", "Capacitación"]
+};
+
 /* Presupuesto mensual de gastos por defecto (en moneda base, CLP).
    El usuario puede cambiarlo en la app; queda guardado en el navegador. */
 window.PRESUPUESTO_DEFAULT = 800000;
