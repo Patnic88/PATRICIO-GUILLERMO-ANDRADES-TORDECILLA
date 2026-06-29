@@ -163,6 +163,24 @@ El trigger que corre `reviseEstadoDiario` cada día a las 08:00 se instala
 solo en la primera invocación del Web App (ver `ensureDailyTrigger` en
 `estado-diario.gs`).
 
+### 📧 Resumen diario por correo
+
+Cuando `reviseEstadoDiario` corre cada mañana, además de etiquetar los
+hilos con `⚖️ Estado Diario`, **envía un resumen del día a
+`pandrades23@gmail.com`** (configurable en `DIGEST_TO` dentro de
+`estado-diario.gs`), con copia (CC) a
+`andradestordecilla.abogado@gmail.com` (configurable en `DIGEST_CC`). El correo:
+
+- viene desde tu propia cuenta de Google (Apps Script usa `GmailApp.sendEmail`),
+- llega en formato HTML, agrupado por tribunal,
+- muestra rol/RIT, carátula, tipo de resolución y un resumen,
+- incluye un link directo al hilo original en Gmail,
+- y se omite por completo si no hubo movimientos ese día (no genera ruido).
+
+Para probar el envío sin esperar al trigger diario, abre el editor de
+Apps Script y ejecuta la función **`sendDigestNow`** — manda el resumen
+del día actual al instante.
+
 ### Configuración manual (alternativa)
 
 Si prefieres no usar clasp:
@@ -188,6 +206,28 @@ Si prefieres no usar clasp:
 | `estado-diario.gs` | Apps Script (el "agente" que lee Gmail) |
 | `apps-script/appsscript.json` | Manifest del proyecto (scopes de Gmail, Web App, runtime V8) |
 | `scripts/deploy-estado-diario.sh` | Despliegue automatizado con clasp |
+| `tests/extract.test.mjs` | Tests unitarios del extractor del agente |
+| `tests/e2e.test.mjs` | Tests E2E (Chromium + Playwright) |
+| `tests/run.sh` | Runner único (unit + E2E) |
+
+### Pruebas
+
+```bash
+bash tests/run.sh
+```
+
+Corre dos suites:
+
+- **Unit** (`tests/extract.test.mjs`): sandboxea `estado-diario.gs` con mocks
+  mínimos de Apps Script y prueba directamente las funciones puras
+  (`extractRol`, `extractCaratulado`, `extractTipo`, `analyzeMessage`,
+  `ensureDailyTrigger`). Cubre los formatos de rol/RIT/ingreso del PJUD y
+  los falsos positivos (correos del Poder Judicial no vinculados a la
+  Municipalidad o a Patricio Andrades).
+- **E2E** (`tests/e2e.test.mjs`): Chromium contra un servidor local; valida
+  la página de tareas con WhatsApp, la página del Estado Diario, los
+  filtros, la persistencia en `localStorage` y el badge "Hoy" inyectando un
+  movimiento con fecha del día.
 
 ### Estructura de cada entrada
 
