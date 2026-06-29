@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predicción de Juicios · Corte Suprema — Patricio Andrades</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>⚖️ Predicción de Juicios</h1>
+        <p class="subtitle">Análisis de jurisprudencia de la Corte Suprema · Dirección Jurídica — Municipalidad de Los Vilos</p>
+      </div>
+      <div class="header-meta">
+        <span id="today"></span>
+        <a class="counter" href="index.html" style="text-decoration:none;color:inherit">← Mis Tareas</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="pred-card aviso-top">
+      <strong>⚠️ Cómo leer esto.</strong> Esta herramienta estima la probabilidad de que la
+      Corte <em>acoja</em> un recurso, comparando tu caso con tu propia base de fallos.
+      Es un <strong>apoyo a la decisión</strong>, no un pronóstico garantizado: la estimación
+      vale lo que vale la base de jurisprudencia que cargues. Revisa siempre los fallos citados.
+    </div>
+
+    <h2 class="seccion-tit">1 · Describe tu caso</h2>
+    <form class="nueva-tarea" id="formCaso" autocomplete="off">
+      <div class="form-row">
+        <select id="casoRecurso" title="Tipo de recurso"></select>
+        <select id="casoSala" title="Sala de la Corte Suprema"></select>
+        <input type="text" id="casoTema" placeholder="Tema (ej. funcionarios municipales, ambiental)" />
+      </div>
+      <textarea id="casoHechos" rows="5" placeholder="Hechos y argumentos del caso: qué se discute, qué se alega, antecedentes relevantes…"></textarea>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Estimar resultado</button>
+      </div>
+    </form>
+
+    <section id="resultado" class="oculto"></section>
+
+    <h2 class="seccion-tit" style="margin-top:32px">2 · Tu base de jurisprudencia
+      <span class="counter" id="contadorFallos" style="background:#eef2f7;color:var(--muted)">0 fallos</span>
+    </h2>
+    <p class="detalle">Mientras más fallos reales de la Corte Suprema cargues (del mismo tipo de recurso y tema),
+      más fiable es la estimación. Empieza por reemplazar los ejemplos por sentencias que tú revises.</p>
+
+    <div class="toolbar">
+      <button class="btn-primary" id="btnAgregarFallo">+ Agregar fallo</button>
+      <button class="btn-ghost" id="btnResetFallos">Restaurar ejemplos</button>
+    </div>
+
+    <form class="nueva-tarea oculto" id="formFallo" autocomplete="off">
+      <div class="form-row">
+        <input type="text" id="fRol" placeholder="Rol (ej. 12345-2024)" required />
+        <input type="number" id="fAnio" placeholder="Año" min="1990" max="2100" />
+        <select id="fSala" title="Sala"></select>
+        <select id="fRecurso" title="Recurso"></select>
+      </div>
+      <div class="form-row">
+        <input type="text" id="fTema" placeholder="Tema (ej. funcionarios municipales)" />
+        <select id="fResultado" title="Resultado">
+          <option value="rechaza">Rechaza</option>
+          <option value="acoge">Acoge</option>
+          <option value="acoge_parcial">Acoge parcial</option>
+        </select>
+      </div>
+      <textarea id="fResumen" rows="3" placeholder="Criterio o doctrina central del fallo (resumen)"></textarea>
+      <input type="text" id="fPalabras" placeholder="Palabras clave separadas por comas (ej. contrata, confianza legítima)" />
+      <textarea id="fTexto" rows="3" placeholder="(Opcional) Considerandos o texto pegado del fallo"></textarea>
+      <input type="text" id="fLink" placeholder="(Opcional) Enlace al fallo" />
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" id="btnCancelarFallo">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar fallo</button>
+      </div>
+    </form>
+
+    <ul class="lista" id="listaFallos"></ul>
+  </main>
+
+  <footer class="app-footer">
+    <span>Tu base de fallos se guarda en este navegador (localStorage). Herramienta de apoyo, no asesoría definitiva.</span>
+    <a class="btn-ghost" href="index.html" style="text-decoration:none">← Volver a Mis Tareas</a>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="jurisprudencia.seed.js"></script>
+  <script src="prediccion.js"></script>
+</body>
+</html>

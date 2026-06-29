@@ -73,6 +73,47 @@ completadas y las que agregaste a mano.
 | `gmail-sync.gs` | Apps Script que lee la etiqueta `📋 Tarea` y entrega JSON |
 | `config.js` | Donde pegas la URL del Apps Script |
 
+## ⚖️ Módulo: Predicción de Juicios (Corte Suprema)
+
+Abre `prediccion.html` (o pulsa **⚖️ Predicción de Juicios** desde la lista de tareas).
+Estima la probabilidad de que la Corte Suprema **acoja** un recurso, comparando tu
+caso con tu propia base de jurisprudencia.
+
+**Cómo funciona (transparente y auditable):**
+
+1. **Describes tu caso**: tipo de recurso, sala, tema y los hechos/argumentos.
+2. El módulo compara tu caso con cada fallo de tu base por: coincidencia de
+   recurso, de sala, de tema y solape de palabras clave del texto.
+3. Pondera cada fallo por su **similitud** y por su **antigüedad** (los fallos
+   recientes pesan más).
+4. Entrega una **probabilidad estimada**, un **nivel de confianza** y los
+   **fallos más influyentes** con su criterio, para que los revises.
+
+> ⚠️ **Es una herramienta de apoyo, no un oráculo.** La estimación vale lo que
+> vale la base de fallos que cargues, y la decisión judicial depende de factores
+> que ningún modelo captura. Nunca reemplaza tu criterio jurídico.
+
+**Tu base de jurisprudencia:**
+
+- Los fallos se guardan en el navegador (`localStorage`). La semilla inicial
+  (`jurisprudencia.seed.js`) trae **ejemplos ilustrativos** que debes reemplazar
+  por sentencias reales que tú revises (botón **+ Agregar fallo**).
+- Mientras más fallos reales cargues del mismo recurso/tema, más fiable es la
+  estimación.
+
+**Análisis ampliado con IA (opcional):**
+
+Si pegas una URL en `window.IA_URL` (en `config.js`) apuntando a un proxy que
+reenvíe al modelo (p. ej. la API de Claude), aparece un botón **🤖 Análisis
+ampliado con IA** que genera un análisis razonado en lenguaje natural a partir de
+los fallos citados. Usar un proxy evita exponer tu clave de API en el navegador.
+
+| Archivo | Rol en la predicción |
+|---|---|
+| `prediccion.html` | Página del módulo |
+| `prediccion.js` | Lógica: similitud, ponderación, estimación |
+| `jurisprudencia.seed.js` | Base inicial de fallos (ejemplos a reemplazar) |
+
 ## Integraciones ya configuradas
 
 - ✅ Etiqueta **`📋 Tarea`** creada en Gmail y aplicada a los correos pendientes.

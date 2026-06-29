@@ -217,7 +217,67 @@ body {
 
 .oculto { display: none; }
 
+/* ---- Predicción de Juicios ---- */
+.nueva-tarea textarea {
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: inherit;
+  resize: vertical;
+}
+.seccion-tit {
+  font-size: 1.1rem;
+  margin: 22px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pred-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+.aviso-top { border-left: 4px solid var(--media); font-size: 0.9rem; color: var(--ink); }
+.gauge { text-align: center; margin-bottom: 8px; }
+.gauge-num { font-size: 3rem; font-weight: 800; line-height: 1; }
+.gauge-lbl { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+.gauge-bar {
+  height: 12px;
+  background: #eef2f7;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 14px auto 0;
+  max-width: 420px;
+}
+.gauge-bar span { display: block; height: 100%; border-radius: 999px; transition: width 0.4s; }
+.pred-reco { text-align: center; font-weight: 600; margin: 12px 0; }
+.pred-meta { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; font-size: 0.75rem; }
+.aviso { color: var(--muted); font-size: 0.78rem; margin: 14px 0 0; }
+.ia-card { border-left: 4px solid var(--brand); }
+.ia-texto { white-space: pre-wrap; font-size: 0.92rem; }
+
+.fallo-rel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+.fallo-rel-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8rem; }
+.fallo-rel-top strong { font-size: 0.9rem; }
+.badge.res-acoge { background: #e9f5ee; color: var(--baja); }
+.badge.res-rechaza { background: #fdeaea; color: var(--alta); }
+.sim { color: var(--muted); font-size: 0.75rem; margin-left: auto; }
+
+/* Navegación entre módulos */
+.nav-modulos { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
 @media (max-width: 560px) {
   .toolbar { flex-direction: column; align-items: stretch; }
   .btn-primary { width: 100%; }
+  .sim { margin-left: 0; }
 }
