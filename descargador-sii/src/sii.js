@@ -75,6 +75,19 @@ export async function abrirNavegador(cfg, perfilDir, log = () => {}) {
     args: ["--start-maximized"],
   };
 
+  // Opción avanzada: si se indica una ruta de navegador (config.json
+  // "rutaNavegador" o variable de entorno SII_RUTA_NAVEGADOR), la usamos tal cual.
+  const rutaManual = cfg.rutaNavegador || process.env.SII_RUTA_NAVEGADOR;
+  if (rutaManual) {
+    const contexto = await chromium.launchPersistentContext(perfilDir, {
+      ...opcionesBase,
+      executablePath: rutaManual,
+    });
+    contexto.setDefaultTimeout(cfg.timeoutMs);
+    log(`✓ Navegador: ${rutaManual}`);
+    return contexto;
+  }
+
   // Para funcionar "en cualquier computadora" probamos varios navegadores en
   // orden: el Chromium que trae Playwright y, si no está, Google Chrome o
   // Microsoft Edge ya instalados en el equipo. Así no es obligatorio descargar

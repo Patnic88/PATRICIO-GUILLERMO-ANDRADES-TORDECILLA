@@ -15,6 +15,9 @@
   "navegador": "auto",
   "//navegador": "Qué navegador usar: 'auto' (Chromium, si no Chrome, si no Edge), o forzar 'chromium' / 'chrome' / 'msedge'.",
 
+  "rutaNavegador": "",
+  "//rutaNavegador": "Opcional/avanzado. Ruta exacta a un navegador (ej: 'C:/Program Files/.../chrome.exe'). Si se indica, se usa esa.",
+
   "headless": false,
   "//headless": "false muestra el navegador (necesario para el login asistido). true lo oculta (sólo si la sesión ya está guardada).",
 

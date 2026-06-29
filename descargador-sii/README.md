@@ -150,6 +150,7 @@ npm start
 | `descargarVentas` | `true` | Bajar el detalle de ventas. |
 | `descargarPDFs` | `false` | (Experimental) intentar bajar PDFs de cada documento. |
 | `navegador` | `"auto"` | `"auto"` (Chromium → Chrome → Edge), o forzar `"chromium"` / `"chrome"` / `"msedge"`. |
+| `rutaNavegador` | `""` | (Avanzado) ruta exacta a un navegador. Si se indica, se usa esa (también vía variable `SII_RUTA_NAVEGADOR`). |
 | `headless` | `false` | `false` muestra el navegador (necesario para login). `true` lo oculta. |
 | `timeoutMs` | `60000` | Espera máxima por paso (ms). |
 | `credenciales.rut` / `.clave` | vacío | Si los completas, intenta login automático con Clave Tributaria. |
