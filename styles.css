@@ -272,6 +272,15 @@ body {
 .badge.res-acoge { background: #e9f5ee; color: var(--baja); }
 .badge.res-rechaza { background: #fdeaea; color: var(--alta); }
 .sim { color: var(--muted); font-size: 0.75rem; margin-left: auto; }
+.comunes { margin-top: 8px; font-size: 0.72rem; color: var(--muted); }
+.termino {
+  display: inline-block;
+  background: #eef2f7;
+  color: var(--brand-dark);
+  padding: 1px 8px;
+  border-radius: 999px;
+  margin: 2px 2px 0 0;
+}
 
 /* Navegación entre módulos */
 .nav-modulos { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }

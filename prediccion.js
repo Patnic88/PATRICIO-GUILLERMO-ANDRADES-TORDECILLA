@@ -73,18 +73,64 @@ function textoFallo(f) {
   return [f.tema, f.resumen, (f.palabras || []).join(" "), f.texto].join(" ");
 }
 
-// Similitud 0..1 entre el caso y un fallo.
-function similitud(caso, f) {
-  const palabrasCaso = setDe(caso.hechos + " " + caso.tema);
-  const semTexto = jaccard(palabrasCaso, setDe(textoFallo(f)));      // 0..1
+// Frecuencia de términos (token -> nº de apariciones).
+function frecuencias(txt) {
+  const m = new Map();
+  tokens(txt).forEach((t) => m.set(t, (m.get(t) || 0) + 1));
+  return m;
+}
+
+// IDF sobre el corpus (todos los fallos + el caso): los términos que aparecen
+// en muchos documentos pesan menos; los distintivos pesan más.
+function calcularIDF(documentos) {
+  const N = documentos.length;
+  const df = new Map();
+  documentos.forEach((freqs) => {
+    freqs.forEach((_, token) => df.set(token, (df.get(token) || 0) + 1));
+  });
+  const idf = new Map();
+  df.forEach((n, token) => idf.set(token, Math.log(1 + N / n)));
+  return idf;
+}
+
+// Vector TF-IDF (token -> peso) a partir de las frecuencias.
+function vectorTFIDF(freqs, idf) {
+  const v = new Map();
+  freqs.forEach((tf, token) => v.set(token, tf * (idf.get(token) || 0)));
+  return v;
+}
+
+// Similitud coseno entre dos vectores TF-IDF (0..1).
+function coseno(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  a.forEach((wa, t) => { na += wa * wa; if (b.has(t)) dot += wa * b.get(t); });
+  b.forEach((wb) => { nb += wb * wb; });
+  if (na === 0 || nb === 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+// Términos compartidos más distintivos (mayor IDF) para mostrar al usuario.
+function terminosComunes(freqsCaso, freqsFallo, idf, max) {
+  const comunes = [];
+  freqsCaso.forEach((_, t) => { if (freqsFallo.has(t)) comunes.push(t); });
+  return comunes
+    .sort((x, y) => (idf.get(y) || 0) - (idf.get(x) || 0))
+    .slice(0, max || 4);
+}
+
+// Similitud 0..1 entre el caso y un fallo, usando vectores TF-IDF ya calculados.
+function similitud(caso, f, ctx) {
+  const semTexto = coseno(ctx.vectorCaso, ctx.vectores.get(f.id)); // 0..1 (coseno TF-IDF)
   const mismoRecurso = caso.recurso && f.recurso === caso.recurso ? 1 : 0;
   const mismaSala = caso.sala && f.sala === caso.sala ? 1 : 0;
-  const mismoTema = caso.tema && f.tema &&
-    normalizar(f.tema) === normalizar(caso.tema) ? 1 : 0;
+  // Tema: solape de términos (no exige texto idéntico).
+  const temaSolape = caso.tema && f.tema
+    ? jaccard(setDe(caso.tema), setDe(f.tema)) : 0;
 
   // Pesos: el texto manda, pero recurso/sala/tema ubican el contexto.
-  const score = 0.50 * semTexto + 0.22 * mismoRecurso + 0.13 * mismaSala + 0.15 * mismoTema;
-  return { score, semTexto, mismoRecurso, mismaSala, mismoTema };
+  const score = 0.50 * semTexto + 0.22 * mismoRecurso + 0.13 * mismaSala + 0.15 * temaSolape;
+  const comunes = terminosComunes(ctx.freqsCaso, ctx.freqsFallos.get(f.id), ctx.idf);
+  return { score, semTexto, mismoRecurso, mismaSala, temaSolape, comunes };
 }
 
 // Peso por antigüedad: más reciente = más peso (0.5 a 1).
@@ -104,10 +150,25 @@ function etiquetaResultado(r) {
   return r === "acoge" ? "Acoge" : r === "acoge_parcial" ? "Acoge parcial" : "Rechaza";
 }
 
+// Construye el contexto TF-IDF a partir del caso y todos los fallos.
+function construirContexto(caso) {
+  const freqsCaso = frecuencias(caso.hechos + " " + caso.tema);
+  const freqsFallos = new Map();
+  fallos.forEach((f) => freqsFallos.set(f.id, frecuencias(textoFallo(f))));
+
+  const idf = calcularIDF([freqsCaso, ...freqsFallos.values()]);
+  const vectorCaso = vectorTFIDF(freqsCaso, idf);
+  const vectores = new Map();
+  freqsFallos.forEach((fr, id) => vectores.set(id, vectorTFIDF(fr, idf)));
+
+  return { freqsCaso, freqsFallos, idf, vectorCaso, vectores };
+}
+
 function predecir(caso, anioActual) {
+  const ctx = construirContexto(caso);
   const evaluados = fallos
     .map((f) => {
-      const sim = similitud(caso, f);
+      const sim = similitud(caso, f, ctx);
       return { fallo: f, ...sim, peso: sim.score * pesoAnio(f.anio, anioActual) };
     })
     .filter((e) => e.score > 0.05)
@@ -182,6 +243,9 @@ function renderResultado(caso, res) {
     const link = f.link
       ? `<a class="gmail-link" href="${escapar(f.link)}" target="_blank" rel="noopener">ver fallo</a>` : "";
     const cls = valorResultado(f.resultado) >= 0.5 ? "res-acoge" : "res-rechaza";
+    const comunes = (e.comunes && e.comunes.length)
+      ? `<div class="comunes">coincide en: ${e.comunes.map((t) => `<span class="termino">${escapar(t)}</span>`).join(" ")}</div>`
+      : "";
     return `
       <li class="fallo-rel">
         <div class="fallo-rel-top">
@@ -193,6 +257,7 @@ function renderResultado(caso, res) {
           ${link}
         </div>
         <div class="detalle">${escapar(f.resumen)}</div>
+        ${comunes}
       </li>`;
   }).join("");
 
