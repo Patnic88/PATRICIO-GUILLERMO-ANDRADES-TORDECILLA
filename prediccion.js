@@ -376,6 +376,83 @@ function initFormularios() {
       renderFallos();
     }
   });
+
+  // Exportar la base como archivo JSON (respaldo / edición en bloque).
+  document.getElementById("btnExportar").addEventListener("click", exportarFallos);
+
+  // Importar una base desde un archivo JSON.
+  const inputImportar = document.getElementById("inputImportar");
+  document.getElementById("btnImportar").addEventListener("click", () => inputImportar.click());
+  inputImportar.addEventListener("change", (e) => {
+    const archivo = e.target.files && e.target.files[0];
+    if (archivo) importarFallos(archivo);
+    inputImportar.value = ""; // permite re-importar el mismo archivo
+  });
+}
+
+function exportarFallos() {
+  const datos = JSON.stringify(fallos, null, 2);
+  const blob = new Blob([datos], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const hoy = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `jurisprudencia-${hoy}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importarFallos(archivo) {
+  const lector = new FileReader();
+  lector.onload = () => {
+    let datos;
+    try {
+      datos = JSON.parse(lector.result);
+    } catch (err) {
+      alert("El archivo no es un JSON válido.");
+      return;
+    }
+    if (!Array.isArray(datos)) {
+      alert("El archivo debe contener una lista (array) de fallos.");
+      return;
+    }
+    // Normaliza y descarta entradas sin contenido mínimo.
+    const importados = datos
+      .filter((f) => f && (f.resumen || f.rol || f.tema))
+      .map((f, i) => ({
+        id: f.id || ("cs-imp-" + Date.now() + "-" + i),
+        rol: f.rol || "s/n",
+        anio: parseInt(f.anio, 10) || null,
+        sala: f.sala || "Tercera",
+        recurso: f.recurso || "Otro",
+        tema: f.tema || "",
+        resultado: ["acoge", "rechaza", "acoge_parcial"].includes(f.resultado) ? f.resultado : "rechaza",
+        resumen: f.resumen || "",
+        palabras: Array.isArray(f.palabras) ? f.palabras : [],
+        texto: f.texto || "",
+        link: f.link || ""
+      }));
+    if (!importados.length) {
+      alert("No se encontraron fallos válidos en el archivo.");
+      return;
+    }
+    const reemplazar = confirm(
+      `Se leyeron ${importados.length} fallos.\n\n` +
+      "Aceptar = REEMPLAZAR tu base actual.\n" +
+      "Cancelar = AGREGARLOS a la base actual."
+    );
+    if (reemplazar) {
+      fallos = importados;
+    } else {
+      const idsExistentes = new Set(fallos.map((f) => f.id));
+      fallos = fallos.concat(importados.filter((f) => !idsExistentes.has(f.id)));
+    }
+    guardarFallos();
+    renderFallos();
+  };
+  lector.readAsText(archivo);
 }
 
 // ---- Init -----------------------------------------------------------------

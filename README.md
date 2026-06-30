@@ -102,6 +102,11 @@ caso con tu propia base de jurisprudencia.
   como "(ver fuente)"**: ábrelos y confírmalos en el fallo oficial
   (<https://juris.pjud.cl>) antes de citarlos. Agrega los tuyos con **+ Agregar
   fallo**.
+- **Respaldo y edición en bloque:** con **⬇️ Exportar base** descargas todos
+  tus fallos como un archivo `JSON` (respaldo, o para editar los Rol en bloque
+  en cualquier editor). Con **⬆️ Importar base** los vuelves a cargar; te
+  pregunta si **reemplazar** o **agregar** a la base actual. Útil porque el
+  `localStorage` vive solo en ese navegador.
 - Mientras más fallos reales cargues del mismo recurso/tema, más fiable es la
   estimación.
 
