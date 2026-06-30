@@ -37,7 +37,10 @@
     <section class="lector oculto" id="lector">
       <div class="doc-info">
         <span id="docNombre" class="doc-nombre"></span>
-        <button class="btn-ghost" id="btnOtro">Cargar otro PDF</button>
+        <div class="doc-acciones">
+          <button class="btn-ghost" id="btnDescargar">⬇️ Descargar texto</button>
+          <button class="btn-ghost" id="btnOtro">Cargar otro PDF</button>
+        </div>
       </div>
 
       <!-- Controles de reproducción -->
@@ -46,6 +49,13 @@
           <button class="btn-primary" id="btnPlay">▶︎ Reproducir</button>
           <button class="btn-ghost" id="btnPausa" disabled>⏸ Pausar</button>
           <button class="btn-ghost" id="btnStop" disabled>⏹ Detener</button>
+        </div>
+        <div class="rango" id="rango">
+          Leer páginas
+          <input type="number" id="inpDesde" min="1" value="1" />
+          a
+          <input type="number" id="inpHasta" min="1" value="1" />
+          <span class="rango-total" id="rangoTotal"></span>
         </div>
         <div class="progreso-wrap">
           <div class="progreso"><div class="progreso-barra" id="progresoBarra"></div></div>

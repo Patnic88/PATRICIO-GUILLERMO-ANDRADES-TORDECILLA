@@ -13,10 +13,14 @@ if (window.pdfjsLib) {
 const synth = window.speechSynthesis;
 
 // Estado
-let frases = [];          // [{ texto, el, palabras: [{ el, start }] }]
+let frases = [];          // [{ texto, el, palabras: [{ el, start }], pagina }]
 let indiceActual = 0;     // frase que se está leyendo
 let leyendo = false;      // hay una lectura en curso (aunque esté en pausa)
 let palabraActual = null; // span de la palabra resaltada en curso
+let finLectura = Infinity; // índice de la última frase a leer en este tramo
+let paginasTexto = [];    // texto crudo por página (para descargar)
+let totalPaginas = 0;     // nº de páginas del PDF
+let nombreArchivo = "";   // nombre del PDF cargado
 
 // ---- Referencias al DOM --------------------------------------------------
 const $ = (id) => document.getElementById(id);
@@ -30,6 +34,11 @@ const btnPlay = $("btnPlay");
 const btnPausa = $("btnPausa");
 const btnStop = $("btnStop");
 const btnOtro = $("btnOtro");
+const btnDescargar = $("btnDescargar");
+const rango = $("rango");
+const inpDesde = $("inpDesde");
+const inpHasta = $("inpHasta");
+const rangoTotal = $("rangoTotal");
 const progresoBarra = $("progresoBarra");
 const progresoTxt = $("progresoTxt");
 const selVoz = $("selVoz");
@@ -109,7 +118,11 @@ async function cargarPdf(file) {
       return;
     }
 
+    nombreArchivo = file.name;
+    paginasTexto = paginas;
+    totalPaginas = paginas.length;
     docNombre.textContent = "📄 " + file.name;
+    configurarRango();
     construirFrases(paginas);
     estado.classList.add("oculto");
     lector.classList.remove("oculto");
@@ -178,16 +191,41 @@ function construirFrases(paginas) {
       span.className = "frase";
       const palabras = construirPalabras(t, span);
       span.addEventListener("click", () => {
-        // Clic en una frase = empezar a leer desde ahí.
+        // Clic en una frase = leer desde ahí hasta el final.
         indiceActual = frases.findIndex((fr) => fr.el === span);
-        reproducirDesde(indiceActual);
+        reproducirDesde(indiceActual, frases.length - 1);
       });
       textoEl.appendChild(span);
-      frases.push({ texto: t, el: span, palabras });
+      frases.push({ texto: t, el: span, palabras, pagina: i });
     });
   });
 
   actualizarProgreso();
+}
+
+// Configura los campos "Leer páginas X a Y" según el PDF cargado.
+function configurarRango() {
+  inpDesde.max = totalPaginas;
+  inpHasta.max = totalPaginas;
+  inpDesde.value = 1;
+  inpHasta.value = totalPaginas;
+  rangoTotal.textContent = `de ${totalPaginas}`;
+  rango.classList.toggle("oculto", totalPaginas <= 1);
+}
+
+// Devuelve los índices de la primera y última frase dentro del rango elegido.
+function rangoFrases() {
+  let d = parseInt(inpDesde.value, 10) || 1;
+  let h = parseInt(inpHasta.value, 10) || totalPaginas;
+  d = Math.min(Math.max(1, d), totalPaginas);
+  h = Math.min(Math.max(d, h), totalPaginas);
+  let ini = frases.findIndex((fr) => fr.pagina + 1 >= d);
+  if (ini < 0) ini = 0;
+  let fin = ini;
+  for (let k = 0; k < frases.length; k++) {
+    if (frases[k].pagina + 1 <= h) fin = k;
+  }
+  return { ini, fin };
 }
 
 // Envuelve cada palabra de la frase en un <span> y guarda el desplazamiento de
@@ -255,7 +293,7 @@ function vozElegida() {
 }
 
 function hablarFrase(i) {
-  if (i >= frases.length) {
+  if (i >= frases.length || i > finLectura) {
     detener();
     return;
   }
@@ -292,8 +330,9 @@ function hablarFrase(i) {
   synth.speak(u);
 }
 
-function reproducirDesde(i) {
+function reproducirDesde(i, fin) {
   synth.cancel();
+  finLectura = fin == null ? frases.length - 1 : fin;
   leyendo = true;
   actualizarBotones();
   hablarFrase(i);
@@ -306,8 +345,10 @@ function reproducir() {
     return;
   }
   if (!frases.length) return;
-  const inicio = indiceActual < frases.length ? indiceActual : 0;
-  reproducirDesde(inicio);
+  // El botón ▶︎ lee el rango de páginas elegido.
+  const { ini, fin } = rangoFrases();
+  const inicio = indiceActual >= ini && indiceActual <= fin ? indiceActual : ini;
+  reproducirDesde(inicio, fin);
 }
 
 function pausar() {
@@ -338,6 +379,27 @@ function actualizarBotones() {
 btnPlay.addEventListener("click", reproducir);
 btnPausa.addEventListener("click", pausar);
 btnStop.addEventListener("click", detener);
+
+// Cambiar el rango detiene la lectura en curso para evitar confusiones.
+[inpDesde, inpHasta].forEach((inp) => inp.addEventListener("change", () => {
+  if (leyendo) detener();
+}));
+
+// ---- Descargar el texto extraído como .txt -------------------------------
+btnDescargar.addEventListener("click", () => {
+  if (!paginasTexto.length) return;
+  const texto = paginasTexto
+    .map((t, i) => (totalPaginas > 1 ? `--- Página ${i + 1} ---\n` : "") + t.trim())
+    .join("\n\n");
+  const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (nombreArchivo.replace(/\.pdf$/i, "") || "documento") + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+});
 
 // ---- Ajustes de voz ------------------------------------------------------
 
