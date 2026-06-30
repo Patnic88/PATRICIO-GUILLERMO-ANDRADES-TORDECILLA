@@ -96,8 +96,12 @@ caso con tu propia base de jurisprudencia.
 **Tu base de jurisprudencia:**
 
 - Los fallos se guardan en el navegador (`localStorage`). La semilla inicial
-  (`jurisprudencia.seed.js`) trae **ejemplos ilustrativos** que debes reemplazar
-  por sentencias reales que tú revises (botón **+ Agregar fallo**).
+  (`jurisprudencia.seed.js`) trae **fallos reales** de la Corte Suprema
+  (confianza legítima en contratas y falta de servicio municipal), cada uno con
+  el **enlace a la fuente**. ⚠️ El **número de Rol y la fecha están marcados
+  como "(ver fuente)"**: ábrelos y confírmalos en el fallo oficial
+  (<https://juris.pjud.cl>) antes de citarlos. Agrega los tuyos con **+ Agregar
+  fallo**.
 - Mientras más fallos reales cargues del mismo recurso/tema, más fiable es la
   estimación.
 

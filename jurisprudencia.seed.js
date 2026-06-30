@@ -1,109 +1,104 @@
 // Base de jurisprudencia de la Corte Suprema (semilla).
 //
-// ⚠️ IMPORTANTE: las entradas de abajo son EJEMPLOS ILUSTRATIVOS para que
-// veas el formato y puedas probar el módulo. NO son citas verificadas: los
-// roles llevan "(ejemplo)" a propósito. Reemplázalas por sentencias reales
-// que tú revises (puedes pegarlas desde el módulo "Predicción de Juicios" o
-// editar este archivo directamente).
+// ⚠️ VERIFICA ANTES DE CITAR. Estas entradas se basan en fallos REALES de la
+// Corte Suprema reseñados por las fuentes enlazadas (campo `link`), pero los
+// números de Rol y fechas NO pudieron extraerse automáticamente (los sitios
+// bloquean la lectura). Por eso el Rol aparece como "(ver fuente)": abre el
+// enlace, confirma el Rol/fecha en el fallo oficial y complétalo. La doctrina
+// resumida sí refleja el criterio reportado por la fuente.
+//
+// Fuente oficial para verificar: buscador de jurisprudencia del Poder Judicial
+// (https://juris.pjud.cl) y la Oficina Judicial Virtual.
 //
 // Salas de la Corte Suprema (referencia):
 //   1ª — Civil
 //   2ª — Penal
 //   3ª — Constitucional y Contencioso Administrativo (protección, ambiental,
-//        municipal, tributario, etc.)
+//        municipal, tributario, falta de servicio, etc.)
 //   4ª — Laboral y Previsional
 //
 // Forma de cada fallo:
 // {
-//   id: "cs-...",            // identificador único
-//   rol: "12345-2024",       // Rol de la causa en la Corte Suprema
-//   anio: 2024,              // año del fallo
-//   sala: "Tercera",          // Primera | Segunda | Tercera | Cuarta | Pleno
-//   recurso: "Protección",   // tipo de recurso/acción (ver lista en el módulo)
-//   tema: "Funcionarios municipales",
-//   resultado: "rechaza",    // acoge | rechaza | acoge_parcial
-//   resumen: "Doctrina o criterio central del fallo.",
-//   palabras: ["...", "..."],// palabras clave que ayudan a la búsqueda
-//   texto: "",               // (opcional) considerandos / texto pegado
-//   link: ""                 // (opcional) enlace al fallo
+//   id, rol, anio, sala, recurso, tema, resultado ("acoge"|"rechaza"|"acoge_parcial"),
+//   resumen, palabras: [...], texto, link
 // }
 window.SEED_FALLOS = [
   {
-    id: "cs-ej-1",
-    rol: "XXXX-2024 (ejemplo)",
-    anio: 2024,
+    id: "cs-cl-5anios",
+    rol: "(ver fuente)",
+    anio: 2025,
     sala: "Tercera",
     recurso: "Protección",
     tema: "Funcionarios municipales",
     resultado: "rechaza",
-    resumen: "La remoción/término de servicios de un funcionario a contrata, dentro del periodo de su designación, no vulnera garantías cuando se ajusta a la facultad legal y existe acto administrativo fundado. La acción de protección no es la vía para discutir la legalidad de fondo del acto.",
-    palabras: ["contrata", "funcionario", "remoción", "acto administrativo", "confianza legítima"],
+    resumen: "La confianza legítima en la contrata opera recién al completar CINCO años continuos en esa calidad; antes del quinquenio la no renovación no es ilegal ni arbitraria. El tiempo servido a honorarios no se computa para ese plazo.",
+    palabras: ["contrata", "confianza legítima", "cinco años", "no renovación", "honorarios"],
     texto: "",
-    link: ""
+    link: "https://anef.cl/corte-suprema-fija-en-5-anos-criterio-para-que-opere-la-confianza-legitima-de-funcionarios-publicos-a-contrata/"
   },
   {
-    id: "cs-ej-2",
-    rol: "XXXX-2023 (ejemplo)",
-    anio: 2023,
+    id: "cs-cl-largaduracion",
+    rol: "(ver fuente)",
+    anio: 2025,
     sala: "Tercera",
     recurso: "Protección",
     tema: "Funcionarios municipales",
     resultado: "acoge",
-    resumen: "Se acoge la protección cuando la no renovación de la contrata vulnera la confianza legítima generada por renovaciones sucesivas y el acto carece de motivación suficiente. Procede ordenar la reincorporación o el pago correspondiente.",
-    palabras: ["contrata", "confianza legítima", "renovaciones sucesivas", "motivación", "no renovación"],
+    resumen: "Tratándose de contratas municipales de larga duración (renovaciones sucesivas más allá del quinquenio), opera la confianza legítima: la Administración solo puede poner término al vínculo mediante calificación o sumario, no por simple no renovación carente de motivación.",
+    palabras: ["contrata", "confianza legítima", "larga duración", "renovaciones sucesivas", "motivación", "municipal"],
     texto: "",
-    link: ""
+    link: "https://www.diarioconstitucional.cl/2025/12/29/corte-suprema-refuerza-principio-de-confianza-legitima-en-la-no-renovacion-de-contratas-municipales-de-larga-duracion/"
   },
   {
-    id: "cs-ej-3",
-    rol: "XXXX-2024 (ejemplo)",
-    anio: 2024,
+    id: "cs-cl-terminocontrata",
+    rol: "(ver fuente)",
+    anio: 2025,
     sala: "Tercera",
-    recurso: "Reclamación ambiental",
-    tema: "Medio ambiente",
+    recurso: "Protección",
+    tema: "Funcionarios municipales",
     resultado: "rechaza",
-    resumen: "Se rechaza la reclamación contra la RCA cuando la autoridad ambiental ponderó adecuadamente los antecedentes técnicos y el reclamante no acredita un vicio que afecte la legalidad o motivación de la decisión.",
-    palabras: ["RCA", "evaluación ambiental", "SEIA", "discrecionalidad técnica", "motivación"],
+    resumen: "Se confirma el término de la contrata y se descarta la confianza legítima cuando no se acreditan los cinco años continuos o se trata de un cargo de confianza, cuya naturaleza admite la no renovación según la evaluación de la autoridad.",
+    palabras: ["contrata", "término", "confianza legítima", "cargo de confianza", "discrecionalidad"],
     texto: "",
-    link: ""
+    link: "https://www.diarioconstitucional.cl/2025/10/11/corte-suprema-confirma-termino-de-contrata-y-descarta-aplicacion-del-principio-de-confianza-legitima-en-el-empleo-publico/"
   },
   {
-    id: "cs-ej-4",
-    rol: "XXXX-2022 (ejemplo)",
-    anio: 2022,
+    id: "cs-cl-investigacionpenal",
+    rol: "(ver fuente)",
+    anio: 2026,
     sala: "Tercera",
-    recurso: "Nulidad de derecho público",
-    tema: "Contratación municipal",
-    resultado: "acoge_parcial",
-    resumen: "Se declara la nulidad del acto que adjudicó sin respetar las bases de licitación, pero se limitan los efectos restitutorios atendido el principio de protección de la confianza y los servicios ya prestados.",
-    palabras: ["licitación", "bases", "adjudicación", "nulidad", "contrato administrativo"],
+    recurso: "Protección",
+    tema: "Funcionarios municipales",
+    resultado: "rechaza",
+    resumen: "Aunque haya más de cinco años de renovaciones, la confianza legítima no ampara cuando existen antecedentes relevantes —como una investigación penal en curso— que hacen no razonable la expectativa de renovación; cede frente a la afectación de la confianza institucional.",
+    palabras: ["contrata", "confianza legítima", "investigación penal", "antecedentes", "expectativa"],
     texto: "",
-    link: ""
+    link: "https://www.diarioconstitucional.cl/2026/05/31/investigacion-penal-impide-invocar-confianza-legitima-para-renovar-contratas-resuelve-corte-suprema/"
   },
   {
-    id: "cs-ej-5",
-    rol: "XXXX-2023 (ejemplo)",
-    anio: 2023,
-    sala: "Cuarta",
-    recurso: "Unificación de jurisprudencia",
-    tema: "Tutela laboral funcionarios",
-    resultado: "acoge",
-    resumen: "La tutela de derechos fundamentales del Código del Trabajo es aplicable a funcionarios públicos (incluidos municipales) respecto de actos que afecten garantías durante la relación estatutaria.",
-    palabras: ["tutela laboral", "funcionario público", "derechos fundamentales", "estatuto administrativo"],
-    texto: "",
-    link: ""
-  },
-  {
-    id: "cs-ej-6",
-    rol: "XXXX-2024 (ejemplo)",
-    anio: 2024,
-    sala: "Primera",
+    id: "cs-fs-viapublica",
+    rol: "(ver fuente)",
+    anio: 2025,
+    sala: "Tercera",
     recurso: "Casación en el fondo",
     tema: "Responsabilidad municipal",
-    resultado: "rechaza",
-    resumen: "La falta de servicio municipal por mantención de vías exige acreditar el estándar de servicio exigible y el nexo causal; no basta la sola ocurrencia del daño. Se rechaza la casación por falta de infracción de ley con influencia en lo dispositivo.",
-    palabras: ["falta de servicio", "responsabilidad", "vías públicas", "nexo causal", "indemnización"],
+    resultado: "acoge",
+    resumen: "La Corte rechazó la casación de la Municipalidad y confirmó la indemnización por falta de servicio: la municipalidad responde por daños derivados del mal estado o mantención de la vía pública cuando se acredita el estándar de servicio incumplido y el nexo causal con el daño. (Caso reseñado: caída de transeúnte por restos vegetales en la vía — Municipalidad de Los Vilos.)",
+    palabras: ["falta de servicio", "vía pública", "indemnización", "daño moral", "nexo causal", "Los Vilos"],
     texto: "",
-    link: ""
+    link: "https://aldiachile.microjuris.com/2025/04/05/corte-suprema-rechazo-recurso-de-casacion-de-municipalidad-y-confirmo-indemnizacion-por-accidente-causado-por-falta-de-servicio/"
+  },
+  {
+    id: "cs-fs-saludmunicipal",
+    rol: "(ver fuente)",
+    anio: 2025,
+    sala: "Tercera",
+    recurso: "Casación en el fondo",
+    tema: "Responsabilidad municipal",
+    resultado: "acoge",
+    resumen: "Se confirma la condena a la municipalidad por falta de servicio en la atención de salud municipal (DESAM): existe responsabilidad cuando el servicio prestado se aparta del estándar exigible y de ello deriva el daño al paciente.",
+    palabras: ["falta de servicio", "salud municipal", "DESAM", "indemnización", "estándar"],
+    texto: "",
+    link: "https://actualidadjuridica.doe.cl/corte-suprema-confirma-condena-a-municipalidad-de-hualpen-por-falta-de-servicio-en-atencion-medica/"
   }
 ];
