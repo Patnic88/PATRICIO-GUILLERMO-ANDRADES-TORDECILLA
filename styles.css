@@ -282,6 +282,20 @@ body {
   margin: 2px 2px 0 0;
 }
 
+/* Comparación de enfoques A/B */
+.comparar-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+.comparar-col { flex: 1; min-width: 240px; }
+.comparar-col .seccion-tit { font-size: 1rem; margin: 4px 0 10px; }
+.comparar-col textarea, .comparar-col input[type="text"] {
+  width: 100%;
+  font-size: 0.95rem;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
 /* Navegación entre módulos */
 .nav-modulos { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 

@@ -87,7 +87,13 @@ caso con tu propia base de jurisprudencia.
 3. Pondera cada fallo por su **similitud** y por su **antigüedad** (los fallos
    recientes pesan más).
 4. Entrega una **probabilidad estimada**, un **nivel de confianza** y los
-   **fallos más influyentes** con su criterio, para que los revises.
+   **fallos más influyentes** con su criterio, para que los revises. Cada fallo
+   muestra **en qué términos coincide** con tu caso (motor TF‑IDF), para que la
+   estimación sea auditable.
+
+También puedes **comparar dos enfoques** del mismo litigio (botón **⚖️ Comparar
+dos enfoques (A/B)**): describes dos hipótesis y la herramienta indica cuál
+tiene mayor respaldo en tu jurisprudencia.
 
 > ⚠️ **Es una herramienta de apoyo, no un oráculo.** La estimación vale lo que
 > vale la base de fallos que cargues, y la decisión judicial depende de factores

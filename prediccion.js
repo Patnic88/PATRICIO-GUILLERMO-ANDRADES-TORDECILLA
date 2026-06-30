@@ -342,6 +342,72 @@ async function analizarConIA(caso, res, btn) {
   }
 }
 
+// ---- Comparación de dos enfoques (A/B) ------------------------------------
+
+function tarjetaEnfoque(etiqueta, item) {
+  const r = item.res;
+  if (!r.ok) {
+    return `<div class="comparar-col">
+      <h3 class="seccion-tit">Enfoque ${etiqueta}</h3>
+      <div class="pred-card"><p class="empty">${escapar(r.motivo)}</p></div>
+    </div>`;
+  }
+  const p = r.probabilidad;
+  const conf = { alta: "Alta", media: "Media", baja: "Baja" }[r.confianza];
+  return `<div class="comparar-col">
+    <h3 class="seccion-tit">Enfoque ${etiqueta}</h3>
+    <div class="pred-card">
+      <div class="gauge">
+        <div class="gauge-num" style="color:${colorProb(p)}">${pct(p)}%</div>
+        <div class="gauge-lbl">prob. de que se acoja</div>
+        <div class="gauge-bar"><span style="width:${pct(p)}%;background:${colorProb(p)}"></span></div>
+      </div>
+      <div class="pred-meta">
+        <span class="badge cat">Confianza: ${conf}</span>
+        <span class="badge cat">${r.top.length} fallos influyentes</span>
+        ${r.dividida ? `<span class="badge res-rechaza">Dividida</span>` : ""}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderComparacion(itemA, itemB) {
+  const cont = document.getElementById("comparacion");
+  cont.classList.remove("oculto");
+
+  const pA = itemA.res.ok ? itemA.res.probabilidad : null;
+  const pB = itemB.res.ok ? itemB.res.probabilidad : null;
+
+  let veredicto;
+  if (pA === null && pB === null) {
+    veredicto = "Ninguno de los dos enfoques tiene coincidencias en tu base de fallos.";
+  } else if (pA === null) {
+    veredicto = "Solo el Enfoque B tiene respaldo en tu base.";
+  } else if (pB === null) {
+    veredicto = "Solo el Enfoque A tiene respaldo en tu base.";
+  } else {
+    const dif = Math.abs(pA - pB);
+    if (dif < 0.07) {
+      veredicto = `Ambos enfoques tienen un respaldo jurisprudencial similar (${pct(pA)}% vs ${pct(pB)}%).`;
+    } else {
+      const mejor = pA > pB ? "A" : "B";
+      veredicto = `El Enfoque ${mejor} tiene mayor respaldo (${pct(pA)}% vs ${pct(pB)}%). ` +
+        "Recuerda: refleja tu base de fallos, no garantiza el resultado.";
+    }
+  }
+
+  cont.innerHTML = `
+    <h3 class="seccion-tit">Comparación de enfoques</h3>
+    <div class="comparar-grid">
+      ${tarjetaEnfoque("A", itemA)}
+      ${tarjetaEnfoque("B", itemB)}
+    </div>
+    <div class="pred-card"><p class="pred-reco">${escapar(veredicto)}</p>
+      <p class="aviso">⚠️ Estimación orientativa basada solo en tu base de fallos. No constituye asesoría definitiva.</p>
+    </div>`;
+  cont.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 // ---- Gestión de la base de fallos -----------------------------------------
 
 function renderFallos() {
@@ -385,6 +451,10 @@ function initFormularios() {
   llenarSelect("casoSala", SALAS, true);
   llenarSelect("fRecurso", RECURSOS, false);
   llenarSelect("fSala", SALAS, false);
+  ["A", "B"].forEach((s) => {
+    llenarSelect("cmpRecurso" + s, RECURSOS, true);
+    llenarSelect("cmpSala" + s, SALAS, true);
+  });
 
   // Predecir
   document.getElementById("formCaso").addEventListener("submit", (e) => {
@@ -401,6 +471,39 @@ function initFormularios() {
     }
     const anioActual = new Date().getFullYear();
     renderResultado(caso, predecir(caso, anioActual));
+  });
+
+  // Comparar dos enfoques (A/B)
+  const formComparar = document.getElementById("formComparar");
+  document.getElementById("btnModoComparar").addEventListener("click", () => {
+    formComparar.classList.toggle("oculto");
+    if (!formComparar.classList.contains("oculto")) {
+      document.getElementById("cmpHechosA").focus();
+    }
+  });
+  document.getElementById("btnCancelarComparar").addEventListener("click", () => {
+    formComparar.classList.add("oculto");
+    formComparar.reset();
+  });
+  formComparar.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const leer = (s) => ({
+      recurso: document.getElementById("cmpRecurso" + s).value,
+      sala: document.getElementById("cmpSala" + s).value,
+      tema: document.getElementById("cmpTema" + s).value.trim(),
+      hechos: document.getElementById("cmpHechos" + s).value.trim()
+    });
+    const casoA = leer("A");
+    const casoB = leer("B");
+    if ((!casoA.hechos && !casoA.tema) || (!casoB.hechos && !casoB.tema)) {
+      alert("Describe el tema o los hechos en AMBOS enfoques.");
+      return;
+    }
+    const anioActual = new Date().getFullYear();
+    renderComparacion(
+      { caso: casoA, res: predecir(casoA, anioActual) },
+      { caso: casoB, res: predecir(casoB, anioActual) }
+    );
   });
 
   // Agregar fallo a la base
