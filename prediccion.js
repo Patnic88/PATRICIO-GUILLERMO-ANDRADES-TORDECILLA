@@ -15,11 +15,25 @@
 
 const FALLOS_KEY = "fallos_cs_v1";
 const RECURSOS = [
-  "Protección", "Amparo", "Casación en el fondo", "Casación en la forma",
-  "Nulidad de derecho público", "Reclamación ambiental", "Reclamación de ilegalidad municipal",
-  "Unificación de jurisprudencia", "Apelación", "Queja", "Otro"
+  "Protección", "Amparo", "Amparo económico",
+  "Casación en el fondo", "Casación en la forma",
+  "Nulidad de derecho público", "Reclamación de ilegalidad municipal",
+  "Reclamación ambiental", "Reclamación tributaria y aduanera",
+  "Reclamo de expropiación (monto)", "Reclamación urbanística (LGUC)",
+  "Unificación de jurisprudencia", "Apelación", "Recurso de hecho",
+  "Queja", "Revisión", "Otro"
 ];
 const SALAS = ["Primera", "Segunda", "Tercera", "Cuarta", "Pleno"];
+
+// Sugerencias de tema (materias frecuentes en el ámbito municipal/administrativo).
+const TEMAS = [
+  "Funcionarios municipales", "Tutela laboral funcionarios", "Sumarios administrativos",
+  "Responsabilidad municipal", "Falta de servicio", "Contratación municipal y licitaciones",
+  "Permisos y concesiones", "Patentes municipales", "Medio ambiente",
+  "Urbanismo y construcción (LGUC)", "Expropiaciones", "Tributario municipal",
+  "Transparencia y acceso a la información", "Salud municipal (DESAM)",
+  "Educación municipal", "Subvenciones", "Bienes nacionales de uso público"
+];
 
 let fallos = [];
 
@@ -455,6 +469,10 @@ function initFormularios() {
     llenarSelect("cmpRecurso" + s, RECURSOS, true);
     llenarSelect("cmpSala" + s, SALAS, true);
   });
+
+  // Sugerencias de tema (autocompletado) compartidas por todos los campos de tema.
+  const dl = document.getElementById("temas-sugeridos");
+  if (dl) dl.innerHTML = TEMAS.map((t) => `<option value="${t}"></option>`).join("");
 
   // Predecir
   document.getElementById("formCaso").addEventListener("submit", (e) => {

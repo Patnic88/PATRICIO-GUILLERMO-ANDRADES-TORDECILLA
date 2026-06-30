@@ -33,7 +33,7 @@
       <div class="form-row">
         <select id="casoRecurso" title="Tipo de recurso"></select>
         <select id="casoSala" title="Sala de la Corte Suprema"></select>
-        <input type="text" id="casoTema" placeholder="Tema (ej. funcionarios municipales, ambiental)" />
+        <input type="text" id="casoTema" list="temas-sugeridos" placeholder="Tema (ej. funcionarios municipales, ambiental)" />
       </div>
       <textarea id="casoHechos" rows="5" placeholder="Hechos y argumentos del caso: qué se discute, qué se alega, antecedentes relevantes…"></textarea>
       <div class="form-actions">
@@ -51,7 +51,7 @@
             <select id="cmpRecursoA" title="Recurso A"></select>
             <select id="cmpSalaA" title="Sala A"></select>
           </div>
-          <input type="text" id="cmpTemaA" placeholder="Tema A" />
+          <input type="text" id="cmpTemaA" list="temas-sugeridos" placeholder="Tema A" />
           <textarea id="cmpHechosA" rows="4" placeholder="Hechos y argumentos del enfoque A"></textarea>
         </div>
         <div class="comparar-col">
@@ -60,7 +60,7 @@
             <select id="cmpRecursoB" title="Recurso B"></select>
             <select id="cmpSalaB" title="Sala B"></select>
           </div>
-          <input type="text" id="cmpTemaB" placeholder="Tema B" />
+          <input type="text" id="cmpTemaB" list="temas-sugeridos" placeholder="Tema B" />
           <textarea id="cmpHechosB" rows="4" placeholder="Hechos y argumentos del enfoque B"></textarea>
         </div>
       </div>
@@ -95,7 +95,7 @@
         <select id="fRecurso" title="Recurso"></select>
       </div>
       <div class="form-row">
-        <input type="text" id="fTema" placeholder="Tema (ej. funcionarios municipales)" />
+        <input type="text" id="fTema" list="temas-sugeridos" placeholder="Tema (ej. funcionarios municipales)" />
         <select id="fResultado" title="Resultado">
           <option value="rechaza">Rechaza</option>
           <option value="acoge">Acoge</option>
@@ -113,6 +113,8 @@
     </form>
 
     <ul class="lista" id="listaFallos"></ul>
+
+    <datalist id="temas-sugeridos"></datalist>
   </main>
 
   <footer class="app-footer">
