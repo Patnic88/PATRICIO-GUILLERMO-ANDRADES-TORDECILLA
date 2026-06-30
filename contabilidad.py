@@ -32,6 +32,7 @@ Autor: generado para Patricio Andrades — Dirección Jurídica, Municipalidad d
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as _dt
 import json
 import os
@@ -500,6 +501,106 @@ def rep_caja(libro: Libro) -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Exportación a CSV (para abrir en Excel / Google Sheets)
+# --------------------------------------------------------------------------- #
+
+def _num(monto: Decimal) -> str:
+    """Monto plano con punto decimal, ideal para reimportar en planillas."""
+    return f"{monto.quantize(DOS_DECIMALES, rounding=ROUND_HALF_UP):.2f}"
+
+
+def _escribir_csv(ruta: str, encabezados: list[str], filas: list[list]) -> None:
+    with open(ruta, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(encabezados)
+        w.writerows(filas)
+
+
+def csv_comprobacion(libro: Libro, ruta: str) -> None:
+    acum = libro.movimientos_por_cuenta()
+    filas = []
+    t_debe = t_haber = t_sd = t_sa = Decimal("0")
+    for codigo in sorted(acum):
+        m = acum[codigo]
+        if not (m["debe"] or m["haber"]):
+            continue
+        saldo = libro.saldo(codigo, m)
+        if TIPOS.get(libro.tipo(codigo), "deudor") == "deudor":
+            sd, sa = (saldo, Decimal("0")) if saldo >= 0 else (Decimal("0"), -saldo)
+        else:
+            sa, sd = (saldo, Decimal("0")) if saldo >= 0 else (Decimal("0"), -saldo)
+        t_debe += m["debe"]; t_haber += m["haber"]; t_sd += sd; t_sa += sa
+        filas.append([codigo, libro.nombre(codigo), libro.tipo(codigo),
+                      _num(m["debe"]), _num(m["haber"]), _num(sd), _num(sa)])
+    filas.append(["", "TOTALES", "", _num(t_debe), _num(t_haber), _num(t_sd), _num(t_sa)])
+    _escribir_csv(ruta, ["codigo", "cuenta", "tipo", "debe", "haber",
+                         "saldo_deudor", "saldo_acreedor"], filas)
+
+
+def csv_balance(libro: Libro, ruta: str) -> None:
+    grupos = _saldos_por_tipo(libro)
+    resultado = (sum((s for _, s in grupos.get("INGRESO", [])), Decimal("0"))
+                 - sum((s for _, s in grupos.get("GASTO", [])), Decimal("0")))
+    filas = []
+    for seccion in ("ACTIVO", "PASIVO", "PATRIMONIO"):
+        for codigo, saldo in sorted(grupos.get(seccion, [])):
+            filas.append([seccion, codigo, libro.nombre(codigo), _num(saldo)])
+        if seccion == "PATRIMONIO":
+            filas.append(["PATRIMONIO", "", "Resultado del ejercicio", _num(resultado)])
+    _escribir_csv(ruta, ["seccion", "codigo", "cuenta", "saldo"], filas)
+
+
+def csv_resultados(libro: Libro, ruta: str) -> None:
+    grupos = _saldos_por_tipo(libro)
+    filas = []
+    for seccion in ("INGRESO", "GASTO"):
+        for codigo, saldo in sorted(grupos.get(seccion, [])):
+            filas.append([seccion, codigo, libro.nombre(codigo), _num(saldo)])
+    _escribir_csv(ruta, ["seccion", "codigo", "cuenta", "saldo"], filas)
+
+
+def csv_caja(libro: Libro, ruta: str) -> None:
+    grupos = _saldos_por_tipo(libro)
+    filas = []
+    for codigo, saldo in sorted(grupos.get("INGRESO", [])):
+        filas.append([codigo, libro.nombre(codigo), _num(saldo), "0.00"])
+    for codigo, saldo in sorted(grupos.get("GASTO", [])):
+        filas.append([codigo, libro.nombre(codigo), "0.00", _num(saldo)])
+    _escribir_csv(ruta, ["codigo", "cuenta", "ingresos", "gastos"], filas)
+
+
+def csv_diario(libro: Libro, ruta: str) -> None:
+    filas = []
+    for a in libro.asientos:
+        for ln in a["lineas"]:
+            filas.append([a["numero"], a["fecha"], a["glosa"], ln["cuenta"],
+                          libro.nombre(ln["cuenta"]),
+                          _num(a_decimal(ln.get("debe", 0))),
+                          _num(a_decimal(ln.get("haber", 0)))])
+    _escribir_csv(ruta, ["numero", "fecha", "glosa", "cuenta", "nombre",
+                         "debe", "haber"], filas)
+
+
+def csv_mayor(libro: Libro, ruta: str, solo: str | None) -> None:
+    filas = []
+    saldos = {}
+    for a in libro.asientos:
+        for ln in a["lineas"]:
+            c = ln["cuenta"]
+            if solo and c != solo:
+                continue
+            debe = a_decimal(ln.get("debe", 0))
+            haber = a_decimal(ln.get("haber", 0))
+            deudor = TIPOS.get(libro.tipo(c), "deudor") == "deudor"
+            saldos[c] = saldos.get(c, Decimal("0")) + (
+                (debe - haber) if deudor else (haber - debe))
+            filas.append([c, libro.nombre(c), a["fecha"], a["glosa"],
+                          _num(debe), _num(haber), _num(saldos[c])])
+    _escribir_csv(ruta, ["cuenta", "nombre", "fecha", "glosa",
+                         "debe", "haber", "saldo"], filas)
+
+
+# --------------------------------------------------------------------------- #
 # Comandos
 # --------------------------------------------------------------------------- #
 
@@ -693,13 +794,18 @@ def construir_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("eliminar", help="Elimina un asiento por su número.")
     s.add_argument("numero", type=int)
 
-    sub.add_parser("diario", help="Libro Diario.")
-    s = sub.add_parser("mayor", help="Libro Mayor (opcional: una cuenta).")
+    def con_csv(parser):
+        parser.add_argument("--csv", metavar="RUTA",
+                            help="Exporta el reporte a un archivo CSV en vez de imprimirlo.")
+        return parser
+
+    con_csv(sub.add_parser("diario", help="Libro Diario."))
+    s = con_csv(sub.add_parser("mayor", help="Libro Mayor (opcional: una cuenta)."))
     s.add_argument("cuenta", nargs="?", help="Código de cuenta a mostrar.")
-    sub.add_parser("comprobacion", help="Balance de Comprobación (sumas y saldos).")
-    sub.add_parser("balance", help="Balance General (Estado de Situación).")
-    sub.add_parser("resultados", help="Estado de Resultados.")
-    sub.add_parser("caja", help="Ingresos vs. Gastos (caja simple).")
+    con_csv(sub.add_parser("comprobacion", help="Balance de Comprobación (sumas y saldos)."))
+    con_csv(sub.add_parser("balance", help="Balance General (Estado de Situación)."))
+    con_csv(sub.add_parser("resultados", help="Estado de Resultados."))
+    con_csv(sub.add_parser("caja", help="Ingresos vs. Gastos (caja simple)."))
     sub.add_parser("menu", help="Menú interactivo (por defecto si no das comando).")
     return p
 
@@ -722,17 +828,41 @@ def main(argv=None) -> int:
         elif comando == "eliminar":
             cmd_eliminar(libro, args)
         elif comando == "diario":
-            rep_diario(libro)
+            if args.csv:
+                csv_diario(libro, args.csv)
+                print(f"✔ Libro Diario exportado a {args.csv}")
+            else:
+                rep_diario(libro)
         elif comando == "mayor":
-            rep_mayor(libro, args.cuenta)
+            if args.csv:
+                csv_mayor(libro, args.csv, args.cuenta)
+                print(f"✔ Libro Mayor exportado a {args.csv}")
+            else:
+                rep_mayor(libro, args.cuenta)
         elif comando == "comprobacion":
-            rep_comprobacion(libro)
+            if args.csv:
+                csv_comprobacion(libro, args.csv)
+                print(f"✔ Balance de Comprobación exportado a {args.csv}")
+            else:
+                rep_comprobacion(libro)
         elif comando == "balance":
-            rep_balance(libro)
+            if args.csv:
+                csv_balance(libro, args.csv)
+                print(f"✔ Balance General exportado a {args.csv}")
+            else:
+                rep_balance(libro)
         elif comando == "resultados":
-            rep_resultados(libro)
+            if args.csv:
+                csv_resultados(libro, args.csv)
+                print(f"✔ Estado de Resultados exportado a {args.csv}")
+            else:
+                rep_resultados(libro)
         elif comando == "caja":
-            rep_caja(libro)
+            if args.csv:
+                csv_caja(libro, args.csv)
+                print(f"✔ Ingresos vs. Gastos exportado a {args.csv}")
+            else:
+                rep_caja(libro)
         elif comando == "menu":
             menu(libro)
         else:

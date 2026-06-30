@@ -67,6 +67,20 @@ Cada línea de un asiento usa el formato `CUENTA:DEBE:HABER` (un monto en cero d
 que no corresponde). El programa **no deja registrar un asiento que no cuadre**, así que
 los balances siempre salen correctos.
 
+### Exportar a Excel / Google Sheets (CSV)
+
+Cualquier reporte (`diario`, `mayor`, `comprobacion`, `balance`, `resultados`, `caja`)
+acepta la opción `--csv RUTA` para guardarlo como archivo CSV en vez de imprimirlo:
+
+```bash
+python3 contabilidad.py comprobacion --csv comprobacion.csv
+python3 contabilidad.py balance --csv balance.csv
+python3 contabilidad.py mayor 1.1.02 --csv mayor-banco.csv
+```
+
+Los archivos se generan en UTF-8 con BOM (se abren con las tildes correctas en Excel)
+y los montos usan punto decimal para que se puedan reimportar sin problemas.
+
 Otros comandos útiles: `cuentas` (ver el plan), `cuenta-add CODIGO "Nombre" TIPO`
 (agregar una cuenta), `eliminar N` (borrar un asiento). Los tipos válidos son
 `ACTIVO`, `PASIVO`, `PATRIMONIO`, `INGRESO` y `GASTO`. Para usar otro archivo de datos:
