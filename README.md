@@ -142,9 +142,21 @@ análisis en lenguaje natural.
 | Archivo | Rol en la predicción |
 |---|---|
 | `prediccion.html` | Página del módulo |
-| `prediccion.js` | Lógica: similitud, ponderación, estimación |
-| `jurisprudencia.seed.js` | Base inicial de fallos (ejemplos a reemplazar) |
+| `engine.js` | Motor de cálculo (TF‑IDF, similitud, ponderación) — sin DOM |
+| `prediccion.js` | Interfaz: formularios, render, comparación A/B |
+| `jurisprudencia.seed.js` | Base inicial de fallos (reales, con Rol por confirmar) |
 | `ia-proxy.gs` | Proxy de Apps Script hacia la API de Claude (opcional) |
+
+**Pruebas del motor:** la lógica de cálculo vive en `engine.js` (sin
+dependencias del navegador) y tiene pruebas automatizadas en
+`test/engine.test.js`. Ejecútalas con:
+
+```
+npm test
+```
+
+(o `node test/engine.test.js`). Sirven para no romper el motor al editar el
+código.
 
 ## Integraciones ya configuradas
 

@@ -1,0 +1,9 @@
+{
+  "name": "lista-tareas-prediccion-juicios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lista de tareas + módulo de Predicción de Juicios (jurisprudencia de la Corte Suprema).",
+  "scripts": {
+    "test": "node test/engine.test.js"
+  }
+}
