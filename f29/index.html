@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bot F29 — Declaración masiva (SII Chile)</title>
+  <link rel="stylesheet" href="f29.css" />
+</head>
+<body>
+  <header class="cabecera">
+    <h1>🧾 Bot Formulario 29</h1>
+    <p>
+      Calcula <strong>masivamente</strong> borradores del F29 del SII —
+      IVA mensual, PPM y retenciones — a partir de una planilla CSV con un
+      contribuyente por fila.
+    </p>
+  </header>
+
+  <main class="contenedor">
+    <section class="aviso">
+      ⚠️ Esta herramienta genera <strong>borradores para revisión</strong>. No
+      presenta declaraciones: los valores deben digitarse o verificarse en
+      <a href="https://www.sii.cl" target="_blank" rel="noopener">www.sii.cl</a>
+      antes de declarar. Ante diferencias, manda siempre la normativa del SII.
+    </section>
+
+    <section class="paso">
+      <h2><span class="numero">1</span> Prepara tus datos</h2>
+      <p>
+        Descarga la plantilla, complétala en Excel o Google Sheets (una fila por
+        empresa y período) y guárdala como CSV. Los montos van en pesos; puedes
+        escribirlos con o sin puntos de miles (<code>12.500.000</code> o
+        <code>12500000</code>). La tasa de PPM va en porcentaje con coma
+        (<code>0,25</code>).
+      </p>
+      <div class="botonera">
+        <button id="btn-plantilla" class="btn">⬇ Descargar plantilla CSV</button>
+        <button id="btn-ejemplo" class="btn btn-secundario">✨ Probar con datos de ejemplo</button>
+      </div>
+    </section>
+
+    <section class="paso">
+      <h2><span class="numero">2</span> Carga la planilla</h2>
+      <div id="zona-soltar" class="zona-soltar">
+        <p>Arrastra aquí tu archivo CSV<br /><span class="sutil">o</span></p>
+        <label class="btn">
+          📂 Elegir archivo…
+          <input type="file" id="entrada-archivo" accept=".csv,.txt,text/csv" hidden />
+        </label>
+      </div>
+      <details class="pegar">
+        <summary>…o pega los datos directamente</summary>
+        <textarea
+          id="texto-pegado"
+          rows="6"
+          placeholder="rut;razon_social;periodo;ventas_netas_afectas;...&#10;77.123.456-9;Comercial Ejemplo SpA;2026-06;12500000;..."
+        ></textarea>
+        <button id="btn-procesar-texto" class="btn">Calcular F29</button>
+      </details>
+    </section>
+
+    <section class="paso" id="seccion-resultados" hidden>
+      <h2><span class="numero">3</span> Revisa los borradores</h2>
+
+      <div id="errores-globales" class="errores-globales" hidden></div>
+
+      <div class="tarjetas" id="tarjetas-resumen"></div>
+
+      <div class="botonera">
+        <button id="btn-exportar" class="btn">⬇ Exportar resultados (CSV)</button>
+        <button id="btn-imprimir-todos" class="btn btn-secundario">🖨 Imprimir todos los borradores</button>
+      </div>
+
+      <div class="tabla-envoltorio">
+        <table class="tabla" id="tabla-resultados">
+          <thead>
+            <tr>
+              <th></th>
+              <th>RUT</th>
+              <th>Razón social</th>
+              <th>Período</th>
+              <th class="num">Débitos (538)</th>
+              <th class="num">Créditos (537)</th>
+              <th class="num">IVA (089)</th>
+              <th class="num">PPM (062)</th>
+              <th class="num">Retenciones</th>
+              <th class="num">Total (091)</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="sutil">
+        Haz clic en una fila para ver todos los códigos del formulario, copiar
+        los valores o imprimir el borrador individual.
+      </p>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>
+      Tasas aplicadas: IVA 19% · retención de honorarios según el año del
+      período (Ley 21.133; 2026: 15,25%). Vencimientos referenciales: día 12
+      del mes siguiente (general), día 20 (facturador electrónico por internet
+      con pago), día 28 (declaración sin pago).
+    </p>
+  </footer>
+
+  <script src="f29-engine.js"></script>
+  <script src="f29-app.js"></script>
+</body>
+</html>
