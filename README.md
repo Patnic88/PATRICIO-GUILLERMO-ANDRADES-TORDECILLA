@@ -1,5 +1,10 @@
 # 📋 Lista de Tareas — Patricio Andrades
 
+> 🧾 **Nuevo:** este repositorio también incluye el
+> [Bot Formulario 29](f29/README.md), una herramienta para calcular
+> masivamente borradores del F29 del SII (IVA, PPM y retenciones) desde una
+> planilla CSV. Ábrelo con `f29/index.html`.
+
 Lista de tareas web, sin servidor, **conectada a tu correo de Gmail**. Las tareas
 iniciales se extrajeron de tus correos recientes de la Dirección Jurídica de la
 Municipalidad de Los Vilos, y cada una enlaza directamente al hilo original en Gmail.
