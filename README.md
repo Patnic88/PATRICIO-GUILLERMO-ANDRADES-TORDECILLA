@@ -22,6 +22,10 @@ cargar la lista original.
 | `styles.css` | Estilos |
 | `app.js` | Lógica: filtros, alta/baja, persistencia |
 | `tasks.seed.js` | Tareas extraídas de tus correos (datos editables) |
+| `obsidian-sync.js` | Puente entre las tareas y la bóveda de Obsidian |
+| `vault/` | Bóveda de Obsidian con las tareas (una nota por tarea) |
+| `segundo-cerebro/` | Bóveda de Obsidian «segundo cerebro» (RAW/WIKI/OUTPUTS), operada por Claude |
+| `CLAUDE.md` | Notas para que Claude mantenga todo sincronizado |
 
 ## Actualizar las tareas desde el correo
 
@@ -73,9 +77,35 @@ completadas y las que agregaste a mano.
 | `gmail-sync.gs` | Apps Script que lee la etiqueta `📋 Tarea` y entrega JSON |
 | `config.js` | Donde pegas la URL del Apps Script |
 
+## 🗂️ Obsidian (usar tus tareas como notas)
+
+Tus tareas también viven como una **bóveda de Obsidian** en la carpeta `vault/`:
+cada tarea es una nota Markdown en `vault/Tareas/` con sus datos en las
+Propiedades y una casilla para marcarla como hecha. El índice es
+`vault/Tablero de Tareas.md`. Así puedes trabajarlas desde la app **o** desde
+Obsidian, y **Claude puede leer y editar las mismas notas**.
+
+**Cómo abrirla:** instala [Obsidian](https://obsidian.md) → *Abrir carpeta como
+bóveda* → elige `vault/`. (Guía completa en `vault/LÉEME.md`.)
+
+**Mantenerla sincronizada** (`tasks.seed.js` es la fuente común):
+
+| Quieres… | Ejecuta en la raíz del repo |
+|---|---|
+| Reflejar en Obsidian las tareas de la app | `node obsidian-sync.js` |
+| Volcar a la app los cambios hechos en Obsidian | `node obsidian-sync.js import` |
+
+O pídeselo a Claude directamente ("actualiza la bóveda de Obsidian" / "pasa mis
+cambios de Obsidian a la app"). Solo necesita Node.js; no instala nada más.
+
 ## Integraciones ya configuradas
 
 - ✅ Etiqueta **`📋 Tarea`** creada en Gmail y aplicada a los correos pendientes.
 - ✅ Recordatorios en **Google Calendar** para las tareas de alta prioridad.
 - ✅ Borradores de respuesta guardados en Gmail para los correos que requieren
   contestación.
+- ✅ **Bóveda de Obsidian** en `vault/`, sincronizada con las tareas mediante
+  `obsidian-sync.js`.
+- ✅ **Segundo cerebro** en `segundo-cerebro/`: bóveda de Obsidian con el
+  método RAW → WIKI → OUTPUTS, donde Claude actúa de bibliotecario
+  (ver `segundo-cerebro/LÉEME.md`).
