@@ -23,7 +23,8 @@ cargar la lista original.
 | `app.js` | Lógica: filtros, alta/baja, persistencia |
 | `tasks.seed.js` | Tareas extraídas de tus correos (datos editables) |
 | `obsidian-sync.js` | Puente entre las tareas y la bóveda de Obsidian |
-| `vault/` | Bóveda de Obsidian (una nota por tarea) |
+| `vault/` | Bóveda de Obsidian con las tareas (una nota por tarea) |
+| `segundo-cerebro/` | Bóveda de Obsidian «segundo cerebro» (RAW/WIKI/OUTPUTS), operada por Claude |
 | `CLAUDE.md` | Notas para que Claude mantenga todo sincronizado |
 
 ## Actualizar las tareas desde el correo
@@ -105,3 +106,6 @@ cambios de Obsidian a la app"). Solo necesita Node.js; no instala nada más.
   contestación.
 - ✅ **Bóveda de Obsidian** en `vault/`, sincronizada con las tareas mediante
   `obsidian-sync.js`.
+- ✅ **Segundo cerebro** en `segundo-cerebro/`: bóveda de Obsidian con el
+  método RAW → WIKI → OUTPUTS, donde Claude actúa de bibliotecario
+  (ver `segundo-cerebro/LÉEME.md`).

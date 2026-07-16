@@ -30,3 +30,14 @@ El puente es `obsidian-sync.js` (Node, sin dependencias):
 - Al actualizar tareas desde Gmail, edita `tasks.seed.js` y luego corre
   `node obsidian-sync.js` para reflejarlo en la bóveda.
 - No edites `vault/Tablero de Tareas.md` a mano; se regenera.
+
+## Segundo cerebro (`segundo-cerebro/`)
+
+`segundo-cerebro/` es otra bóveda de Obsidian: el **segundo cerebro personal**
+de Patricio (método RAW/ → WIKI/ → OUTPUTS/). Claude actúa de **bibliotecario**
+según las instrucciones de `segundo-cerebro/CLAUDE.md`: consulta `WIKI/` y
+`RAW/` antes de responder preguntas sobre Patricio o su trabajo, y solo Claude
+mantiene `WIKI/`.
+
+Reparto: **pendientes accionables** → sistema de tareas (`tasks.seed.js` /
+`vault/`); **conocimiento y contexto** → `segundo-cerebro/`.
