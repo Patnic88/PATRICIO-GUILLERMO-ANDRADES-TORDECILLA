@@ -1,7 +1,7 @@
 ---
 id: "g-19e60beecbeb66a5"
 titulo: "Verificar funcionario aludido en Rex N°15445/2026 y solicitar antecedentes a RR.HH."
-detalle: "Gergos pidió verificar si el aludido es funcionario municipal y, en caso positivo, solicitar a Recursos Humanos los antecedentes. Paula ya ingresó a RUCA."
+detalle: "Gergos pidió verificar si el aludido es funcionario municipal y, en caso positivo, pedir antecedentes a RR.HH. Sin novedades en el correo desde el 01-jun: confirmar si sigue pendiente."
 categoria: Administrativo
 prioridad: media
 vence: ""
@@ -17,7 +17,7 @@ tags:
 # Verificar funcionario aludido en Rex N°15445/2026 y solicitar antecedentes a RR.HH.
 
 > [!info] Contexto del correo
-> Gergos pidió verificar si el aludido es funcionario municipal y, en caso positivo, solicitar a Recursos Humanos los antecedentes. Paula ya ingresó a RUCA.
+> Gergos pidió verificar si el aludido es funcionario municipal y, en caso positivo, pedir antecedentes a RR.HH. Sin novedades en el correo desde el 01-jun: confirmar si sigue pendiente.
 
 - [ ] Verificar funcionario aludido en Rex N°15445/2026 y solicitar antecedentes a RR.HH. 🔼
 

@@ -1,7 +1,7 @@
 ---
 id: "g-19e6f440b093c793"
 titulo: "Consultar en el CBR el estado del documento de prohibición e informar fecha tentativa"
-detalle: "Of. N°268 / Rex N°3162 de 2022. Mauricio Quezada necesita informar al ministerio una fecha tentativa de entrega; el documento está en revisión en el Conservador de Bienes Raíces."
+detalle: "Of. N°268 / Rex N°3162 de 2022. Mauricio Quezada necesita informar al ministerio una fecha tentativa. Sin novedades en el correo desde el 01-jun: confirmar si sigue pendiente."
 categoria: Judicial
 prioridad: alta
 vence: ""
@@ -17,7 +17,7 @@ tags:
 # Consultar en el CBR el estado del documento de prohibición e informar fecha tentativa
 
 > [!info] Contexto del correo
-> Of. N°268 / Rex N°3162 de 2022. Mauricio Quezada necesita informar al ministerio una fecha tentativa de entrega; el documento está en revisión en el Conservador de Bienes Raíces.
+> Of. N°268 / Rex N°3162 de 2022. Mauricio Quezada necesita informar al ministerio una fecha tentativa. Sin novedades en el correo desde el 01-jun: confirmar si sigue pendiente.
 
 - [ ] Consultar en el CBR el estado del documento de prohibición e informar fecha tentativa ⏫
 

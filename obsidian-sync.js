@@ -246,7 +246,7 @@ function parseChecked(text) {
 
 function serializeSeed(tasks) {
   const header =
-    '// Tareas extraídas de los correos recientes de Gmail (al 2026-06-01).\n' +
+    '// Tareas extraídas de los correos de Gmail (última revisión: 2026-07-16).\n' +
     '// Cada tarea enlaza al hilo original mediante su threadId de Gmail.\n' +
     '// Para regenerar o ampliar esta lista, pídele a Claude que vuelva a revisar\n' +
     '// tus correos etiquetados o destacados.\n' +

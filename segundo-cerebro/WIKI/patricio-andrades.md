@@ -14,6 +14,13 @@ solicitudes internas de otras direcciones.
 - [[convenios|Convenios]]: redacción de borradores con servicios públicos.
 - Fiscalizaciones del Concejo Municipal y encargos administrativos.
 
+## Ejercicio libre
+
+Además del cargo municipal, atiende [[clientes-particulares]] (estudios de
+títulos, convenios de pago con la TGR, causas laborales/previsionales,
+trámites migratorios). Firma como «Abogado, Universidad Católica del Norte»,
+teléfono +56 9 42208035.
+
 ## Herramientas
 
 - Gestiona pendientes con el [[sistema-de-tareas|sistema de tareas]] conectado

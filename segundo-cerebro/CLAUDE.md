@@ -65,6 +65,10 @@ cerebro. Su trabajo:
 
 - Patricio trabaja en la Dirección Jurídica de la Municipalidad de Los Vilos
   (Chile); su flujo de trabajo entra principalmente por Gmail.
+- Además **ejerce libremente** la profesión con clientes particulares
+  (ver `WIKI/clientes-particulares.md`): estudios de títulos, convenios de
+  pago TGR, causas laborales/previsionales y trámites migratorios. Cuando
+  pregunte por "mis clientes", incluir ambos mundos: el municipal y el libre.
 - Método basado en la plantilla «Segundo Cerebro con Claude Code» de Claudio
   Conde (PDF en su Google Drive), idea original de archivos de texto de
   Andrej Karpathy.

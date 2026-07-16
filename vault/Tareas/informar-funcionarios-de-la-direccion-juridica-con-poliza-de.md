@@ -1,7 +1,7 @@
 ---
 id: "g-19e6f625f85fa905"
 titulo: "Informar funcionarios de la Dirección Jurídica con póliza de conducción autorizada"
-detalle: "Juan Mansilla solicita a cada dirección informar qué funcionarios cuentan con póliza autorizada para conducir vehículos municipales (ISE)."
+detalle: "Juan Mansilla solicitó informar qué funcionarios cuentan con póliza autorizada para conducir vehículos municipales (ISE). Sin novedades desde el 01-jun: confirmar si sigue pendiente."
 categoria: Administrativo
 prioridad: media
 vence: ""
@@ -17,7 +17,7 @@ tags:
 # Informar funcionarios de la Dirección Jurídica con póliza de conducción autorizada
 
 > [!info] Contexto del correo
-> Juan Mansilla solicita a cada dirección informar qué funcionarios cuentan con póliza autorizada para conducir vehículos municipales (ISE).
+> Juan Mansilla solicitó informar qué funcionarios cuentan con póliza autorizada para conducir vehículos municipales (ISE). Sin novedades desde el 01-jun: confirmar si sigue pendiente.
 
 - [ ] Informar funcionarios de la Dirección Jurídica con póliza de conducción autorizada 🔼
 

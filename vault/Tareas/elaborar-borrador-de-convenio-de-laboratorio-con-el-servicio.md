@@ -1,13 +1,13 @@
 ---
 id: "g-19e6baab5a78671d"
 titulo: "Elaborar borrador de convenio de laboratorio con el Servicio de Salud Coquimbo (HLV)"
-detalle: "Gergos analiza los insumos y te entregará los detalles para redactar el convenio. Claudio Alhambra (SSC) está esperando el borrador."
+detalle: "Borrador elaborado y circulado: el SSC lo revisó y el 25-jun envió modificaciones de su referente regional (ver tarea nueva de incorporación de cambios)."
 categoria: Convenios
 prioridad: alta
 vence: ""
 de: "guizzella.gonzalez@munilosvilos.cl"
 threadId: "19e6baab5a78671d"
-hecha: false
+hecha: true
 gmail: "https://mail.google.com/mail/u/0/#all/19e6baab5a78671d"
 tags:
   - tarea
@@ -17,9 +17,9 @@ tags:
 # Elaborar borrador de convenio de laboratorio con el Servicio de Salud Coquimbo (HLV)
 
 > [!info] Contexto del correo
-> Gergos analiza los insumos y te entregará los detalles para redactar el convenio. Claudio Alhambra (SSC) está esperando el borrador.
+> Borrador elaborado y circulado: el SSC lo revisó y el 25-jun envió modificaciones de su referente regional (ver tarea nueva de incorporación de cambios).
 
-- [ ] Elaborar borrador de convenio de laboratorio con el Servicio de Salud Coquimbo (HLV) ⏫
+- [x] Elaborar borrador de convenio de laboratorio con el Servicio de Salud Coquimbo (HLV) ⏫
 
 **Categoría:** Convenios · **Prioridad:** alta  
 **De:** guizzella.gonzalez@munilosvilos.cl  

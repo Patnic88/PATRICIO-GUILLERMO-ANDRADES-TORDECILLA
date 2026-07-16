@@ -18,6 +18,9 @@ encargos administrativos de otras direcciones.
 | Paula Eyzaguirre | Patentes; trabaja con RUCA |
 | Carla Acevedo | Concejal; origina fiscalizaciones |
 | Claudio Alhambra | Servicio de Salud Coquimbo (contraparte de convenio) |
+| Sergio Ansieta | Abogado Jefe Depto. Jurídico del SSC (revisa el convenio de laboratorio) |
+| Elizabeth Musso | Licitaciones (pide VB jurídico de bases) |
+| Christian Gross Hidalgo | Alcalde (administrador municipal: Luis Henríquez) |
 
 ## Flujo de trabajo típico
 

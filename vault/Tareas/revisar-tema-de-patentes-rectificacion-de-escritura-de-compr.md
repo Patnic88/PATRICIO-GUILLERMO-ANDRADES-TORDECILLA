@@ -1,7 +1,7 @@
 ---
 id: "g-19e6fab7baff1cb9"
 titulo: "Revisar tema de patentes (rectificación de escritura de compraventa)"
-detalle: "Varios correos de Paula Eyzaguirre y Asesoría Jurídica sobre 'patente'/'patentes' y rectificación de la escritura de compraventa de patentes."
+detalle: "Correos de Paula Eyzaguirre y Asesoría Jurídica sobre la rectificación de la escritura de compraventa de patentes. Sin novedades desde el 01-jun: confirmar si sigue pendiente."
 categoria: Administrativo
 prioridad: baja
 vence: ""
@@ -17,7 +17,7 @@ tags:
 # Revisar tema de patentes (rectificación de escritura de compraventa)
 
 > [!info] Contexto del correo
-> Varios correos de Paula Eyzaguirre y Asesoría Jurídica sobre 'patente'/'patentes' y rectificación de la escritura de compraventa de patentes.
+> Correos de Paula Eyzaguirre y Asesoría Jurídica sobre la rectificación de la escritura de compraventa de patentes. Sin novedades desde el 01-jun: confirmar si sigue pendiente.
 
 - [ ] Revisar tema de patentes (rectificación de escritura de compraventa) 🔽
 
