@@ -14,7 +14,7 @@ Un tema por línea. Mantenido por Claude (el bibliotecario); no editar a mano.
 
 ## Outputs guardados
 
-(Aún no hay síntesis guardadas; cuando existan, se enlazan aquí.)
+- [[2026-07-16-diligencias-principales-clientes]] — principales diligencias con clientes y contrapartes (estado al 2026-06-01).
 
 ---
 Registro de cambios: [[changelog]]
