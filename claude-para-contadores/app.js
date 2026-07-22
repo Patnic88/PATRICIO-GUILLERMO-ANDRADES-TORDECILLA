@@ -47,13 +47,17 @@ const esc = (s) => String(s ?? '')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const descargar = (nombre, contenido, tipo) => {
-  const blob = new Blob([contenido], { type: tipo });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = nombre;
-  a.click();
-  URL.revokeObjectURL(url);
+  try {
+    const blob = new Blob([contenido], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    avisar('Este visor no permite descargas. Abre la app en tu navegador para descargar archivos.');
+  }
 };
 
 /* ───────── almacenamiento ───────── */
@@ -101,6 +105,62 @@ function mostrarTip(html, x, y) {
 }
 function ocultarTip() { tooltip().hidden = true; }
 
+/* ───────── avisos (reemplazo de alert/confirm, que pueden estar
+   bloqueados en visores embebidos) ───────── */
+let avisoTimer = null;
+function avisar(msg) {
+  let el = $('#aviso');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'aviso';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('visible');
+  clearTimeout(avisoTimer);
+  avisoTimer = setTimeout(() => el.classList.remove('visible'), 3200);
+}
+
+// Los visores embebidos (iframes con sandbox) bloquean el envío nativo de
+// formularios, así que la acción se conecta al clic del botón con validación
+// manual; el evento submit queda como respaldo para la tecla Enter.
+function conectarFormulario(form, accion) {
+  form.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    accion();
+  });
+  const btn = form.querySelector('button[type="submit"]');
+  if (btn) {
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      let valido = true;
+      try { valido = form.reportValidity(); } catch (e) { valido = form.checkValidity(); }
+      if (valido) accion();
+    });
+  }
+}
+
+async function copiarTexto(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (e2) {
+      return false;
+    }
+  }
+}
+
 function activarTips(contenedor) {
   contenedor.addEventListener('mousemove', (ev) => {
     const el = ev.target.closest('[data-tip]');
@@ -121,8 +181,27 @@ const RENDER = {
   auditoria: renderAuditoria,
 };
 
-function navegar() {
-  const ruta = (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
+let rutaActual = '';
+
+function rutaDesdeHash() {
+  try {
+    return (location.hash.replace(/^#\/?/, '') || '').split('?')[0];
+  } catch (e) {
+    return rutaActual;
+  }
+}
+
+// Navegación directa por clic: no depende de location.hash, que puede estar
+// bloqueado en visores embebidos. El hash se sincroniza solo si está disponible.
+function irA(ruta) {
+  try { location.hash = ruta ? '#/' + ruta : '#'; } catch (e) { /* sin hash */ }
+  mostrarRuta(ruta);
+}
+
+function navegar() { mostrarRuta(rutaDesdeHash()); }
+
+function mostrarRuta(ruta) {
+  rutaActual = ruta;
   const enApp = VISTAS.includes(ruta);
   $('#portada').hidden = enApp;
   $('#app').hidden = !enApp;
@@ -276,9 +355,8 @@ function renderGraficoCaja(mesFinal) {
   </svg>`;
 }
 
-function agregarMovimiento(ev) {
-  ev.preventDefault();
-  const f = ev.target;
+function agregarMovimiento() {
+  const f = $('#form-mov');
   const monto = Math.round(Number(f.monto.value));
   if (!f.fecha.value || !monto || monto <= 0) return;
   estado.movimientos.push({
@@ -515,7 +593,7 @@ function proyectarDesdeCaja() {
   const meses = [-3, -2, -1].map((d) => sumarMeses(ahora, d));
   const movs = estado.movimientos.filter((m) => meses.includes(m.fecha.slice(0, 7)));
   if (!movs.length) {
-    alert('No hay movimientos en los últimos 3 meses del Flujo de Caja. Registra movimientos primero.');
+    avisar('No hay movimientos en los últimos 3 meses del Flujo de Caja. Registra movimientos primero.');
     return;
   }
   const ing = movs.filter((m) => m.tipo === 'ingreso').reduce((s, m) => s + m.monto, 0) / 3;
@@ -670,8 +748,7 @@ function renderCamposDoc() {
   }).join('');
 }
 
-function generarDocumento(ev) {
-  ev.preventDefault();
+function generarDocumento() {
   const p = PLANTILLAS.find((x) => x.id === $('#doc-plantilla').value);
   if (!p) return;
   estado.config.emisor = $('#doc-emisor').value.trim();
@@ -836,10 +913,10 @@ function importarJSON(archivo) {
       if (!datos || !Array.isArray(datos.movimientos)) throw new Error('Formato no reconocido');
       estado = Object.assign(estadoInicial(), datos);
       guardar();
-      navegar();
-      alert('Respaldo importado correctamente.');
+      mostrarRuta(rutaActual || 'inicio');
+      avisar('Respaldo importado correctamente.');
     } catch (e) {
-      alert('El archivo no es un respaldo válido de Claude para Contadores.');
+      avisar('El archivo no es un respaldo válido de Claude para Contadores.');
     }
   };
   lector.readAsText(archivo);
@@ -850,16 +927,22 @@ function init() {
   cargar();
 
   // portada
-  $('#btn-acceso').addEventListener('click', () => { location.hash = '#/inicio'; });
+  $('#btn-acceso').addEventListener('click', () => irA('inicio'));
 
-  // navegación
+  // navegación: clic directo en cualquier enlace interno + hash cuando existe
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href^="#"]');
+    if (!a) return;
+    ev.preventDefault();
+    irA(a.getAttribute('href').replace(/^#\/?/, ''));
+  });
   window.addEventListener('hashchange', navegar);
 
   // flujo de caja
   $('#form-mov').fecha.value = hoyISO();
   poblarCategorias();
   $('#mov-tipo').addEventListener('change', poblarCategorias);
-  $('#form-mov').addEventListener('submit', agregarMovimiento);
+  conectarFormulario($('#form-mov'), agregarMovimiento);
   $('#caja-mes').addEventListener('change', renderCaja);
   $('#btn-exportar-csv').addEventListener('click', exportarCSV);
   $('#btn-demo').addEventListener('click', cargarDemo);
@@ -883,21 +966,20 @@ function init() {
   $('#fiscal-apuntes').addEventListener('input', guardarApuntes);
 
   // proyecciones
-  $('#form-proy').addEventListener('submit', (ev) => { ev.preventDefault(); renderProyeccion(false); });
+  conectarFormulario($('#form-proy'), () => renderProyeccion(false));
   $('#btn-proy-desde-caja').addEventListener('click', proyectarDesdeCaja);
   activarTips($('#proy-grafico'));
 
   // documentos
   $('#doc-plantilla').addEventListener('change', renderCamposDoc);
-  $('#form-doc').addEventListener('submit', generarDocumento);
+  conectarFormulario($('#form-doc'), generarDocumento);
   $('#btn-doc-copiar').addEventListener('click', async () => {
     if (!docActual) return;
-    try {
-      await navigator.clipboard.writeText(docActual.texto);
+    if (await copiarTexto(docActual.texto)) {
       $('#btn-doc-copiar').textContent = 'Copiado ✓';
       setTimeout(() => { $('#btn-doc-copiar').textContent = 'Copiar texto'; }, 1500);
-    } catch (e) {
-      alert('No fue posible copiar automáticamente. Selecciona el texto y cópialo manualmente.');
+    } else {
+      avisar('No fue posible copiar automáticamente. Selecciona el texto y cópialo manualmente.');
     }
   });
   $('#btn-doc-imprimir').addEventListener('click', imprimirDocumento);
@@ -932,12 +1014,25 @@ function init() {
     if (ev.target.files[0]) importarJSON(ev.target.files[0]);
     ev.target.value = '';
   });
-  $('#btn-borrar-todo').addEventListener('click', () => {
-    if (confirm('Esto elimina TODOS los datos guardados (movimientos, apuntes, documentos y auditoría). ¿Continuar?')) {
-      estado = estadoInicial();
-      guardar();
-      navegar();
+  // confirmación en dos pasos (confirm() puede estar bloqueado en visores embebidos)
+  let borrarArmado = null;
+  $('#btn-borrar-todo').addEventListener('click', (ev) => {
+    const btn = ev.currentTarget;
+    if (!borrarArmado) {
+      btn.textContent = '¿Seguro? Presiona otra vez para borrar todo';
+      borrarArmado = setTimeout(() => {
+        borrarArmado = null;
+        btn.textContent = 'Borrar todos los datos';
+      }, 4000);
+      return;
     }
+    clearTimeout(borrarArmado);
+    borrarArmado = null;
+    btn.textContent = 'Borrar todos los datos';
+    estado = estadoInicial();
+    guardar();
+    mostrarRuta(rutaActual || 'inicio');
+    avisar('Todos los datos fueron borrados.');
   });
 
   navegar();

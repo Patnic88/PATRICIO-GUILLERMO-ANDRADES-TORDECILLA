@@ -376,6 +376,26 @@ tr.fila-total td { border-top: 2px solid var(--marco); font-weight: bold; }
 .muestra-ingreso { background: var(--serie-ingreso); }
 .muestra-egreso { background: var(--serie-egreso); }
 
+#aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(16px);
+  z-index: 300;
+  background: var(--tinta);
+  color: var(--papel-claro);
+  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
+  box-shadow: var(--sombra);
+  max-width: min(90vw, 480px);
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#aviso.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 #tooltip {
   position: fixed;
   z-index: 100;
