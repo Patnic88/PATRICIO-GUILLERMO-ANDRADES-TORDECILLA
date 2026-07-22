@@ -213,6 +213,41 @@ a { color: var(--acento); }
 .app-nav a:hover { color: var(--tinta); }
 .app-nav a.activo { color: var(--acento); border-bottom-color: var(--acento); }
 
+.barra-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0 0.55rem;
+  border-top: 1px solid var(--linea);
+  margin-top: 0.35rem;
+}
+.barra-cliente label {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+.barra-cliente select {
+  width: auto;
+  min-width: 180px;
+  max-width: 50vw;
+  margin-top: 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+}
+.btn-mini { padding: 0.32rem 0.7rem; font-size: 0.74rem; }
+#form-cliente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+#form-cliente[hidden] { display: none; }
+#form-cliente input { width: auto; min-width: 170px; margin-top: 0; padding: 0.32rem 0.5rem; font-size: 0.9rem; }
+
+.fila-activa td { background: var(--papel); }
+
 .app-contenido {
   max-width: 1080px;
   margin: 0 auto;
@@ -452,7 +487,7 @@ tr.fila-total td { border-top: 2px solid var(--marco); font-weight: bold; }
   padding: 0.45rem 0;
   font-size: 0.88rem;
 }
-.lista-docs .doc-abrir {
+.doc-abrir {
   background: none; border: none; cursor: pointer;
   font-family: inherit; font-size: inherit;
   color: var(--acento); text-align: left; padding: 0;

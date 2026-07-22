@@ -53,6 +53,18 @@
         <a href="#/documentos" data-ruta="documentos">Documentos</a>
         <a href="#/auditoria" data-ruta="auditoria">Auditoría</a>
       </nav>
+      <div class="barra-cliente">
+        <label for="sel-cliente">Cliente</label>
+        <select id="sel-cliente"></select>
+        <button class="btn btn-mini" id="btn-cliente-nuevo" type="button">＋ Nuevo</button>
+        <button class="btn btn-mini" id="btn-cliente-editar" type="button">Editar</button>
+        <form id="form-cliente" hidden>
+          <input type="text" id="cliente-nombre" placeholder="Razón social o nombre" maxlength="80" required>
+          <input type="text" id="cliente-rut" placeholder="RUT (76.123.456-7)" maxlength="14">
+          <button class="btn btn-mini btn-primario" type="submit">Guardar</button>
+          <button class="btn btn-mini" id="btn-cliente-cancelar" type="button">Cancelar</button>
+        </form>
+      </div>
     </header>
 
     <main class="app-contenido">
@@ -60,7 +72,7 @@
       <!-- ───────── INICIO ───────── -->
       <section id="vista-inicio" class="vista" hidden>
         <h2 class="titulo-vista">Escritorio</h2>
-        <p class="intro">Bienvenido. Este es el estado general de tu práctica contable.</p>
+        <p class="intro">Estado general de <strong id="inicio-cliente"></strong>.</p>
         <div class="grilla-tarjetas" id="inicio-stats"></div>
         <h3 class="titulo-seccion">Módulos</h3>
         <div class="grilla-modulos">
@@ -90,6 +102,16 @@
             <p>Listas de control del cierre mensual y la Operación Renta.</p>
           </a>
         </div>
+        <h3 class="titulo-seccion">Cartera de clientes</h3>
+        <div class="tarjeta">
+          <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-clientes">
+              <thead><tr><th>Cliente</th><th>RUT</th><th class="col-num">Movimientos</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="nota">Cada cliente guarda por separado su caja, documentos y auditoría. Haz clic en un nombre para trabajar con ese cliente, o usa el selector del encabezado.</p>
+        </div>
         <h3 class="titulo-seccion">Respaldo de datos</h3>
         <div class="tarjeta">
           <p>Todos los datos se guardan solo en este navegador. Exporta un respaldo periódicamente.</p>
@@ -109,7 +131,17 @@
           <label>Mes
             <input type="month" id="caja-mes">
           </label>
+          <label class="btn" for="input-rcv" title="Importa el CSV del Registro de Compras y Ventas descargado de sii.cl">Importar RCV (SII)</label>
+          <input type="file" id="input-rcv" accept=".csv,text/csv,text/plain" hidden>
           <button class="btn" id="btn-exportar-csv" type="button">Exportar CSV</button>
+        </div>
+        <div class="tarjeta" id="rcv-previa" hidden>
+          <h3 class="titulo-seccion sin-margen">Importación de datos</h3>
+          <p id="rcv-resumen"></p>
+          <div class="fila-botones">
+            <button class="btn btn-primario" id="btn-rcv-confirmar" type="button">Importar</button>
+            <button class="btn" id="btn-rcv-cancelar" type="button">Cancelar</button>
+          </div>
         </div>
         <div class="grilla-tarjetas" id="caja-stats"></div>
 

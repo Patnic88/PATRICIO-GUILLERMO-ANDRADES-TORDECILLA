@@ -60,26 +60,81 @@ const descargar = (nombre, contenido, tipo) => {
   }
 };
 
-/* ───────── almacenamiento ───────── */
-const STORE_KEY = 'cpc:datos:v1';
+/* ───────── almacenamiento (multi-cliente) ───────── */
+const STORE_KEY = 'cpc:datos:v2';
+const STORE_KEY_V1 = 'cpc:datos:v1';
 
-const estadoInicial = () => ({
-  movimientos: [],   // {id, fecha, tipo, categoria, descripcion, monto}
-  apuntes: '',
+// datos que se guardan POR CLIENTE
+const carpetaVacia = () => ({
+  movimientos: [],   // {id, fecha, tipo, categoria, descripcion, monto, origen?}
   documentos: [],    // {id, plantilla, titulo, creado, texto}
   auditoria: {},     // { '2026-07': { 'iva:0': true } }
+});
+
+const estadoInicial = () => ({
+  version: 2,
   config: { emisor: '' },
+  apuntes: '',
+  clientes: [],        // {id, nombre, rut}
+  clienteActivo: null,
+  porCliente: {},      // id -> carpetaVacia()
 });
 
 let estado = estadoInicial();
 
+function clienteActual() {
+  return estado.clientes.find((c) => c.id === estado.clienteActivo) || null;
+}
+
+function asegurarCliente() {
+  if (!estado.clientes.length) {
+    const c = { id: uid(), nombre: 'Mi estudio', rut: '' };
+    estado.clientes.push(c);
+    estado.clienteActivo = c.id;
+  }
+  if (!estado.clientes.some((c) => c.id === estado.clienteActivo)) {
+    estado.clienteActivo = estado.clientes[0].id;
+  }
+  if (!estado.porCliente[estado.clienteActivo]) {
+    estado.porCliente[estado.clienteActivo] = carpetaVacia();
+  }
+}
+
+// carpeta de datos del cliente activo
+function carpeta() {
+  asegurarCliente();
+  return estado.porCliente[estado.clienteActivo];
+}
+
+// convierte un respaldo v1 (sin clientes) al formato v2
+function migrarV1(v1) {
+  const e = estadoInicial();
+  e.config = Object.assign({ emisor: '' }, v1.config);
+  e.apuntes = v1.apuntes || '';
+  const c = { id: uid(), nombre: 'General', rut: '' };
+  e.clientes.push(c);
+  e.clienteActivo = c.id;
+  e.porCliente[c.id] = {
+    movimientos: v1.movimientos || [],
+    documentos: v1.documentos || [],
+    auditoria: v1.auditoria || {},
+  };
+  return e;
+}
+
 function cargar() {
   try {
-    const crudo = localStorage.getItem(STORE_KEY);
-    if (crudo) estado = Object.assign(estadoInicial(), JSON.parse(crudo));
+    const v2 = localStorage.getItem(STORE_KEY);
+    if (v2) {
+      estado = Object.assign(estadoInicial(), JSON.parse(v2));
+    } else {
+      const v1 = localStorage.getItem(STORE_KEY_V1);
+      if (v1) estado = migrarV1(JSON.parse(v1));
+    }
   } catch (e) {
     console.warn('No se pudo leer el almacenamiento local:', e);
   }
+  asegurarCliente();
 }
 function guardar() {
   try {
@@ -220,10 +275,54 @@ function mostrarRuta(ruta) {
   window.scrollTo({ top: 0 });
 }
 
+/* ═══════════════ CLIENTES ═══════════════ */
+function renderClientes() {
+  asegurarCliente();
+  $('#sel-cliente').innerHTML = estado.clientes
+    .map((c) => `<option value="${c.id}" ${c.id === estado.clienteActivo ? 'selected' : ''}>${esc(c.nombre)}</option>`)
+    .join('');
+}
+
+let clienteBorrarPendiente = null;
+
+function renderCartera() {
+  const cuerpo = $('#tabla-clientes tbody');
+  cuerpo.innerHTML = estado.clientes.map((c) => {
+    const n = (estado.porCliente[c.id] || carpetaVacia()).movimientos.length;
+    const activo = c.id === estado.clienteActivo;
+    return `<tr class="${activo ? 'fila-activa' : ''}">
+      <td><button type="button" class="doc-abrir" data-cliente="${c.id}">${activo ? '● ' : ''}${esc(c.nombre)}</button></td>
+      <td>${esc(c.rut || '—')}</td>
+      <td class="num">${n}</td>
+      <td><button type="button" class="btn-borrar" data-cliente-borrar="${c.id}" title="Eliminar cliente y sus datos" aria-label="Eliminar cliente">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function guardarCliente(modo) {
+  const nombre = $('#cliente-nombre').value.trim();
+  if (!nombre) return;
+  const rut = $('#cliente-rut').value.trim();
+  if (modo === 'nuevo') {
+    const c = { id: uid(), nombre, rut };
+    estado.clientes.push(c);
+    estado.clienteActivo = c.id;
+    estado.porCliente[c.id] = carpetaVacia();
+  } else {
+    const c = clienteActual();
+    if (c) { c.nombre = nombre; c.rut = rut; }
+  }
+  guardar();
+  $('#form-cliente').hidden = true;
+  renderClientes();
+  mostrarRuta(VISTAS.includes(rutaActual) ? rutaActual : 'inicio');
+  avisar(modo === 'nuevo' ? `Cliente creado: ${nombre}` : 'Cliente actualizado.');
+}
+
 /* ═══════════════ INICIO ═══════════════ */
 function renderInicio() {
   const mes = mesActual();
-  const movs = estado.movimientos;
+  const movs = carpeta().movimientos;
   const delMes = movs.filter((m) => m.fecha.startsWith(mes));
   const saldoTotal = movs.reduce((s, m) => s + (m.tipo === 'ingreso' ? m.monto : -m.monto), 0);
   const avance = avanceAuditoria(mes);
@@ -231,11 +330,14 @@ function renderInicio() {
     { r: 'Saldo acumulado', v: fmt(saldoTotal), c: saldoTotal >= 0 ? 'positivo' : 'negativo' },
     { r: 'Movimientos este mes', v: String(delMes.length), c: '' },
     { r: 'Auditoría del mes', v: avance.total ? Math.round(100 * avance.hechos / avance.total) + '%' : '—', c: '' },
-    { r: 'Documentos emitidos', v: String(estado.documentos.length), c: '' },
+    { r: 'Documentos emitidos', v: String(carpeta().documentos.length), c: '' },
   ];
   $('#inicio-stats').innerHTML = stats.map((s) =>
     `<div class="tarjeta stat ${s.c}"><span class="rotulo">${s.r}</span><strong>${s.v}</strong></div>`
   ).join('');
+  const cli = clienteActual();
+  $('#inicio-cliente').textContent = cli ? cli.nombre : '';
+  renderCartera();
 }
 
 /* ═══════════════ FLUJO DE CAJA ═══════════════ */
@@ -250,7 +352,7 @@ function poblarCategorias() {
 }
 
 function movimientosDeMes(mes) {
-  return estado.movimientos
+  return carpeta().movimientos
     .filter((m) => m.fecha.startsWith(mes))
     .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
 }
@@ -263,7 +365,7 @@ function renderCaja() {
   const ing = delMes.filter((m) => m.tipo === 'ingreso').reduce((s, m) => s + m.monto, 0);
   const egr = delMes.filter((m) => m.tipo === 'egreso').reduce((s, m) => s + m.monto, 0);
   const finDeMes = mes + '-99';
-  const acumulado = estado.movimientos
+  const acumulado = carpeta().movimientos
     .filter((m) => m.fecha <= finDeMes)
     .reduce((s, m) => s + (m.tipo === 'ingreso' ? m.monto : -m.monto), 0);
 
@@ -293,7 +395,7 @@ function renderGraficoCaja(mesFinal) {
   const meses = [];
   for (let i = 5; i >= 0; i--) meses.push(sumarMeses(mesFinal, -i));
   const series = meses.map((mes) => {
-    const movs = estado.movimientos.filter((m) => m.fecha.startsWith(mes));
+    const movs = carpeta().movimientos.filter((m) => m.fecha.startsWith(mes));
     return {
       mes,
       ingreso: movs.filter((m) => m.tipo === 'ingreso').reduce((s, m) => s + m.monto, 0),
@@ -359,7 +461,7 @@ function agregarMovimiento() {
   const f = $('#form-mov');
   const monto = Math.round(Number(f.monto.value));
   if (!f.fecha.value || !monto || monto <= 0) return;
-  estado.movimientos.push({
+  carpeta().movimientos.push({
     id: uid(),
     fecha: f.fecha.value,
     tipo: f.tipo.value,
@@ -376,11 +478,13 @@ function agregarMovimiento() {
 
 function exportarCSV() {
   const filas = [['fecha', 'tipo', 'categoria', 'descripcion', 'monto']];
-  [...estado.movimientos]
+  [...carpeta().movimientos]
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
     .forEach((m) => filas.push([m.fecha, m.tipo, m.categoria, m.descripcion.replace(/;/g, ','), String(m.monto)]));
   const csv = '\uFEFF' + filas.map((f) => f.join(';')).join('\r\n');
-  descargar('flujo-de-caja.csv', csv, 'text/csv;charset=utf-8');
+  const cli = clienteActual();
+  const slug = quitarAcentos(cli ? cli.nombre : 'cliente').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cliente';
+  descargar(`flujo-de-caja-${slug}.csv`, csv, 'text/csv;charset=utf-8');
 }
 
 function cargarDemo() {
@@ -402,10 +506,180 @@ function cargarDemo() {
     [0, '22', 'egreso', 'Servicios básicos', 'Internet y luz', 47000],
   ];
   demo.forEach(([dm, dia, tipo, categoria, descripcion, monto]) => {
-    estado.movimientos.push({ id: uid(), fecha: sumarMeses(mes, dm) + '-' + dia, tipo, categoria, descripcion, monto });
+    carpeta().movimientos.push({ id: uid(), fecha: sumarMeses(mes, dm) + '-' + dia, tipo, categoria, descripcion, monto });
   });
   guardar();
   renderCaja();
+}
+
+/* ═══════════════ IMPORTACIÓN DE DATOS DE CLIENTES ═══════════════
+   Lee el CSV del Registro de Compras y Ventas (RCV) descargado desde
+   sii.cl, o un CSV exportado por esta misma app. */
+
+const quitarAcentos = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+// El SII suele exportar en codificación ISO-8859-1; se detecta por los
+// caracteres de reemplazo que deja UTF-8 al fallar.
+function decodificar(buffer) {
+  const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
+  if (!utf8.includes('�')) return utf8;
+  return new TextDecoder('iso-8859-1').decode(buffer);
+}
+
+function parsearCSV(texto) {
+  const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== '');
+  if (!lineas.length) return { cabeceras: [], filas: [] };
+  const primera = lineas[0];
+  const sep = [';', ',', '\t'].reduce((a, b) => (primera.split(a).length >= primera.split(b).length ? a : b));
+  const partir = (linea) => {
+    const celdas = [];
+    let actual = '', enComillas = false;
+    for (const ch of linea) {
+      if (ch === '"') { enComillas = !enComillas; continue; }
+      if (ch === sep && !enComillas) { celdas.push(actual); actual = ''; continue; }
+      actual += ch;
+    }
+    celdas.push(actual);
+    return celdas;
+  };
+  return {
+    cabeceras: partir(lineas[0]).map(quitarAcentos),
+    filas: lineas.slice(1).map(partir),
+  };
+}
+
+// montos del SII: enteros en pesos, con posible separador de miles
+const numeroCL = (s) => {
+  const limpio = String(s || '').replace(/[^\d-]/g, '');
+  return limpio && limpio !== '-' ? parseInt(limpio, 10) : 0;
+};
+
+function fechaISOde(s) {
+  s = String(s || '').trim().slice(0, 10);
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return null;
+}
+
+const TIPOS_DTE = {
+  33: 'Factura', 34: 'Factura exenta', 39: 'Boleta', 41: 'Boleta exenta',
+  43: 'Liquidación factura', 46: 'Factura de compra', 56: 'Nota de débito',
+  61: 'Nota de crédito', 110: 'Factura de exportación', 111: 'ND exportación',
+  112: 'NC exportación',
+};
+
+function analizarImportacion(texto) {
+  const { cabeceras, filas } = parsearCSV(texto);
+  if (!filas.length) return { error: 'El archivo no tiene filas de datos.' };
+  const idx = (frag) => cabeceras.findIndex((c) => c.includes(frag));
+  const primerIdx = (frags) => frags.map(idx).find((i) => i >= 0) ?? -1;
+
+  // ¿CSV exportado por esta app? (fecha;tipo;categoria;descripcion;monto)
+  if (idx('categoria') >= 0 && idx('descripcion') >= 0 && idx('monto') >= 0) {
+    const iF = idx('fecha'), iT = idx('tipo'), iC = idx('categoria'), iD = idx('descripcion'), iM = idx('monto');
+    const movimientos = [];
+    filas.forEach((f) => {
+      const fecha = fechaISOde(f[iF]);
+      const monto = Math.abs(numeroCL(f[iM]));
+      const tipo = quitarAcentos(f[iT]) === 'egreso' ? 'egreso' : 'ingreso';
+      if (!fecha || !monto) return;
+      const descripcion = String(f[iD] || '').trim();
+      movimientos.push({
+        id: uid(), fecha, tipo,
+        categoria: String(f[iC] || 'Otros').trim(),
+        descripcion,
+        monto,
+        origen: `csv:${fecha}:${tipo}:${monto}:${descripcion}`,
+      });
+    });
+    return { clase: 'CSV de la app', movimientos };
+  }
+
+  // ¿RCV del SII? ventas o compras según sus columnas
+  const esVenta = idx('tipo venta') >= 0 || idx('rut cliente') >= 0;
+  const esCompra = idx('tipo compra') >= 0 || idx('rut proveedor') >= 0;
+  if (!esVenta && !esCompra) {
+    return { error: 'No se reconoce el formato. Usa el CSV del RCV de sii.cl (ventas o compras) o un CSV exportado por esta app.' };
+  }
+  const iFecha = primerIdx(['fecha docto', 'fecha emision', 'fecha']);
+  const iTotal = idx('monto total');
+  const iFolio = idx('folio');
+  const iTipoDoc = idx('tipo doc');
+  const iRazon = idx('razon social');
+  const iRut = esVenta ? primerIdx(['rut cliente', 'rut']) : primerIdx(['rut proveedor', 'rut']);
+  if (iFecha < 0 || iTotal < 0) {
+    return { error: 'El archivo no tiene las columnas de fecha y monto total del RCV.' };
+  }
+
+  const movimientos = [];
+  filas.forEach((f) => {
+    const fecha = fechaISOde(f[iFecha]);
+    const total = numeroCL(f[iTotal]);
+    if (!fecha || !total) return;
+    const codigo = iTipoDoc >= 0 ? numeroCL(f[iTipoDoc]) : 0;
+    const esNC = codigo === 61 || codigo === 112 || total < 0;
+    const nombreDoc = TIPOS_DTE[codigo] || (codigo ? 'Doc ' + codigo : 'Documento');
+    const folio = iFolio >= 0 ? String(f[iFolio] || '').trim() : '';
+    const razon = iRazon >= 0 ? String(f[iRazon] || '').trim() : '';
+    const rut = iRut >= 0 ? String(f[iRut] || '').trim() : '';
+    const base = esVenta ? 'ingreso' : 'egreso';
+    movimientos.push({
+      id: uid(),
+      fecha,
+      tipo: esNC ? (base === 'ingreso' ? 'egreso' : 'ingreso') : base,
+      categoria: (esVenta ? 'Ventas (RCV)' : 'Compras (RCV)') + (esNC ? ' — NC' : ''),
+      descripcion: [razon, nombreDoc + (folio ? ' N°' + folio : '')].filter(Boolean).join(' — '),
+      monto: Math.abs(total),
+      origen: `rcv:${esVenta ? 'v' : 'c'}:${codigo}:${folio}:${rut}`,
+    });
+  });
+  return { clase: esVenta ? 'RCV de ventas' : 'RCV de compras', movimientos };
+}
+
+let importPendiente = null;
+
+function manejarArchivoImportacion(ev) {
+  const archivo = ev.target.files[0];
+  ev.target.value = '';
+  if (!archivo) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    const res = analizarImportacion(decodificar(lector.result));
+    if (res.error) { avisar(res.error); return; }
+    const existentes = new Set(carpeta().movimientos.map((m) => m.origen).filter(Boolean));
+    const nuevos = res.movimientos.filter((m) => !m.origen || !existentes.has(m.origen));
+    const omitidos = res.movimientos.length - nuevos.length;
+    if (!nuevos.length) {
+      avisar(omitidos ? 'Todos los documentos del archivo ya estaban importados.' : 'El archivo no tiene movimientos válidos.');
+      return;
+    }
+    importPendiente = nuevos;
+    const meses = [...new Set(nuevos.map((m) => m.fecha.slice(0, 7)))].sort();
+    const total = nuevos.reduce((s, m) => s + m.monto, 0);
+    const cli = clienteActual();
+    $('#rcv-resumen').innerHTML =
+      `Se detectó <strong>${esc(res.clase)}</strong>: <strong>${nuevos.length}</strong> documentos nuevos ` +
+      `por un total de <strong>${fmt(total)}</strong> (${esc(meses.length === 1 ? nombreMes(meses[0], true) : nombreMes(meses[0], true) + ' a ' + nombreMes(meses[meses.length - 1], true))}).` +
+      (omitidos ? ` Se omitirán ${omitidos} ya importados.` : '') +
+      `<br>Se importarán al cliente <strong>«${esc(cli ? cli.nombre : '')}»</strong>.`;
+    $('#rcv-previa').hidden = false;
+  };
+  lector.readAsArrayBuffer(archivo);
+}
+
+function confirmarImportacion() {
+  if (!importPendiente || !importPendiente.length) { $('#rcv-previa').hidden = true; return; }
+  carpeta().movimientos.push(...importPendiente);
+  const ultimoMes = importPendiente.map((m) => m.fecha.slice(0, 7)).sort().pop();
+  const n = importPendiente.length;
+  importPendiente = null;
+  guardar();
+  $('#rcv-previa').hidden = true;
+  if (ultimoMes) $('#caja-mes').value = ultimoMes;
+  renderCaja();
+  avisar(n + ' movimientos importados correctamente.');
 }
 
 /* ═══════════════ INVESTIGACIÓN FISCAL ═══════════════ */
@@ -591,7 +865,7 @@ function renderGraficoProyeccion(filas) {
 function proyectarDesdeCaja() {
   const ahora = mesActual();
   const meses = [-3, -2, -1].map((d) => sumarMeses(ahora, d));
-  const movs = estado.movimientos.filter((m) => meses.includes(m.fecha.slice(0, 7)));
+  const movs = carpeta().movimientos.filter((m) => meses.includes(m.fecha.slice(0, 7)));
   if (!movs.length) {
     avisar('No hay movimientos en los últimos 3 meses del Flujo de Caja. Registra movimientos primero.');
     return;
@@ -740,11 +1014,15 @@ function renderDocumentos() {
 
 function renderCamposDoc() {
   const p = PLANTILLAS.find((x) => x.id === $('#doc-plantilla').value) || PLANTILLAS[0];
+  // pre-llenado con el cliente activo de la cartera
+  const cli = clienteActual();
+  const prellenado = { cliente: cli ? cli.nombre : '', rut: cli ? (cli.rut || '') : '' };
   $('#doc-campos').innerHTML = p.campos.map((c) => {
     const req = c.req === false ? '' : 'required';
+    const valor = c.v || prellenado[c.n] || '';
     if (c.t === 'textarea') return `<label>${c.l}<textarea name="${c.n}" rows="3" ${req}>${esc(c.v || '')}</textarea></label>`;
     if (c.t === 'select') return `<label>${c.l}<select name="${c.n}">${c.o.map((o) => `<option>${o}</option>`).join('')}</select></label>`;
-    return `<label>${c.l}<input type="${c.t}" name="${c.n}" value="${esc(c.v || '')}" placeholder="${esc(c.p || '')}" ${c.t === 'number' ? 'min="0" step="1"' : ''} ${req}></label>`;
+    return `<label>${c.l}<input type="${c.t}" name="${c.n}" value="${esc(valor)}" placeholder="${esc(c.p || '')}" ${c.t === 'number' ? 'min="0" step="1"' : ''} ${req}></label>`;
   }).join('');
 }
 
@@ -762,8 +1040,8 @@ function generarDocumento() {
   const titulo = `${p.nombre} — ${datos.cliente || 'sin cliente'}`;
   docActual = { titulo, texto };
 
-  estado.documentos.unshift({ id: uid(), plantilla: p.id, titulo, creado: hoyISO(), texto });
-  estado.documentos = estado.documentos.slice(0, 40);
+  carpeta().documentos.unshift({ id: uid(), plantilla: p.id, titulo, creado: hoyISO(), texto });
+  carpeta().documentos = carpeta().documentos.slice(0, 40);
   guardar();
   mostrarDocumento(docActual);
   renderHistorialDocs();
@@ -779,8 +1057,8 @@ function mostrarDocumento(doc) {
 
 function renderHistorialDocs() {
   const ul = $('#doc-historial');
-  ul.innerHTML = estado.documentos.length
-    ? estado.documentos.map((d) => `
+  ul.innerHTML = carpeta().documentos.length
+    ? carpeta().documentos.map((d) => `
       <li>
         <button type="button" class="doc-abrir" data-doc="${d.id}">${esc(d.titulo)}</button>
         <span class="doc-fecha">${fmtFecha(d.creado)}</span>
@@ -853,7 +1131,7 @@ const CHECKLISTS = [
 ];
 
 function avanceAuditoria(periodo) {
-  const marcas = estado.auditoria[periodo] || {};
+  const marcas = carpeta().auditoria[periodo] || {};
   let total = 0, hechos = 0;
   CHECKLISTS.forEach((cl) => cl.items.forEach((_, i) => {
     total++;
@@ -865,7 +1143,7 @@ function avanceAuditoria(periodo) {
 function renderAuditoria() {
   const periodo = $('#audit-periodo').value || mesActual();
   $('#audit-periodo').value = periodo;
-  const marcas = estado.auditoria[periodo] || {};
+  const marcas = carpeta().auditoria[periodo] || {};
 
   $('#audit-listas').innerHTML = CHECKLISTS.map((cl) => {
     const hechos = cl.items.filter((_, i) => marcas[cl.id + ':' + i]).length;
@@ -893,9 +1171,9 @@ function renderAuditoria() {
 
 function marcarAuditoria(clave, valor) {
   const periodo = $('#audit-periodo').value || mesActual();
-  if (!estado.auditoria[periodo]) estado.auditoria[periodo] = {};
-  if (valor) estado.auditoria[periodo][clave] = true;
-  else delete estado.auditoria[periodo][clave];
+  if (!carpeta().auditoria[periodo]) carpeta().auditoria[periodo] = {};
+  if (valor) carpeta().auditoria[periodo][clave] = true;
+  else delete carpeta().auditoria[periodo][clave];
   guardar();
   renderAuditoria();
 }
@@ -909,10 +1187,17 @@ function importarJSON(archivo) {
   const lector = new FileReader();
   lector.onload = () => {
     try {
-      const datos = JSON.parse(lector.result);
-      if (!datos || !Array.isArray(datos.movimientos)) throw new Error('Formato no reconocido');
-      estado = Object.assign(estadoInicial(), datos);
+      const crudo = JSON.parse(lector.result);
+      if (crudo && crudo.version === 2 && Array.isArray(crudo.clientes)) {
+        estado = Object.assign(estadoInicial(), crudo);
+      } else if (crudo && Array.isArray(crudo.movimientos)) {
+        estado = migrarV1(crudo);
+      } else {
+        throw new Error('Formato no reconocido');
+      }
+      asegurarCliente();
       guardar();
+      renderClientes();
       mostrarRuta(rutaActual || 'inicio');
       avisar('Respaldo importado correctamente.');
     } catch (e) {
@@ -938,6 +1223,73 @@ function init() {
   });
   window.addEventListener('hashchange', navegar);
 
+  // clientes
+  renderClientes();
+  $('#sel-cliente').addEventListener('change', (ev) => {
+    estado.clienteActivo = ev.target.value;
+    asegurarCliente();
+    guardar();
+    importPendiente = null;
+    $('#rcv-previa').hidden = true;
+    mostrarRuta(VISTAS.includes(rutaActual) ? rutaActual : 'inicio');
+  });
+  let modoCliente = 'nuevo';
+  $('#btn-cliente-nuevo').addEventListener('click', () => {
+    modoCliente = 'nuevo';
+    $('#cliente-nombre').value = '';
+    $('#cliente-rut').value = '';
+    $('#form-cliente').hidden = false;
+    $('#cliente-nombre').focus();
+  });
+  $('#btn-cliente-editar').addEventListener('click', () => {
+    const c = clienteActual();
+    if (!c) return;
+    modoCliente = 'editar';
+    $('#cliente-nombre').value = c.nombre;
+    $('#cliente-rut').value = c.rut || '';
+    $('#form-cliente').hidden = false;
+    $('#cliente-nombre').focus();
+  });
+  $('#btn-cliente-cancelar').addEventListener('click', () => { $('#form-cliente').hidden = true; });
+  conectarFormulario($('#form-cliente'), () => guardarCliente(modoCliente));
+  $('#tabla-clientes').addEventListener('click', (ev) => {
+    const activar = ev.target.closest('[data-cliente]');
+    const borrar = ev.target.closest('[data-cliente-borrar]');
+    if (borrar) {
+      const id = borrar.dataset.clienteBorrar;
+      if (clienteBorrarPendiente !== id) {
+        clienteBorrarPendiente = id;
+        avisar('Eliminar borra TODOS los datos de ese cliente. Presiona ✕ otra vez para confirmar.');
+        setTimeout(() => { if (clienteBorrarPendiente === id) clienteBorrarPendiente = null; }, 4000);
+        return;
+      }
+      clienteBorrarPendiente = null;
+      estado.clientes = estado.clientes.filter((c) => c.id !== id);
+      delete estado.porCliente[id];
+      asegurarCliente();
+      guardar();
+      renderClientes();
+      renderInicio();
+      avisar('Cliente eliminado.');
+      return;
+    }
+    if (activar) {
+      estado.clienteActivo = activar.dataset.cliente;
+      asegurarCliente();
+      guardar();
+      renderClientes();
+      renderInicio();
+    }
+  });
+
+  // importación de datos (RCV del SII / CSV propio)
+  $('#input-rcv').addEventListener('change', manejarArchivoImportacion);
+  $('#btn-rcv-confirmar').addEventListener('click', confirmarImportacion);
+  $('#btn-rcv-cancelar').addEventListener('click', () => {
+    importPendiente = null;
+    $('#rcv-previa').hidden = true;
+  });
+
   // flujo de caja
   $('#form-mov').fecha.value = hoyISO();
   poblarCategorias();
@@ -949,7 +1301,7 @@ function init() {
   $('#tabla-movs').addEventListener('click', (ev) => {
     const btn = ev.target.closest('[data-borrar]');
     if (!btn) return;
-    estado.movimientos = estado.movimientos.filter((m) => m.id !== btn.dataset.borrar);
+    carpeta().movimientos = carpeta().movimientos.filter((m) => m.id !== btn.dataset.borrar);
     guardar();
     renderCaja();
   });
@@ -990,13 +1342,13 @@ function init() {
     const abrir = ev.target.closest('[data-doc]');
     const borrar = ev.target.closest('[data-doc-borrar]');
     if (borrar) {
-      estado.documentos = estado.documentos.filter((d) => d.id !== borrar.dataset.docBorrar);
+      carpeta().documentos = carpeta().documentos.filter((d) => d.id !== borrar.dataset.docBorrar);
       guardar();
       renderHistorialDocs();
       return;
     }
     if (abrir) {
-      const d = estado.documentos.find((x) => x.id === abrir.dataset.doc);
+      const d = carpeta().documentos.find((x) => x.id === abrir.dataset.doc);
       if (d) mostrarDocumento(d);
     }
   });
