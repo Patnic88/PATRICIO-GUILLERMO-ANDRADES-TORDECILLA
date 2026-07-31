@@ -1,5 +1,10 @@
 # 📋 Lista de Tareas — Patricio Andrades
 
+> 🧠 **Nuevo:** ahora tienes un **cerebro en Obsidian** en la carpeta
+> [`cerebro/`](cerebro/): causas, clientes, personas, plazos y conocimiento,
+> todo conectado. Cómo abrirlo en tu computador: ver
+> [`cerebro/LÉEME.md`](cerebro/LÉEME.md).
+
 Lista de tareas web, sin servidor, **conectada a tu correo de Gmail**. Las tareas
 iniciales se extrajeron de tus correos recientes de la Dirección Jurídica de la
 Municipalidad de Los Vilos, y cada una enlaza directamente al hilo original en Gmail.
