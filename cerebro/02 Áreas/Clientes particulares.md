@@ -4,24 +4,43 @@ tipo: area
 
 # 💼 Clientes particulares
 
-Tu ejercicio libre de la profesión, fuera de la Municipalidad. Datos según
-las tareas registradas al 2026-07-16 — actualizar estados al revisarlas.
+Tu ejercicio libre de la profesión, en paralelo al cargo municipal. Firmas como
+**«Abogado, Universidad Católica del Norte, +56 9 42208035»**.
+
+Estado según correos al **2026-07-16**.
 
 ## Cartera
 
-- **Alexander González** — ingresar documentación de residencia temporal.
-- **American JR SpA** — presentar «téngase presente» en causa RIT O-51-2025.
-- **David Cabrera** — estudio de títulos e impuesto de herencia; retirar y
-  revisar copias del CBR (carátula 1306…).
-- **Rental SpA** — respuesta de transparencia de la Municipalidad y
-  seguimiento de la insistencia ante la TGR (Tesorería General de la
-  República).
+### [[David Cabrera]] — Rental SpA
+Tres frentes simultáneos:
+- [[Estudio de títulos Balneario Los Vilos — David Cabrera]] 🟡
+- [[Convenio de pago TGR — Rental SpA]] ⏳ (≈$133.103.662)
+- [[Transparencia Municipalidad de Ovalle — Rental SpA]] 🔴 plazo vencido
+
+### [[Claudia Jablonka]] — American JR SpA
+- [[Causa O-51-2025 — Diego con Jablonka (AFP UNO)]] 🟡
+
+### [[Alexander González]]
+- [[Residencia temporal — Alexander González]] 🟡
+
+## Administración del estudio
+
+- Boleta de honorarios recibida de **Mario César Olmos Lopomo** (2026-07-15) y
+  pago asociado. → Registrar aquí ingresos y honorarios pactados por cliente.
 
 ## Cómo llevar cada cliente
 
-Crear una nota por cliente con la plantilla [[Cliente]] cuando el caso crezca
-(gestiones, plazos, honorarios, documentos).
+Una nota por cliente en `Personas/` (con la plantilla [[Cliente]]) + una nota
+por encargo en `01 Proyectos/`. Así un cliente con tres asuntos no se
+convierte en una sola nota confusa.
+
+## Diferencia con el trabajo municipal
+
+Aquí **tú respondes directamente al cliente** y hay honorarios de por medio;
+en [[Dirección Jurídica Los Vilos]] el encargo viene de la jefatura y el
+"cliente" es el municipio. Los plazos de los clientes particulares no los
+avisa nadie: dependen de ti.
 
 ## Relacionado
 
-[[Inicio]] · [[Causas judiciales]]
+[[Inicio]] · [[Causas judiciales]] · [[Trámites y plazos frecuentes]]

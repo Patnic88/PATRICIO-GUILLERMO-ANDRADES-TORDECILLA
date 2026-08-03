@@ -15,8 +15,14 @@ sesión sobre este repo.
      haz *Clone repository* y tendrás siempre la última versión con un clic.
 3. Abre Obsidian → **Abrir carpeta como bóveda** (*Open folder as vault*) →
    elige esta carpeta **`cerebro/`**.
-4. Empieza por la nota [[Inicio]]. Pulsa el icono de grafo (o `Ctrl/Cmd+G`)
-   para ver todas las conexiones.
+4. Empieza por [[Inicio]] y luego por el **[[Tablero de pendientes]]**, que es
+   la nota más útil del día a día: todo lo abierto ordenado por urgencia.
+   Pulsa el icono de grafo (o `Ctrl/Cmd+G`) para ver todas las conexiones.
+
+> [!warning] Antes de confiar en un plazo, verifícalo
+> El contenido viene de tus correos con corte al **2026-07-16**. Cada dato
+> indica su fecha y fuente. Para refrescarlo, pídele a Claude: «revisa mis
+> correos y actualiza el cerebro».
 
 ## Estructura (método P.A.R.A. simplificado)
 

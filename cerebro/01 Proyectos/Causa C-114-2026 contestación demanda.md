@@ -2,27 +2,34 @@
 tipo: proyecto
 estado: activo
 plazo:
-area: "[[Dirección Jurídica Los Vilos]]"
 rol: C-114-2026
+area: "[[Dirección Jurídica Los Vilos]]"
 ---
 
 # Causa C-114-2026 — contestación de demanda
 
-**Objetivo:** finalizar y presentar la contestación de la demanda, causa Rol
-**C-114-2026**.
+**Objetivo:** presentar la contestación de la demanda, causa Rol **C-114-2026**.
 
-## Estado (según correos)
+## Historial
 
-- El borrador de contestación ya fue enviado.
-- Falta contrastarlo con el **expediente que tiene Karina** y con la
-  situación de **Rolando en el DESAM**.
+| Fecha | Hecho |
+|---|---|
+| may-2026 | Borrador de contestación enviado |
+| may-2026 | Pendiente: contrastar con el **expediente que tiene Karina** y la situación de **Rolando en el DESAM** |
+| 2026-06-24 | **Borradores de contestación enviados**; [[José Guerra]] los agradeció |
+
+## Estado
+
+🟡 Los borradores ya circularon el 24-jun. **Falta confirmar si la contestación
+se presentó efectivamente en el tribunal** y si se resolvieron los dos puntos
+abiertos (expediente de Karina, situación de Rolando en el DESAM).
 
 ## Próximos pasos
 
-- [ ] Revisar el expediente con Karina.
-- [ ] Aclarar la situación de Rolando (DESAM).
-- [ ] Presentar la contestación en el sistema.
+- [ ] Verificar en la Oficina Judicial Virtual si la contestación está
+      presentada y dentro de plazo.
+- [ ] Si no, cerrar los dos puntos pendientes y presentarla.
 
 ## Relacionado
 
-[[Causas judiciales]] · [[Dirección Jurídica Los Vilos]]
+[[Causas judiciales]] · [[José Guerra]] · [[Dirección Jurídica Los Vilos]]
