@@ -79,3 +79,25 @@ completadas y las que agregaste a mano.
 - ✅ Recordatorios en **Google Calendar** para las tareas de alta prioridad.
 - ✅ Borradores de respuesta guardados en Gmail para los correos que requieren
   contestación.
+
+---
+
+## 🧠 Skill: micro examen de derecho (`.claude/skills/micro-examen-derecho/`)
+
+Examen diario de 3 a 5 minutos para no perder vigencia: 4 a 8 preguntas de respuesta
+corta, corrección inmediata con la fuente al lado y repetición espaciada (cajas de 1, 3,
+7, 21 y 60 días). Se invoca con **"micro examen"**, "examen relámpago", "micro examen de
+laboral" o "examen de mis errores".
+
+Regla dura: **solo se pregunta lo que tiene fuente verificada**. El motor rechaza los
+ítems sin cita, sin enlace o con marcador `[VERIFICAR]`, y saca del examen los que llevan
+más de 12 meses sin reverificarse. El banco nace vacío y se llena con lo que ya trabajaste
+(causas, informes, dictámenes del briefing).
+
+```bash
+python3 .claude/skills/micro-examen-derecho/scripts/micro_examen.py estado
+```
+
+Los datos del repaso viven en `~/.micro-examen/` (Windows: `%USERPROFILE%\.micro-examen\`),
+fuera del repositorio. Para usar la skill desde cualquier carpeta, copia
+`.claude/skills/micro-examen-derecho/` a `~/.claude/skills/`.
