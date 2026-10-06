@@ -17,6 +17,31 @@ comandos para contadores.
 
 ## Cómo empezar (para cualquier persona)
 
+### Windows: instalador, sin Python
+
+1. Descargue **`Instalar-MiContabilidad.exe`** desde la sección **Releases** del
+   repositorio, versión «Mi Contabilidad 0.1.0 (preliminar)».
+2. Haga doble clic en el archivo. El programa no está firmado digitalmente, así que
+   Windows puede mostrar **«Windows protegió su PC»**: presione **«Más información»** y
+   luego **«Ejecutar de todos modos»**.
+3. Siga el asistente. No pide permisos de administrador y crea el acceso directo
+   **«Mi Contabilidad»** en el Escritorio y en el menú Inicio.
+4. Abra **Mi Contabilidad**. Aparece una ventana negra y, enseguida, el navegador con el
+   programa. **No cierre la ventana negra mientras trabaja**; al terminar, ciérrela.
+
+Los datos se guardan en **Documentos\Mi Contabilidad**. Por eso desinstalar o instalar
+una versión nueva no borra la contabilidad.
+
+En la misma página de descarga hay una versión sin instalar,
+`MiContabilidad-portable.zip`: se descomprime y se abre `MiContabilidad.exe`.
+
+El instalador lo construye automáticamente GitHub Actions
+(`.github/workflows/instalador-windows.yml`) en un Windows real. Antes de publicarlo,
+el proceso ejecuta las pruebas, instala el programa y recorre el flujo del mes con
+los datos de ejemplo.
+
+### Mac, Linux o Windows con Python
+
 1. **Instale Python** (una sola vez) desde <https://www.python.org/downloads/>.
    En Windows, al instalar, marque la casilla **"Add Python to PATH"**.
 2. **Copie la carpeta `contabilidad-sii`** a su computador, por ejemplo al Escritorio.
@@ -25,11 +50,9 @@ comandos para contadores.
    - Mac: `Abrir contabilidad (Mac).command`. La primera vez puede pedir permiso: clic
      derecho → Abrir.
 
-Se abre una ventana negra y, enseguida, el navegador con el programa. **No cierre la
-ventana negra mientras trabaja**; al terminar, ciérrela.
-
 Si falta Python, el archivo de inicio lo avisa y abre la página de descarga. La primera
-vez también instala solo el complemento para Excel, lo que requiere internet.
+vez también instala solo el complemento para Excel, lo que requiere internet. Con esta
+forma de uso, los datos quedan en la carpeta `mis_empresas/`, junto al programa.
 
 ### Qué verá
 
@@ -54,8 +77,9 @@ y la descarga a Excel.
 
 ### Dónde quedan los datos
 
-Todo se guarda en la carpeta **`mis_empresas/`**, junto al programa, con un archivo por
-RUT. Nada se envía a internet: el programa solo acepta conexiones desde el mismo
+Todo se guarda en **Documentos\Mi Contabilidad** si usa el instalador, o en la carpeta
+**`mis_empresas/`**, junto al programa, si lo usa con Python. Hay un archivo por RUT. La
+pantalla de Ayuda muestra la ubicación exacta. Nada se envía a internet: el programa solo acepta conexiones desde el mismo
 computador. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
 pendrive.
 
@@ -195,5 +219,7 @@ contasii/
 ejemplos/           datos ficticios
 tests/              pruebas unitarias
 docs/               capturas de pantalla
+empaquetado/        instalador de Windows: punto de entrada, ícono, script de Inno Setup
+                    y prueba de humo del .exe
 ABRIR CONTABILIDAD (Windows).bat / Abrir contabilidad (Mac).command   archivos de inicio
 ```

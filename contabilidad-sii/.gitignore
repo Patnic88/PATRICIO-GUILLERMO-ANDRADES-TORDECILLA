@@ -3,3 +3,8 @@ __pycache__/
 *.xlsx
 salida/
 mis_empresas/
+empaquetado/salida/
+entrega/
+build/
+dist/
+*.spec

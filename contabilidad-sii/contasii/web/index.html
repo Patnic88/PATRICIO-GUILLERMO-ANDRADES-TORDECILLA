@@ -611,10 +611,11 @@ function pantallaAyuda() {
       <dt>Anular</dt><dd>En contabilidad nada se borra: un error se corrige con un registro contrario.</dd>
       <dt>Cerrar el mes</dt><dd>Bloquear el mes para que no se modifique después de declarar.</dd>
     </dl></div>
-    <div class="panel"><h2>Sus datos</h2><p>Todo se guarda en su computador, en la carpeta <b>mis_empresas</b> que está junto al programa. Nada se envía a internet.</p>
+    <div class="panel"><h2>Sus datos</h2><p>Todo se guarda en su computador, en esta carpeta: <b id="carpetaDatos">…</b>. Nada se envía a internet.</p>
       <p><b>Haga una copia de esa carpeta</b> regularmente, por ejemplo en un pendrive o en OneDrive.</p></div>
     <div class="panel"><h2>Importante</h2><p>Los cálculos de impuestos son un borrador de apoyo. Compárelos siempre con la propuesta del SII y consulte a su contador ante cualquier duda. Las alertas en amarillo indican casos que el programa no resuelve solo.</p></div>`);
   const b = $("#ayV"); if (b) b.onclick = pantallaEmpresas;
+  api("carpeta").then(r => { $("#carpetaDatos").textContent = r.carpeta; }).catch(() => {});
 }
 
 $("#btnEmpresas").onclick = pantallaEmpresas;

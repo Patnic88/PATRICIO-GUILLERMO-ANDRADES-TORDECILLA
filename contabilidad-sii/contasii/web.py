@@ -105,6 +105,12 @@ class App:
             raise ErrorUsuario("No encuentro esa empresa.")
         return Libro(ruta)
 
+    def ping(self, q, b):
+        return {"app": "contasii"}
+
+    def info_carpeta(self, q, b):
+        return {"carpeta": self.carpeta}
+
     # ---- empresas
     def empresas(self, q, b):
         out = []
@@ -379,7 +385,7 @@ class App:
         return {"problemas": lib.verificar_integridad()}
 
 
-GLOBAL = {"empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm")}
+GLOBAL = {"ping": ("GET", "ping"), "carpeta": ("GET", "info_carpeta"), "empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm")}
 POR_EMPRESA = {
     "resumen": ("GET", "resumen"), "analizar": ("POST", "analizar"), "importar": ("POST", "importar"),
     "catalogo": ("GET", "catalogo"), "movimiento": ("POST", "movimiento"), "anular": ("POST", "anular"),
@@ -485,21 +491,53 @@ def servidor(carpeta: str, puerto: int = 8765):
     raise OSError("No hay un puerto libre entre 8765 y 8784.")
 
 
+def carpeta_por_defecto() -> str:
+    """Donde se guardan las empresas.
+
+    En el programa instalado (.exe) va a Documentos\\Mi Contabilidad, fuera de la
+    carpeta del programa, para que sobreviva a actualizaciones y desinstalaciones.
+    Ejecutado desde el código fuente, queda en contabilidad-sii/mis_empresas.
+    """
+    if getattr(sys, "frozen", False):
+        return os.path.join(os.path.expanduser("~"), "Documents", "Mi Contabilidad")
+    return os.path.join(os.path.dirname(AQUI), "mis_empresas")
+
+
+def ya_abierto(puerto: int) -> bool:
+    """True si ya hay un programa de contabilidad respondiendo en ese puerto."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/api/ping", timeout=1) as r:
+            return json.loads(r.read()).get("app") == "contasii"
+    except Exception:
+        return False
+
+
 def main(argv=None):
     import argparse
+    for flujo in (sys.stdout, sys.stderr):
+        try:
+            flujo.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description="Abre la contabilidad en el navegador")
-    ap.add_argument("--carpeta", default=os.path.join(os.path.dirname(AQUI), "mis_empresas"),
-                    help="carpeta donde se guardan las empresas")
+    ap.add_argument("--carpeta", default=carpeta_por_defecto(), help="carpeta donde se guardan las empresas")
     ap.add_argument("--puerto", type=int, default=8765)
     ap.add_argument("--no-abrir", action="store_true", help="no abrir el navegador automáticamente")
     a = ap.parse_args(argv)
+    if ya_abierto(a.puerto):
+        # Doble clic con el programa ya abierto: solo se muestra de nuevo en el navegador.
+        if not a.no_abrir:
+            webbrowser.open(f"http://127.0.0.1:{a.puerto}/")
+        print("La contabilidad ya estaba abierta; se mostró en su navegador.")
+        return 0
     srv, p = servidor(a.carpeta, a.puerto)
     url = f"http://127.0.0.1:{p}/"
     print("=" * 60)
-    print(" CONTABILIDAD — abierta en su navegador")
-    print(f" Si no se abrió sola, copie esta dirección en el navegador: {url}")
+    print(" MI CONTABILIDAD - abierta en su navegador")
+    print(f" Si no se abrio sola, copie esta direccion en el navegador: {url}")
     print(f" Sus datos se guardan en: {os.path.abspath(a.carpeta)}")
-    print(" Para cerrar el programa, cierre esta ventana.")
+    print(" NO CIERRE esta ventana mientras trabaja. Para salir, cierrela.")
     print("=" * 60)
     if not a.no_abrir:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
