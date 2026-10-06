@@ -7,167 +7,271 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
   <header class="app-header">
     <div class="header-inner">
-      <div>
-        <h1>🎯 Radar Dropshipping</h1>
-        <p class="subtitle">Analiza lo que funciona en redes y adáptalo a tu tienda Shopify</p>
-      </div>
-      <span class="counter" id="counter">0 analizados</span>
+      <a href="#inicio" class="logo">🎯 Radar Dropshipping</a>
+      <button class="btn-ayuda" id="btnAyuda" aria-haspopup="dialog">❓ Ayuda</button>
     </div>
-    <nav class="tabs header-inner" id="tabs">
-      <button class="tab active" data-tab="registrar">1 · Registrar</button>
-      <button class="tab" data-tab="ranking">2 · Ranking</button>
-      <button class="tab" data-tab="patrones">3 · Patrones</button>
-      <button class="tab" data-tab="aplicar">4 · Aplicar a mi tienda</button>
-      <button class="tab" data-tab="meta">Meta Ad Library</button>
+    <nav class="menu" id="menu" aria-label="Menú principal">
+      <a href="#inicio" data-vista="inicio"><span aria-hidden="true">🏠</span>Inicio</a>
+      <a href="#analizar" data-vista="analizar"><span aria-hidden="true">🔍</span>Analizar</a>
+      <a href="#productos" data-vista="productos"><span aria-hidden="true">📋</span>Mis productos</a>
+      <a href="#tienda" data-vista="tienda"><span aria-hidden="true">🛒</span>Mi tienda</a>
+      <a href="#tendencias" data-vista="tendencias"><span aria-hidden="true">💡</span>Tendencias</a>
     </nav>
   </header>
 
-  <main class="container">
-    <!-- 1. REGISTRAR ---------------------------------------------------- -->
-    <section class="panel" id="panel-registrar">
-      <p class="ayuda">Anota un anuncio o video que veas funcionando. Copia solo los datos visibles
-        (vistas, likes, comentarios) y describe la <strong>estructura</strong>; no copies el texto ni el video.</p>
-      <form id="formGanador" autocomplete="off">
+  <main class="container" id="contenido" tabindex="-1">
+
+    <!-- INICIO ============================================================ -->
+    <section class="vista" id="v-inicio">
+      <div class="bienvenida">
+        <h1>Encuentra productos que ya se venden en redes y llévalos a tu tienda</h1>
+        <p>No necesitas experiencia. Te haremos preguntas simples y te diremos si un producto vale la pena.</p>
+      </div>
+
+      <ol class="como-funciona" aria-label="Cómo funciona">
+        <li><span class="num">1</span><b>Mira videos</b> en TikTok, Instagram o Facebook y elige un producto que te llame la atención.</li>
+        <li><span class="num">2</span><b>Responde preguntas</b> sobre ese video. Te diremos si es buen producto con un semáforo 🟢🟡🔴.</li>
+        <li><span class="num">3</span><b>Llévalo a tu tienda:</b> te damos el precio, la descripción y el guion para tu video.</li>
+      </ol>
+
+      <div class="acciones-grandes">
+        <a href="#analizar" class="accion-grande principal" id="btnEmpezar">
+          <span class="icono" aria-hidden="true">🔍</span>
+          <span><b>Analizar un producto</b><small>Viste algo en redes: veamos si sirve</small></span>
+        </a>
+        <a href="#productos" class="accion-grande">
+          <span class="icono" aria-hidden="true">📋</span>
+          <span><b>Mis productos</b><small id="resumenProductos">Aún no analizas ninguno</small></span>
+        </a>
+        <a href="#tienda" class="accion-grande">
+          <span class="icono" aria-hidden="true">🛒</span>
+          <span><b>Llevar a mi tienda</b><small>Precio, descripción y video</small></span>
+        </a>
+        <button class="accion-grande" id="btnEjemplo">
+          <span class="icono" aria-hidden="true">🎓</span>
+          <span><b>Ver un ejemplo</b><small>Aprende con datos inventados</small></span>
+        </button>
+      </div>
+
+      <details class="avanzado">
+        <summary>⚙️ Herramientas avanzadas</summary>
+        <div class="avanzado-cuerpo">
+          <h3>Guardar o recuperar tus datos</h3>
+          <p class="nota">Tus productos se guardan solo en este navegador. Descarga una copia de vez en cuando.</p>
+          <div class="fila-botones">
+            <button class="btn-sec" id="btnExportar">⬇ Descargar copia</button>
+            <label class="btn-sec">⬆ Recuperar copia<input type="file" id="inputImportar" accept=".json" hidden /></label>
+            <button class="btn-sec" id="btnCSVTodos">⬇ Archivo Shopify con todos los aptos</button>
+          </div>
+
+          <h3>Buscar anuncios en la Biblioteca de Anuncios de Meta</h3>
+          <p class="nota">Requiere un "token" de una app de Meta (identidad verificada). Solo entrega anuncios de tiendas
+            mostrados en Europa o Reino Unido; para Chile u otros países casi solo muestra anuncios políticos.
+            Sirve para ver qué se vende en Europa antes de que llegue a tu país.</p>
+          <div class="campos-grid">
+            <label>Token de acceso<input id="metaToken" type="password" autocomplete="off" /></label>
+            <label>¿Qué buscas?<input id="metaTerminos" placeholder="Ej.: envío gratis" /></label>
+            <label>País (2 letras)<input id="metaPais" value="ES" maxlength="2" /></label>
+            <label>Versión API<input id="metaVersion" value="v25.0" /></label>
+          </div>
+          <div class="fila-botones"><button class="btn-sec" id="btnMeta">Buscar anuncios</button></div>
+          <p class="alerta oculto" id="metaError" role="alert"></p>
+          <ul class="lista" id="metaResultados"></ul>
+        </div>
+      </details>
+    </section>
+
+    <!-- ANALIZAR (asistente) =============================================== -->
+    <section class="vista oculto" id="v-analizar" aria-labelledby="tituloAsistente">
+      <div class="progreso" aria-hidden="true"><div class="progreso-barra" id="barraProgreso"></div></div>
+      <p class="paso-indicador" id="pasoIndicador">Paso 1 de 7</p>
+      <p class="aviso-ejemplo oculto" id="avisoEjemplo">🎓 Estás viendo un <b>ejemplo con datos inventados</b>. Puedes cambiar lo que quieras.</p>
+
+      <form id="asistente" autocomplete="off" novalidate>
         <input type="hidden" name="id" />
-        <fieldset>
-          <legend>Fuente</legend>
-          <div class="grid">
-            <label>Producto *<input name="producto" required placeholder="Ej.: corrector de postura" /></label>
-            <label>Nicho<input name="nicho" list="nichos" placeholder="Ej.: salud y bienestar" /></label>
-            <label>Plataforma
-              <select name="plataforma">
-                <option>TikTok</option><option>Instagram Reels</option><option>Facebook</option>
-                <option>Meta Ads (Biblioteca)</option><option>YouTube Shorts</option><option>Otro</option>
-              </select>
-            </label>
-            <label>Enlace<input name="enlace" type="url" placeholder="https://…" /></label>
-            <label>Fecha de publicación<input name="fechaPublicacion" type="date" /></label>
-            <label>Días activo (si es anuncio pagado)<input name="diasActivo" type="number" min="0" /></label>
+
+        <!-- Paso 1 -->
+        <fieldset class="paso" data-paso="1">
+          <legend id="tituloAsistente"><h2>¿Qué producto viste?</h2></legend>
+          <label class="campo">Nombre del producto
+            <input name="producto" placeholder="Ej.: organizador de cables" />
+            <small>Escríbelo como tú lo llamarías.</small>
+          </label>
+          <p class="error oculto" id="errProducto" role="alert">Escribe el nombre del producto para continuar.</p>
+          <p class="pregunta">¿Dónde lo viste?</p>
+          <div class="tarjetas-opcion" data-grupo="plataforma"></div>
+          <label class="campo">Link del video <span class="opcional">(opcional)</span>
+            <input name="enlace" type="url" inputmode="url" placeholder="Pega aquí el link" />
+            <small>Así podrás volver a verlo después.</small>
+          </label>
+        </fieldset>
+
+        <!-- Paso 2 -->
+        <fieldset class="paso oculto" data-paso="2">
+          <legend><h2>¿Cuánta gente reaccionó al video?</h2></legend>
+          <p class="ayuda">Copia los números que aparecen en el video. Si dice <b>1,2 M</b> o <b>15 mil</b>, escríbelo tal cual: nosotros lo entendemos.</p>
+          <div class="campos-grid">
+            <label class="campo">👁 Vistas / reproducciones<input name="vistas" inputmode="decimal" placeholder="Ej.: 1,2 M" /></label>
+            <label class="campo">❤ Me gusta<input name="likes" inputmode="decimal" placeholder="Ej.: 85 mil" /></label>
+            <label class="campo">💬 Comentarios<input name="comentarios" inputmode="decimal" placeholder="Ej.: 900" /></label>
+            <label class="campo">↗ Compartidos<input name="compartidos" inputmode="decimal" placeholder="Ej.: 4.500" /></label>
+          </div>
+          <p class="pregunta">¿Hace cuántos días se publicó?</p>
+          <div class="chips" data-destino="diasPublicado">
+            <button type="button" data-valor="1">Hoy</button>
+            <button type="button" data-valor="3">Hace 3 días</button>
+            <button type="button" data-valor="7">Hace 1 semana</button>
+            <button type="button" data-valor="30">Hace 1 mes</button>
+          </div>
+          <label class="campo campo-corto">O escribe los días<input name="diasPublicado" inputmode="numeric" placeholder="Ej.: 10" /></label>
+          <details class="donde">
+            <summary>¿Dónde encuentro estos números?</summary>
+            <p>Están junto a los íconos del video: el corazón (me gusta), la burbuja (comentarios) y la flecha (compartir).
+              Las vistas suelen aparecer en la miniatura del video o en el perfil de quien lo publicó.
+              La fecha aparece debajo del nombre de usuario o en la descripción.</p>
+            <p>Si algún número no aparece, déjalo en blanco.</p>
+          </details>
+        </fieldset>
+
+        <!-- Paso 3 -->
+        <fieldset class="paso oculto" data-paso="3">
+          <legend><h2>¿Hay señales de que se está vendiendo?</h2></legend>
+          <p class="pregunta">¿El video decía <b>"Patrocinado"</b> o <b>"Publicidad"</b>?</p>
+          <div class="tarjetas-opcion compactas" data-grupo="anuncioPagado"></div>
+          <label class="campo campo-corto oculto" id="campoDiasActivo">¿Hace cuántos días ves ese anuncio?
+            <input name="diasActivo" inputmode="numeric" placeholder="Ej.: 20" />
+            <small>Si alguien paga publicidad durante semanas, probablemente le está funcionando.</small>
+          </label>
+          <p class="pregunta">Lee los primeros 20 comentarios. ¿Cuántos preguntan el <b>precio</b> o <b>dónde comprarlo</b>?</p>
+          <div class="deslizador">
+            <input type="range" name="comentariosCompra" min="0" max="20" value="0" aria-describedby="valorIntencion" />
+            <output id="valorIntencion">0 de 20</output>
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>Métricas visibles</legend>
-          <div class="grid">
-            <label>Vistas<input name="vistas" type="number" min="0" /></label>
-            <label>Likes<input name="likes" type="number" min="0" /></label>
-            <label>Comentarios<input name="comentarios" type="number" min="0" /></label>
-            <label>Compartidos<input name="compartidos" type="number" min="0" /></label>
-            <label title="Cuenta en una muestra de comentarios cuántos preguntan dónde comprar, precio o link">
-              Comentarios con intención de compra<input name="comentariosCompra" type="number" min="0" /></label>
+        <!-- Paso 4 -->
+        <fieldset class="paso oculto" data-paso="4">
+          <legend><h2>¿Cómo era el video?</h2></legend>
+          <p class="pregunta">¿Cómo <b>empezaba</b>? (los primeros 3 segundos)</p>
+          <div class="tarjetas-opcion" data-grupo="tipoGancho"></div>
+          <p class="pregunta">¿Qué <b>tipo de video</b> era?</p>
+          <div class="tarjetas-opcion" data-grupo="formato"></div>
+          <p class="pregunta">¿Ofrecían algo especial?</p>
+          <div class="tarjetas-opcion" data-grupo="oferta"></div>
+        </fieldset>
+
+        <!-- Paso 5 -->
+        <fieldset class="paso oculto" data-paso="5">
+          <legend><h2>Hagamos cuentas</h2></legend>
+          <div class="campos-grid">
+            <label class="campo">💰 ¿A cuánto lo venden en el video o en su tienda?
+              <input name="precioVenta" inputmode="decimal" placeholder="Ej.: 19.990" /></label>
+            <label class="campo">🏭 ¿Cuánto cuesta en el proveedor?
+              <input name="costoProducto" inputmode="decimal" placeholder="Ej.: 4.500" /></label>
+            <label class="campo">🚚 ¿Cuánto cuesta enviarlo?
+              <input name="costoEnvio" inputmode="decimal" placeholder="Ej.: 2.500" /></label>
+            <label class="campo">📅 ¿Cuánto tarda en llegar? <span class="opcional">(opcional)</span>
+              <input name="tiempoEnvio" placeholder="Ej.: 7 a 12 días hábiles" /></label>
           </div>
+          <div class="calculo" id="calculoGanancia" aria-live="polite"></div>
+          <details class="donde">
+            <summary>¿Qué es el proveedor y dónde veo su precio?</summary>
+            <p>En dropshipping tú no compras stock: cuando alguien te compra, el <b>proveedor</b> envía el producto
+              directo a tu cliente. Busca el mismo producto (por foto o por nombre) en un proveedor de dropshipping
+              —por ejemplo AliExpress, CJ Dropshipping o un mayorista de tu país— y anota su precio y el costo de envío.</p>
+          </details>
         </fieldset>
 
-        <fieldset>
-          <legend>Estructura del anuncio</legend>
-          <div class="grid">
-            <label>Tipo de gancho (primeros 3 s)<select name="tipoGancho" id="selGancho"></select></label>
-            <label>Formato<select name="formato" id="selFormato"></select></label>
-            <label>Oferta
-              <select name="oferta">
-                <option>Ninguna</option><option>Envío gratis</option><option>Descuento %</option>
-                <option>2x1 / pack</option><option>Regalo incluido</option>
-                <option>Pago contra entrega</option><option>Garantía de devolución</option>
-              </select>
-            </label>
-            <label>Llamado a la acción<input name="cta" placeholder="Ej.: Pídelo hoy con envío gratis" /></label>
+        <!-- Paso 6 -->
+        <fieldset class="paso oculto" data-paso="6">
+          <legend><h2>Revisemos el producto</h2></legend>
+          <p class="ayuda">Responde con sinceridad. Si no sabes, elige "No sé".</p>
+          <div id="preguntasCriterios"></div>
+        </fieldset>
+
+        <!-- Paso 7 -->
+        <fieldset class="paso oculto" data-paso="7">
+          <legend><h2>Descríbelo con tus palabras <span class="opcional">(opcional)</span></h2></legend>
+          <p class="ayuda">Esto se usará para escribir tu página de producto y tu video. Puedes saltarlo y completarlo después.</p>
+          <label class="campo">¿Qué problema resuelve?<input name="problema" placeholder="Ej.: los cables siempre se enredan detrás del escritorio" /></label>
+          <label class="campo">¿Qué logra la persona que lo usa?<input name="beneficioPrincipal" placeholder="Ej.: tener el escritorio ordenado en 5 minutos" /></label>
+          <div class="campos-grid">
+            <label class="campo">Ventaja 1<input name="beneficio1" placeholder="Ej.: se instala sin herramientas" /></label>
+            <label class="campo">Ventaja 2<input name="beneficio2" placeholder="Ej.: sirve para 10 cables" /></label>
+            <label class="campo">Ventaja 3<input name="beneficio3" placeholder="Ej.: no deja marcas" /></label>
           </div>
+          <label class="campo">¿Qué recibe el cliente en la caja?<input name="incluye" placeholder="Ej.: 1 organizador + 10 clips adhesivos" /></label>
         </fieldset>
 
-        <fieldset>
-          <legend>Números del negocio</legend>
-          <div class="grid">
-            <label>Precio de venta observado<input name="precioVenta" type="number" min="0" step="any" /></label>
-            <label>Costo del producto (proveedor)<input name="costoProducto" type="number" min="0" step="any" /></label>
-            <label>Costo de envío<input name="costoEnvio" type="number" min="0" step="any" /></label>
-            <label>Plazo de entrega del proveedor<input name="tiempoEnvio" placeholder="Ej.: 7 a 12 días hábiles" /></label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Para tu ficha (con tus palabras)</legend>
-          <div class="grid">
-            <label class="ancho">Problema que resuelve<input name="problema" placeholder="Ej.: dolor de espalda por estar sentado" /></label>
-            <label class="ancho">Beneficio principal<input name="beneficioPrincipal" placeholder="Ej.: mejorar tu postura en minutos al día" /></label>
-            <label>Beneficio 1<input name="beneficio1" /></label>
-            <label>Beneficio 2<input name="beneficio2" /></label>
-            <label>Beneficio 3<input name="beneficio3" /></label>
-            <label>Qué incluye<input name="incluye" placeholder="Ej.: 1 corrector ajustable + manual" /></label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Checklist de producto ganador</legend>
-          <div id="criterios" class="criterios"></div>
-        </fieldset>
-
-        <div class="form-actions">
-          <button type="reset" class="btn-ghost" id="btnLimpiar">Limpiar</button>
-          <button type="submit" class="btn-primary">Guardar y puntuar</button>
+        <div class="navegacion-pasos">
+          <button type="button" class="btn-sec" id="btnAtras">← Atrás</button>
+          <button type="button" class="btn-prim" id="btnSiguiente">Siguiente →</button>
         </div>
       </form>
-      <datalist id="nichos"></datalist>
     </section>
 
-    <!-- 2. RANKING ------------------------------------------------------ -->
-    <section class="panel oculto" id="panel-ranking">
-      <p class="ayuda">Puntaje 0–100 = demanda (30) + margen (25) + prueba de rentabilidad (15) + checklist (30).
-        Los umbrales son heurísticos y se ajustan en <code>scoring.js</code>.</p>
-      <ul class="lista" id="ranking"></ul>
-      <p class="empty oculto" id="rankingVacio">Aún no registras productos. Empieza en la pestaña 1.</p>
-      <div class="barra-acciones">
-        <button class="btn-ghost" id="btnExportar">⬇ Respaldo JSON</button>
-        <label class="btn-ghost">⬆ Restaurar respaldo<input type="file" id="inputImportar" accept=".json" hidden /></label>
-      </div>
+    <!-- RESULTADO ========================================================= -->
+    <section class="vista oculto" id="v-resultado" aria-live="polite">
+      <div id="resultado"></div>
     </section>
 
-    <!-- 3. PATRONES ----------------------------------------------------- -->
-    <section class="panel oculto" id="panel-patrones">
-      <p class="ayuda">Qué tienen en común tus productos mejor puntuados (puntaje ≥ <span id="umbralPatron">50</span>, sin "No apto").
-        Con menos de 5 registros los patrones son poco confiables.</p>
-      <div id="patrones" class="patrones"></div>
+    <!-- MIS PRODUCTOS ===================================================== -->
+    <section class="vista oculto" id="v-productos">
+      <h1>📋 Mis productos</h1>
+      <p class="ayuda">Ordenados del mejor al peor. Toca uno para ver por qué obtuvo ese resultado.</p>
+      <ul class="lista" id="listaProductos"></ul>
     </section>
 
-    <!-- 4. APLICAR ------------------------------------------------------ -->
-    <section class="panel oculto" id="panel-aplicar">
-      <div class="grid">
-        <label>Producto<select id="selAplicar"></select></label>
-        <label>Moneda
-          <select id="selMoneda"><option>CLP</option><option>USD</option><option>EUR</option><option>MXN</option></select>
-        </label>
-        <label>Multiplicador de precio<input id="inputMult" type="number" min="1.5" max="6" step="0.1" value="2.8" /></label>
-        <label class="check"><input type="checkbox" id="chkComparar" /> Mostrar precio "antes" tachado</label>
-      </div>
-      <p class="aviso oculto" id="avisoComparar">⚠ Un precio "antes" que nunca cobraste puede ser publicidad engañosa
-        frente a la normativa de protección al consumidor de tu país. Úsalo solo si es un precio real anterior.</p>
-      <div id="salidaAplicar"></div>
-      <div class="barra-acciones">
-        <button class="btn-primary" id="btnCSV">⬇ CSV para Shopify (todos los aptos)</button>
-      </div>
+    <!-- MI TIENDA ========================================================= -->
+    <section class="vista oculto" id="v-tienda">
+      <h1>🛒 Llevar a mi tienda</h1>
+      <label class="campo">¿Qué producto quieres vender?<select id="selProducto"></select></label>
+      <div id="tienda"></div>
     </section>
 
-    <!-- 5. META --------------------------------------------------------- -->
-    <section class="panel oculto" id="panel-meta">
-      <p class="ayuda">Busca anuncios activos en la Biblioteca de Anuncios de Meta. <strong>Limitación:</strong> la API solo
-        entrega anuncios comerciales mostrados en la UE o Reino Unido; para Chile u otros países devuelve, en la práctica,
-        solo anuncios políticos. Úsala para detectar tendencias en Europa antes de que lleguen a tu mercado.</p>
-      <div class="grid">
-        <label class="ancho">Token de acceso<input id="metaToken" type="password" placeholder="Token de tu app de Meta" /></label>
-        <label>Término<input id="metaTerminos" placeholder="Ej.: envío gratis" /></label>
-        <label>País (UE/UK)<input id="metaPais" value="ES" maxlength="2" /></label>
-        <label>Versión API<input id="metaVersion" value="v25.0" /></label>
-      </div>
-      <div class="barra-acciones"><button class="btn-primary" id="btnMeta">Buscar</button></div>
-      <p class="aviso oculto" id="metaError"></p>
-      <ul class="lista" id="metaResultados"></ul>
+    <!-- TENDENCIAS ======================================================== -->
+    <section class="vista oculto" id="v-tendencias">
+      <h1>💡 Qué está funcionando</h1>
+      <p class="ayuda">Lo que tienen en común tus productos con mejor resultado (🟢 y 🟡).</p>
+      <div id="tendencias"></div>
     </section>
   </main>
 
-  <footer class="app-footer">
-    Los datos se guardan solo en este navegador. Respalda con "⬇ Respaldo JSON" en la pestaña Ranking.
-  </footer>
+  <!-- AYUDA ============================================================== -->
+  <dialog id="dlgAyuda" aria-labelledby="tituloAyuda">
+    <h2 id="tituloAyuda">❓ Ayuda</h2>
+    <h3>¿Qué es el dropshipping?</h3>
+    <p>Vendes productos en tu tienda online sin tenerlos en tu casa. Cuando alguien te compra, tú le compras al
+      <b>proveedor</b> y él lo envía directo a tu cliente. Tu ganancia es la diferencia de precio.</p>
+    <h3>¿Qué hace esta app?</h3>
+    <p>Te ayuda a elegir productos mirando lo que ya funciona en redes sociales, y prepara lo necesario para
+      venderlos: precio, descripción y guion de video. <b>No copia</b> videos ni textos de otros (eso está prohibido):
+      te enseña a hacer los tuyos con la misma fórmula.</p>
+    <h3>Palabras que vas a ver</h3>
+    <dl>
+      <dt>Proveedor</dt><dd>Quien tiene el producto y lo envía a tu cliente.</dd>
+      <dt>Ganancia por venta</dt><dd>Lo que te queda: precio de venta menos costo del producto y del envío. A eso aún
+        hay que restarle lo que gastes en publicidad.</dd>
+      <dt>Anuncio pagado</dt><dd>Video que dice "Patrocinado" o "Publicidad": alguien paga para mostrarlo.</dd>
+      <dt>Shopify</dt><dd>Plataforma para crear tu tienda online.</dd>
+      <dt>Borrador</dt><dd>Producto guardado en tu tienda pero que tus clientes aún no ven, hasta que lo publiques.</dd>
+    </dl>
+    <h3>¿Qué significan los colores?</h3>
+    <ul class="semaforo-leyenda">
+      <li>🟢 <b>Buen candidato:</b> vale la pena probarlo.</li>
+      <li>🟡 <b>Pruébalo con poco dinero:</b> tiene potencial, pero hay dudas.</li>
+      <li>⚪ <b>Mejor busca otro:</b> pocas señales de que funcione.</li>
+      <li>🔴 <b>No lo vendas:</b> puede traerte problemas legales.</li>
+    </ul>
+    <p class="nota">El resultado es una guía basada en criterios habituales del rubro, no una garantía de ventas.</p>
+    <form method="dialog"><button class="btn-prim">Entendido</button></form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="scoring.js"></script>
   <script src="generadores.js"></script>

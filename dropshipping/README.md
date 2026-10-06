@@ -11,29 +11,54 @@ principiante: ficha de producto, precio, guion de anuncio y CSV de importación.
 
 ## Cómo usarla
 
-Abre `index.html` en el navegador. Flujo en 4 pasos:
+Abre `index.html` en el navegador (computador o celular). Está pensada para
+alguien **sin experiencia**: una pregunta por pantalla, ejemplos en cada
+campo, ayudas "¿dónde encuentro esto?" y un resultado tipo semáforo.
 
-1. **Registrar**: cuando veas un video o anuncio que funciona, anota las
-   métricas visibles (vistas, likes, comentarios, compartidos), la estructura
-   (gancho, formato, oferta) y los números del negocio (precio observado,
-   costo del proveedor, envío). Marca el checklist del producto.
-2. **Ranking**: cada producto recibe un puntaje de 0 a 100 y un veredicto:
-   *Ganador probable* (≥70), *Testear con poco presupuesto* (50–69),
-   *Descartar* (<50) o *No apto* (si falla un criterio obligatorio).
-3. **Patrones**: muestra qué ganchos, formatos, ofertas, plataformas y nichos
-   se repiten entre tus mejores productos, y las medianas de precio, margen y
-   engagement.
-4. **Aplicar a mi tienda**: genera la ficha de producto, el precio sugerido,
-   un guion de anuncio de 30 segundos y el checklist previo a publicar.
-   Exporta:
-   - **CSV para Shopify** (Admin → Productos → Importar). Los productos
-     entran como **borrador** (`Status = draft`).
-   - **JSON para Claude**: pégalo en una conversación con el conector de
-     Shopify activo y Claude crea el producto como borrador.
+1. **Inicio**: explica el método en 3 pasos. El botón **🎓 Ver un ejemplo**
+   carga un producto con **datos inventados** (marcado como "Ejemplo") para
+   aprender sin riesgo.
+2. **🔍 Analizar** (asistente de 7 pasos con barra de avance):
+   1. Qué producto viste y dónde (botones grandes: TikTok, Instagram…).
+   2. Cuánta gente reaccionó. Acepta los números como aparecen en redes:
+      `1,2 M`, `15 mil`, `8K`, `19.990`.
+   3. Señales de venta: si el video decía "Patrocinado" y cuántos de 20
+      comentarios preguntan el precio o dónde comprarlo.
+   4. Cómo era el video: inicio, tipo de video y oferta, con tarjetas que
+      explican cada opción con un ejemplo.
+   5. Cuentas: precio, costo del proveedor y envío. Muestra en vivo cuánto
+      ganarías por venta.
+   6. Ocho preguntas Sí / No / No sé sobre el producto. Dos son
+      **importantes** (marcas y productos restringidos).
+   7. (Opcional) Descripción con tus palabras para la página y el video.
+3. **Resultado**: semáforo 🟢 *¡Buen candidato!* · 🟡 *Pruébalo con poco
+   dinero* · ⚪ *Mejor busca otro* · 🔴 *No lo vendas*, con las razones en
+   palabras simples (✅ / ➖ / ❌). El puntaje numérico queda en un desplegable.
+4. **📋 Mis productos**: lista ordenada del mejor al peor, con accesos a
+   corregir, ver el video, llevar a la tienda o borrar.
+5. **🛒 Mi tienda**: cinco etapas numeradas —precio (con un deslizador
+   "más barato ↔ más ganancia"), vista previa de la página de producto, guion
+   del video como línea de tiempo, subida a Shopify (archivo o Claude) y
+   lista de revisión antes de publicar.
+6. **💡 Tendencias**: qué tienen en común tus productos 🟢 y 🟡.
 
-Los datos quedan en `localStorage` de ese navegador. Usa **⬇ Respaldo JSON**
-(pestaña Ranking) para no perderlos y **⬆ Restaurar respaldo** para
-recuperarlos o pasarlos a otro equipo.
+En celular el menú queda abajo, como en una app, y los botones Atrás /
+Siguiente siempre están a la vista. Respeta el modo oscuro del teléfono.
+
+### Subir a Shopify
+
+- **Opción A (recomendada)**: *Descargar archivo para Shopify* → en
+  Shopify, **Productos → Importar** → elegir el archivo. Entra como
+  **borrador**: agrega tus fotos y publícalo.
+- **Opción B**: *Copiar texto para Claude* y pegarlo en una conversación
+  con Claude que tenga el conector de Shopify activo. También crea un
+  borrador.
+
+### Guardar tus datos
+
+Se guardan solo en ese navegador. En **Inicio → ⚙️ Herramientas
+avanzadas** puedes descargar una copia, recuperarla en otro equipo o
+exportar todos los productos aptos a un solo archivo de Shopify.
 
 ## Cómo se calcula el puntaje
 
@@ -41,7 +66,7 @@ recuperarlos o pasarlos a otro equipo.
 |---|---|---|---|
 | Demanda | 30 | Engagement (interacciones / vistas) y vistas por día (escala log.) | engagement ≥ 10 % y ≥ 50.000 vistas/día |
 | Margen | 25 | (precio − costo − envío) / precio | margen ≥ 65 % |
-| Prueba de rentabilidad | 15 | Días activo del anuncio pagado, o % de comentarios con intención de compra | ≥ 30 días activo, o ≥ 5 % de comentarios de compra |
+| Señales de venta | 15 | Días que lleva activo el anuncio pagado, o comentarios que preguntan precio / dónde comprar (de 20 leídos) | ≥ 30 días activo, o ≥ 5 de 20 comentarios |
 | Checklist | 30 | 8 criterios cualitativos (efecto wow, resuelve problema, etc.) | todos marcados |
 
 **Estos umbrales son heurísticos**: reflejan criterios de práctica habitual
@@ -57,9 +82,9 @@ y no se exporta al CSV.
 
 ## Módulo opcional: Biblioteca de Anuncios de Meta
 
-La pestaña **Meta Ad Library** consulta la API oficial (`ads_archive`) y
-ordena los anuncios por días activo. Con **➕ Analizar este anuncio** se
-precarga el formulario.
+En **Inicio → ⚙️ Herramientas avanzadas**, la búsqueda de Meta consulta la API oficial (`ads_archive`) y
+ordena los anuncios por días activo. Con **🔍 Analizar este** se
+precarga el asistente.
 
 Limitaciones (fuentes secundarias; no pude abrir la documentación oficial
 desde este entorno, revísala en
@@ -73,7 +98,7 @@ desde este entorno, revísala en
   (incluye verificación de identidad). El token se guarda solo en tu
   navegador.
 - La versión de la API viene por defecto en `v25.0` y se puede cambiar en
-  la pestaña. Si Meta responde con error, el mensaje se muestra tal cual.
+  esa sección. Si Meta responde con error, el mensaje se muestra tal cual.
 
 **TikTok** no está integrado: su Commercial Content API requiere solicitar
 acceso (revisión de 1–2 semanas) y solo entrega datos de Europa. Para TikTok
@@ -83,11 +108,11 @@ usa el registro manual.
 
 | Archivo | Descripción |
 |---|---|
-| `index.html` | Interfaz (5 pestañas) |
+| `index.html` | Interfaz: inicio, asistente, resultado, productos, tienda, tendencias y ayuda |
 | `styles.css` | Estilos |
-| `app.js` | Lógica de interfaz y persistencia |
-| `scoring.js` | Motor de puntuación (umbrales y pesos editables) |
-| `generadores.js` | Ficha, guion, CSV de Shopify y JSON para Claude |
+| `app.js` | Navegación, asistente paso a paso, semáforo y persistencia |
+| `scoring.js` | Motor de puntuación (umbrales y pesos editables), preguntas del checklist y lector de números |
+| `generadores.js` | Ficha, guion (en pasos), CSV de Shopify y texto para Claude |
 | `meta-api.js` | Cliente de la Biblioteca de Anuncios de Meta |
 | `tests/scoring.test.js` | Pruebas: `node tests/scoring.test.js` |
 
@@ -97,6 +122,6 @@ usa el registro manual.
   Shopify citada en fuentes secundarias (solo `Handle` y `Title` son
   obligatorias; los encabezados distinguen mayúsculas). **Importa primero un
   solo producto de prueba** para confirmarlo con tu tienda.
-- Precio "antes" tachado: viene desactivado. Mostrar un precio anterior que
+- Precio "antes" tachado: no se ofrece en la interfaz. Mostrar un precio anterior que
   nunca se cobró puede infringir la normativa de protección al consumidor
   (en Chile, Ley 19.496 [VERIFICAR artículo aplicable y vigencia]).

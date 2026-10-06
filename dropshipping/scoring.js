@@ -13,7 +13,7 @@
     vistasDiaPleno: 50000,   // vistas por día para puntaje máximo de velocidad
     margenPleno: 0.65,       // 65 % de margen bruto = puntaje máximo
     diasActivoPleno: 30,     // anuncio pagado activo 30+ días = señal fuerte
-    intencionPleno: 0.05,    // 5 % de comentarios preguntando "¿dónde lo compro?"
+    intencionPleno: 0.25,    // 5 de cada 20 comentarios preguntan precio o "¿dónde lo compro?"
   };
 
   const PESOS = { demanda: 30, margen: 25, prueba: 15, checklist: 30 };
@@ -21,14 +21,23 @@
   // Criterios cualitativos. Los marcados `bloqueante` dejan el producto como
   // "No apto" si no se cumplen, sin importar el resto del puntaje.
   const CRITERIOS = [
-    { id: "wow", texto: "Efecto 'wow' visible en video" },
-    { id: "problema", texto: "Resuelve un problema concreto" },
-    { id: "noLocal", texto: "Difícil de encontrar en tiendas locales" },
-    { id: "tresSeg", texto: "Se entiende en los primeros 3 segundos" },
-    { id: "impulso", texto: "Precio de compra por impulso para tu público" },
-    { id: "envio", texto: "Liviano, no frágil, fácil de enviar" },
-    { id: "sinMarca", texto: "No usa marca registrada ni imita un producto de marca", bloqueante: true },
-    { id: "permitido", texto: "No es producto restringido (salud, cosmética regulada, armas, etc.)", bloqueante: true },
+    // `pregunta` y `ayuda` son el texto para principiantes del asistente.
+    { id: "wow", texto: "Efecto 'wow' visible en video",
+      pregunta: "¿Se ve llamativo o sorprendente en un video?", ayuda: "Si al verlo piensas \"¡qué buena idea!\", es un sí." },
+    { id: "problema", texto: "Resuelve un problema concreto",
+      pregunta: "¿Soluciona un problema o molestia del día a día?", ayuda: "Ej.: cables enredados, dolor de espalda, ropa con pelusas." },
+    { id: "noLocal", texto: "Difícil de encontrar en tiendas locales",
+      pregunta: "¿Es difícil encontrarlo en tiendas de tu ciudad?", ayuda: "Si se vende en cualquier supermercado, la gente no te lo comprará a ti." },
+    { id: "tresSeg", texto: "Se entiende en los primeros 3 segundos",
+      pregunta: "¿Se entiende para qué sirve en 3 segundos?", ayuda: "La gente pasa los videos muy rápido. Si hay que explicarlo mucho, es un no." },
+    { id: "impulso", texto: "Precio de compra por impulso para tu público",
+      pregunta: "¿Alguien lo compraría sin pensarlo mucho por su precio?", ayuda: "Productos baratos o medianos se compran por impulso; los caros no." },
+    { id: "envio", texto: "Liviano, no frágil, fácil de enviar",
+      pregunta: "¿Es liviano y no se rompe fácil?", ayuda: "Lo pesado o frágil encarece el envío y genera reclamos." },
+    { id: "sinMarca", texto: "No usa marca registrada ni imita un producto de marca", bloqueante: true,
+      pregunta: "¿Es un producto SIN marca famosa y que NO es copia de una?", ayuda: "Vender copias de Nike, Apple, Disney, etc. es ilegal y te pueden cerrar la tienda." },
+    { id: "permitido", texto: "No es producto restringido (salud, cosmética regulada, armas, etc.)", bloqueante: true,
+      pregunta: "¿Es un producto de venta libre (no es medicamento, suplemento, arma ni similar)?", ayuda: "Esos productos requieren permisos especiales. Si tienes dudas, responde \"No sé\"." },
   ];
 
   const num = (v) => {
@@ -55,7 +64,10 @@
     const precio = num(g.precioVenta);
     const margen = precio ? (precio - costoTotal) / precio : 0;
     const multiplicador = costoTotal ? precio / costoTotal : 0;
-    const intencion = num(g.comentarios) ? num(g.comentariosCompra) / num(g.comentarios) : 0;
+    // Intención de compra sobre una muestra de comentarios leídos (por defecto
+    // 20): nadie puede leer los miles de comentarios de un video viral.
+    const muestra = num(g.muestraComentarios) || (num(g.comentariosCompra) ? 20 : 0);
+    const intencion = muestra ? Math.min(1, num(g.comentariosCompra) / muestra) : 0;
     return { vistas, interacciones, engagement, dias, vistasDia, costoTotal, precio, margen, multiplicador, intencion };
   }
 
@@ -127,7 +139,28 @@
     return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
   }
 
-  const api = { UMBRALES, PESOS, CRITERIOS, metricas, puntuar, precioSugerido, frecuencias, mediana, diasDesde };
+// Entiende "1,2 M", "15 mil", "15K", "19.990", "24.99", "$ 4.500".
+  function leerNumero(txt) {
+    let s = String(txt ?? "").trim().toLowerCase().replace(/[$\s]/g, "").replace(/^(us|mx|clp|usd)/, "");
+    if (!s) return "";
+    const sufijo = s.match(/(millones|millón|millon|mill|mil|k|m)$/);
+    let mult = 1;
+    if (sufijo) {
+      mult = sufijo[1] === "k" || sufijo[1] === "mil" ? 1e3 : 1e6;
+      s = s.slice(0, -sufijo[1].length).replace(",", ".");
+    } else if (/^\d{1,3}([.,]\d{3})+$/.test(s)) {
+      s = s.replace(/[.,]/g, "");                 // 19.990 / 1,200,000
+    } else if (s.includes(".") && s.includes(",")) {
+      const decimal = s.lastIndexOf(",") > s.lastIndexOf(".") ? "," : ".";
+      s = s.split(decimal === "," ? "." : ",").join("").replace(",", "."); // 1.234,50 / 1,234.50
+    } else {
+      s = s.replace(",", ".");
+    }
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? Math.round(n * mult * 100) / 100 : "";
+  }
+
+  const api = { leerNumero, UMBRALES, PESOS, CRITERIOS, metricas, puntuar, precioSugerido, frecuencias, mediana, diasDesde };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.Scoring = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -58,7 +58,7 @@
       "</ul>",
       `<p><strong>Incluye:</strong> ${esc(g.incluye || "[qué recibe el cliente]")}</p>`,
       `<p><strong>Envío:</strong> ${esc(g.tiempoEnvio || "[plazo real de entrega informado por tu proveedor]")}</p>`,
-    ].join("\n");
+    ].join("");
 
     return {
       handle: slug(producto),
@@ -74,20 +74,29 @@
     };
   }
 
-  function guion(g) {
-    const gancho = GANCHOS[g.tipoGancho] || "[Gancho: primera frase que detiene el scroll]";
-    const formato = FORMATOS[g.formato] || "Formato libre: vertical 9:16, 15–30 segundos.";
+  // Guion de 30 s en bloques, para mostrarlo como línea de tiempo.
+  function guionPasos(g) {
     const bs = beneficios(g);
-    const oferta = g.oferta && g.oferta !== "Ninguna" ? g.oferta : "[tu oferta, si tienes]";
+    const oferta = g.oferta && g.oferta !== "Ninguna" ? g.oferta : "[tu oferta, si tienes una]";
     return [
-      `FORMATO: ${g.formato || "—"}`,
-      `Cómo grabarlo: ${formato}`,
+      { tiempo: "0–3 s", titulo: "Detén el scroll", texto: GANCHOS[g.tipoGancho] || "[Primera frase que haga que la gente se detenga]" },
+      { tiempo: "3–10 s", titulo: "Muestra el problema y el producto", texto: g.problema || "[Muestra el problema y el producto resolviéndolo]" },
+      { tiempo: "10–20 s", titulo: "Cuenta los beneficios", texto: (bs.length ? bs : ["[beneficio 1]", "[beneficio 2]"]).join(" · ") },
+      { tiempo: "20–25 s", titulo: "Di la oferta", texto: oferta },
+      { tiempo: "25–30 s", titulo: "Dile qué hacer", texto: g.cta || "Toca el enlace y pídelo hoy" },
+    ];
+  }
+
+  function comoGrabar(g) {
+    return FORMATOS[g.formato] || "Graba en vertical (como se ve en el celular), entre 15 y 30 segundos.";
+  }
+
+  function guion(g) {
+    return [
+      `TIPO DE VIDEO: ${g.formato || "—"}`,
+      `Cómo grabarlo: ${comoGrabar(g)}`,
       "",
-      `0–3 s  GANCHO (${g.tipoGancho || "—"}): ${gancho}`,
-      `3–10 s PROBLEMA / DEMO: ${g.problema || "[muestra el problema y el producto resolviéndolo]"}`,
-      `10–20 s BENEFICIOS: ${(bs.length ? bs : ["[beneficio 1]", "[beneficio 2]"]).join(" · ")}`,
-      `20–25 s OFERTA: ${oferta}`,
-      `25–30 s LLAMADO A LA ACCIÓN: ${g.cta || "Toca el enlace y pídelo hoy"}`,
+      ...guionPasos(g).map((p) => `${p.tiempo}  ${p.titulo.toUpperCase()}: ${p.texto}`),
       "",
       "Escribe el texto con tus propias palabras y graba tu propio video.",
       "No reutilices el video, la música ni el texto del anuncio original.",
@@ -134,7 +143,7 @@
     };
   }
 
-  const api = { GANCHOS, FORMATOS, COLUMNAS_CSV, ficha, guion, csvShopify, jsonShopify, slug };
+  const api = { GANCHOS, FORMATOS, COLUMNAS_CSV, ficha, guion, guionPasos, comoGrabar, csvShopify, jsonShopify, slug };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.Generadores = api;
 })(typeof window !== "undefined" ? window : globalThis);
