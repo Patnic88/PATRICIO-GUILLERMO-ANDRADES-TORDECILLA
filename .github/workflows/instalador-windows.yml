@@ -43,6 +43,12 @@ jobs:
         continue-on-error: true
         run: python empaquetado/prueba_sii_real.py "$env:RUNNER_TEMP/prueba.pfx"
 
+      - name: Diagnóstico de autenticación con el SII (informativo)
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet pypdf
+          python empaquetado/diagnostico_sii.py
+
       - name: Construir MiContabilidad.exe
         run: |
           pyinstaller --noconfirm --clean --console `
