@@ -63,7 +63,8 @@ jobs:
             choco install innosetup -y --no-progress
           }
           $fuente = (Resolve-Path dist/MiContabilidad).Path
-          & $iscc "/DSourceDir=$fuente" "/DMyAppVersion=$env:VERSION" "/Osalida" empaquetado/instalador.iss
+          $salida = Join-Path $PWD "empaquetado/salida"
+          & $iscc "/DSourceDir=$fuente" "/DMyAppVersion=$env:VERSION" "/O$salida" empaquetado/instalador.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló" }
           Get-ChildItem empaquetado/salida
 
