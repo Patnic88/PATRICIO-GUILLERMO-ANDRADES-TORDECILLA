@@ -22,7 +22,7 @@ from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from . import controles, honorarios, impuestos, obligaciones, operaciones, rcv, reportes
+from . import controles, honorarios, impuestos, obligaciones, operaciones, rcv, reportes, sii_ws
 from . import rut as rutmod
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros, guardar_utm_local
@@ -381,10 +381,38 @@ class App:
         guardar_utm_local(self.local, periodo, valor)
         return {"ok": True}
 
+    # ---- conexión con el SII (prueba de certificado)
+    @staticmethod
+    def _ambiente(b):
+        a = b.get("ambiente") or "certificacion"
+        if a not in sii_ws.AMBIENTES:
+            raise ErrorUsuario("Ambiente del SII no válido.")
+        return a
+
+    def sii_semilla(self, q, b):
+        return sii_ws.obtener_semilla(self._ambiente(b))
+
+    @staticmethod
+    def _pfx(b):
+        if not b.get("pfx"):
+            raise ErrorUsuario("Elija el archivo de su certificado digital (.pfx o .p12).")
+        try:
+            return base64.b64decode(b["pfx"])
+        except ValueError:
+            raise ErrorUsuario("No se pudo leer el archivo del certificado.")
+
+    def sii_certificado(self, q, b):
+        _, cert = sii_ws.cargar_pfx(self._pfx(b), b.get("clave") or "")
+        return sii_ws.info_certificado(cert)
+
+    def sii_token(self, q, b):
+        return sii_ws.probar_certificado(self._pfx(b), b.get("clave") or "", self._ambiente(b))
+
     def integridad(self, lib, q, b):
         return {"problemas": lib.verificar_integridad()}
 
 
+SII = {"sii-semilla": "sii_semilla", "sii-certificado": "sii_certificado", "sii-token": "sii_token"}
 GLOBAL = {"ping": ("GET", "ping"), "carpeta": ("GET", "info_carpeta"), "empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm")}
 POR_EMPRESA = {
     "resumen": ("GET", "resumen"), "analizar": ("POST", "analizar"), "importar": ("POST", "importar"),
@@ -446,6 +474,9 @@ def crear_manejador(app: App, puerto_ref: list):
                     return self._json(400, {"error": "Solicitud inválida."})
             partes = url.path.strip("/").split("/")[1:]  # sin 'api'
             try:
+                if len(partes) == 1 and partes[0] in SII and metodo == "POST":
+                    # Las consultas al SII no tocan la contabilidad: no bloquean el resto del programa.
+                    return self._json(200, getattr(app, SII[partes[0]])(q, b))
                 with app.lock:
                     if len(partes) == 1 and partes[0] in GLOBAL and GLOBAL[partes[0]][0] == metodo:
                         res = getattr(app, GLOBAL[partes[0]][1])(q, b)
@@ -463,7 +494,7 @@ def crear_manejador(app: App, puerto_ref: list):
                     return self._enviar(200, res, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                         {"Content-Disposition": f'attachment; filename="{nombre}"'})
                 return self._json(200, res)
-            except (ErrorUsuario, ErrorContable, ParametroFaltante, rutmod.RutInvalido) as e:
+            except (ErrorUsuario, ErrorContable, ParametroFaltante, rutmod.RutInvalido, sii_ws.ErrorSII) as e:
                 return self._json(400, {"error": str(e)})
             except Exception as e:  # error inesperado: se informa sin detener el programa
                 traceback.print_exc()

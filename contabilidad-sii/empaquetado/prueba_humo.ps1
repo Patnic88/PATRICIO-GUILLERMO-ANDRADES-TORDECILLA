@@ -43,6 +43,12 @@ try {
     $x = Invoke-WebRequest "$base/api/$e/excel?periodo=2026-10"
     if ($x.StatusCode -ne 200 -or $x.Content[0] -ne 80 -or $x.Content[1] -ne 75) { throw "La descarga a Excel falló" }
     Write-Host "Excel: $($x.Content.Length) bytes"
+    $pfx = Join-Path $env:RUNNER_TEMP "prueba.pfx"
+    if (Test-Path $pfx) {
+        $cert = Post "sii-certificado" @{ pfx = [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfx)); clave = "clave123" }
+        if ($cert.titular -ne "PERSONA DE PRUEBA") { throw "No se pudo leer el certificado de prueba" }
+        Write-Host "Certificado de prueba leido: $($cert.titular), vigente hasta $($cert.valido_hasta)"
+    } else { Write-Host "Sin .pfx de prueba: se omite la revision del certificado" }
     $c = (Invoke-RestMethod "$base/api/carpeta").carpeta
     Write-Host "Carpeta de datos: $c"
     if ($EsperarDocumentos -and ($c -notlike "*Documents*Mi Contabilidad*")) { throw "Carpeta de datos inesperada: $c" }

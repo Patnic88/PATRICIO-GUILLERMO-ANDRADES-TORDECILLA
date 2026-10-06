@@ -13,10 +13,10 @@ if not defined PY goto sinpython
 %PY% -c "import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)" >nul 2>nul
 if errorlevel 1 goto sinpython
 
-%PY% -c "import openpyxl" >nul 2>nul
+%PY% -c "import openpyxl, cryptography" >nul 2>nul
 if errorlevel 1 (
-  echo Instalando el complemento para Excel. Solo ocurre la primera vez...
-  %PY% -m pip install --user --quiet openpyxl
+  echo Instalando complementos para Excel y certificados. Solo ocurre la primera vez...
+  %PY% -m pip install --user --quiet openpyxl cryptography
 )
 
 echo Abriendo la contabilidad en su navegador...

@@ -34,10 +34,14 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar herramientas de empaquetado
-        run: python -m pip install --upgrade pip pyinstaller openpyxl
+        run: python -m pip install --upgrade pip pyinstaller openpyxl cryptography
 
       - name: Pruebas unitarias
         run: python -m unittest discover -s tests -v
+
+      - name: Prueba real con el SII (ambiente de certificación)
+        continue-on-error: true
+        run: python empaquetado/prueba_sii_real.py "$env:RUNNER_TEMP/prueba.pfx"
 
       - name: Construir MiContabilidad.exe
         run: |

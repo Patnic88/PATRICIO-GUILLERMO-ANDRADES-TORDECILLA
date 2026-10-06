@@ -137,6 +137,7 @@ dl.glos dt { font-weight: 700; } dl.glos dd { margin: 0; }
 <div class="top"><div class="in">
   <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Mi Contabilidad</div>
   <div class="emp" id="topEmp"></div>
+  <button class="btn link" id="btnSII" type="button">Conexión SII</button>
   <button class="btn link" id="btnAyuda" type="button">Ayuda</button>
   <button class="btn" id="btnEmpresas" type="button" hidden>Cambiar empresa</button>
 </div></div>
@@ -597,6 +598,52 @@ async function libro(t, q) {
 }
 
 /* ------------------------------------------------------------ ayuda */
+function pantallaSII() {
+  render(`<div><button class="btn link" type="button" id="siiV">← Volver</button></div>
+    <div class="stack"><h1>Probar la conexión con el SII</h1>
+      <p class="muted">Compruebe que su computador se conecta con el SII y que su certificado digital funciona. No se envía ni se modifica ninguna declaración: solo se pide un permiso de acceso de prueba.</p></div>
+    <div class="panel"><label for="siiAmb" style="max-width:420px">Ambiente del SII
+      <select id="siiAmb"><option value="certificacion">Pruebas del SII (certificación) — recomendado</option><option value="produccion">Producción</option></select></label></div>
+    <div class="panel"><h2>1. Conexión</h2><p class="muted">No necesita certificado. El programa pide al SII un código de prueba (semilla).</p>
+      <div><button class="btn primary" type="button" id="siiSem">Probar conexión</button></div><div id="siiSemR"></div></div>
+    <div class="panel"><h2>2. Certificado digital</h2>
+      <p class="muted">Elija el archivo de su certificado (.pfx o .p12) y escriba su clave. El archivo y la clave se usan solo en este computador, en memoria: no se guardan ni se envían a nadie más que al SII para la prueba.</p>
+      <div class="grid2"><label for="siiPfx">Archivo del certificado<input id="siiPfx" type="file" accept=".pfx,.p12"></label>
+        <label for="siiClave">Clave del certificado<input id="siiClave" type="password" autocomplete="off"></label></div>
+      <div class="row"><button class="btn" type="button" id="siiRev">Revisar certificado</button><button class="btn primary" type="button" id="siiTok">Probar certificado con el SII</button></div>
+      <div id="siiCertR"></div></div>
+    <details><summary>¿Qué significa cada resultado?</summary><div class="stack small">
+      <p><b>Conexión correcta:</b> su computador llega a los servicios del SII.</p>
+      <p><b>Certificado revisado:</b> el archivo y la clave son correctos; se muestra a nombre de quién está y hasta cuándo vale.</p>
+      <p><b>Certificado aceptado por el SII:</b> el SII validó la firma y entregó un permiso de acceso. Con esto se pueden usar los servicios web del SII.</p>
+      <p><b>Rechazado:</b> el mensaje del SII indica el motivo, por ejemplo un certificado vencido o no reconocido.</p></div></details>`);
+  $("#siiV").onclick = () => S.empresa ? ir("inicio") : pantallaEmpresas();
+  const amb = () => $("#siiAmb").value;
+  const pfx = async () => { const f = $("#siiPfx").files[0]; if (!f) throw new Error("Elija el archivo de su certificado (.pfx o .p12)."); return aBase64(f); };
+  const ocupado = (b, t) => { b.disabled = true; const o = b.textContent; b.textContent = t; return () => { b.disabled = false; b.textContent = o; }; };
+  $("#siiSem").onclick = async () => {
+    const fin = ocupado($("#siiSem"), "Conectando…");
+    try { const r = await api("sii-semilla", { ambiente: amb() });
+      $("#siiSemR").innerHTML = `<div class="msg ok"><b>Conexión correcta con el SII.</b><span>Código de prueba recibido: ${esc(r.semilla)}</span></div>`;
+    } catch (e) { error($("#siiSemR"), e); } finally { fin(); }
+  };
+  const mostrarCert = c => `<div class="msg ${c.vigente ? "ok" : "bad"}"><b>${c.vigente ? "Certificado revisado: archivo y clave correctos." : "El certificado no está vigente."}</b>
+    <span>Titular: ${esc(c.titular || "—")}${c.identificador ? ` · Identificador: ${esc(c.identificador)}` : ""}</span>
+    <span>Emitido por: ${esc(c.emisor || "—")}</span>
+    <span>Válido desde ${esc(c.valido_desde)} hasta ${esc(c.valido_hasta)}${c.vigente ? ` (quedan ${c.dias_restantes} días)` : ""}</span></div>`;
+  $("#siiRev").onclick = async () => {
+    const fin = ocupado($("#siiRev"), "Revisando…");
+    try { const c = await api("sii-certificado", { pfx: await pfx(), clave: $("#siiClave").value }); $("#siiCertR").innerHTML = mostrarCert(c); }
+    catch (e) { error($("#siiCertR"), e); } finally { fin(); }
+  };
+  $("#siiTok").onclick = async () => {
+    const fin = ocupado($("#siiTok"), "Consultando al SII…");
+    try { const r = await api("sii-token", { pfx: await pfx(), clave: $("#siiClave").value, ambiente: amb() });
+      $("#siiCertR").innerHTML = mostrarCert(r.certificado) + `<div class="msg ok"><b>Certificado aceptado por el SII (${r.ambiente === "produccion" ? "producción" : "ambiente de pruebas"}).</b><span>Permiso de acceso recibido: ${esc(r.token_parcial)}</span></div>`;
+    } catch (e) { error($("#siiCertR"), e); } finally { fin(); }
+  };
+}
+
 function pantallaAyuda() {
   render(`${S.empresa ? volver() : `<div><button class="btn link" type="button" id="ayV">← Volver</button></div>`}
     <div class="stack"><h1>Ayuda</h1><p>Este programa lleva la contabilidad con los archivos que usted descarga del SII. Cada mes siga los cuatro pasos de la pantalla de inicio.</p></div>
@@ -619,6 +666,7 @@ function pantallaAyuda() {
 }
 
 $("#btnEmpresas").onclick = pantallaEmpresas;
+$("#btnSII").onclick = pantallaSII;
 $("#btnAyuda").onclick = () => S.empresa ? ir("ayuda") : pantallaAyuda();
 pantallaEmpresas();
 </script>

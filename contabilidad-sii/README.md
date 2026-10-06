@@ -83,6 +83,35 @@ pantalla de Ayuda muestra la ubicación exacta. Nada se envía a internet: el pr
 computador. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
 pendrive.
 
+## Probar la conexión con el SII y el certificado digital
+
+En el programa, el botón **«Conexión SII»** de la barra superior abre una pantalla con
+dos pruebas:
+
+1. **Conexión.** No necesita certificado. Pide al SII una semilla, que es el primer paso
+   de la «autenticación automática» descrita en el *Manual de Desarrollador
+   Autenticación Automática* del SII.
+2. **Certificado digital.**
+   - Usted elige su archivo `.pfx` o `.p12` y escribe la clave.
+   - El programa muestra a nombre de quién está el certificado y su vigencia.
+   - Luego firma la semilla y pide un token al SII. Si el SII entrega el token, el
+     certificado funciona con sus servicios web.
+
+Por defecto se usa el **ambiente de pruebas del SII** (certificación, `maullin.sii.cl`).
+También puede elegirse producción (`palena.sii.cl`). Ninguna de las dos pruebas envía ni
+modifica declaraciones.
+
+El archivo del certificado y su clave se usan **solo en memoria** y no se guardan.
+
+La firma XML (`contasii/sii_ws.py`) tiene estas características:
+- es envuelta, con C14N inclusiva, RSA-SHA1 y digest SHA1;
+- su KeyInfo incluye KeyValue y X509Data;
+- se verificó con libxmlsec1 en las pruebas automáticas.
+
+El formato de los mensajes sigue el manual del SII y una implementación pública de
+referencia. **No se ha probado con un certificado real**: falta esa prueba con su
+certificado.
+
 ## Qué automatiza
 
 | Función | Detalle |
@@ -214,6 +243,7 @@ contasii/
   web/index.html    pantallas de la interfaz
   operaciones.py    operaciones en lenguaje simple ("Me pagó un cliente"...)
   controles.py      cuadraturas del período
+  sii_ws.py         autenticación con los servicios web del SII (semilla, firma, token)
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026
 ejemplos/           datos ficticios
