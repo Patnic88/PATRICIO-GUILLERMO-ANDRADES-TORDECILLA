@@ -1,0 +1,78 @@
+{
+  "_leeme": "Estados: VERIFICADO = un humano leyó la norma en la fuente oficial y lo confirmó. FUENTE_OFICIAL_INDIRECTA = dato obtenido de un buscador acotado a sii.cl/bcn.cl el 06-10-2026, SIN lectura directa del documento (el acceso a esos sitios estaba bloqueado). PENDIENTE = no confirmado; valor null. Todo lo que no sea VERIFICADO aparece en los reportes bajo [VERIFICAR]. Cambie el estado a VERIFICADO solo tras leer la fuente.",
+  "anio": 2026,
+  "valores": {
+    "tasa_iva": {
+      "valor": 0.19, "norma": "art. 14 DL 825",
+      "fuente": "https://www.sii.cl/normativa_legislacion/sobreventasyservicios.pdf", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "retencion_honorarios": {
+      "valor": 0.1525, "norma": "art. 74 N°2 y art. 42 N°2 LIR; gradualidad de la Ley 21.133 (2027: 16%; 2028: 17%) [VERIFICAR artículo transitorio]",
+      "fuente": "https://www.sii.cl/destacados/boletas_honorarios/aumento_gradual.html", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "ppm_14A": {
+      "valor": null, "norma": "art. 84 letra a) LIR: tasa variable según la relación impuesto/ingresos del ejercicio anterior; ingresarla por contribuyente con --tasa-ppm",
+      "fuente": "", "estado": "PENDIENTE"
+    },
+    "ppm_14D3": {
+      "valor": 0.00125, "norma": "art. 14 D N°3 y art. 84 LIR; rebaja transitoria Ley 21.755 (ingresos ago-2025 a dic-2027): 0,125% si ingresos ≤ 50.000 UF o primer año; 0,25% si > 50.000 UF. Circular SII N°53/2025",
+      "fuente": "https://www.sii.cl/normativa_legislacion/circulares/2025/circu53.pdf", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "ppm_14D8": {
+      "valor": 0.002, "norma": "art. 14 D N°8 LIR: 0,2% si ingresos ≤ 50.000 UF; 0,5% si > 50.000 UF",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_0695.htm", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "ppm_honorarios_sin_retencion": {
+      "valor": null, "norma": "art. 84 letra b) LIR — tasa no confirmada en esta versión",
+      "fuente": "", "estado": "PENDIENTE"
+    },
+    "idpc_14A": {
+      "valor": 0.27, "norma": "art. 20 LIR (régimen 14 A)",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_4708.htm", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "idpc_14D3": {
+      "valor": 0.125, "norma": "Ley 21.755 art. vigésimo quinto: 12,5% años comerciales 2025-2027 (15% en 2028; 25% permanente), condicionado a la cotización del empleador de la Ley 21.735. Circular SII N°53/2025",
+      "fuente": "https://www.sii.cl/normativa_legislacion/circulares/2025/circu53.pdf", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "plazo_f29_dia": {
+      "valor": 12, "norma": "art. 64 inc. 1° DL 825",
+      "fuente": "https://www.bcn.cl/leychile/Navegar?idNorma=253994", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "plazo_f29_dia_electronico": {
+      "valor": 20, "norma": "D.S. Hacienda N°1.001 de 2006, art. 1° (declaración por internet + emisor de documentos electrónicos)",
+      "fuente": "https://www.sii.cl/pagina/actualizada/noticias/2006/121006noti01ym.htm", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    },
+    "prorroga_dia_habil": {
+      "valor": null, "norma": "Regla de prórroga cuando el vencimiento cae en día inhábil — no confirmada en esta versión",
+      "fuente": "", "estado": "PENDIENTE"
+    },
+    "conservacion_documentos_anios": {
+      "valor": 6, "norma": "art. 17 inciso final Código Tributario (texto Ley 21.210) en relación con art. 200 CT",
+      "fuente": "https://www.sii.cl/normativa_legislacion/codigo_tributario.pdf", "estado": "FUENTE_OFICIAL_INDIRECTA"
+    }
+  },
+  "utm": {
+    "2026-10": {"valor": 72151, "fuente": "https://www.sii.cl/valores_y_fechas/utm/utm2026.htm", "estado": "FUENTE_OFICIAL_INDIRECTA"}
+  },
+  "tabla_iusc": {
+    "norma": "art. 43 N°1 LIR — tramos mensuales en UTM",
+    "fuente": "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026.htm",
+    "estado": "FUENTE_OFICIAL_INDIRECTA",
+    "tramos": [[0, 13.5, 0], [13.5, 30, 0.04], [30, 50, 0.08], [50, 70, 0.135], [70, 90, 0.23], [90, 120, 0.304], [120, 310, 0.35], [310, null, 0.40]]
+  },
+  "codigos_f29": {
+    "_fuente": "Instrucciones de llenado F29, https://www.sii.cl/servicios_online/instrucciones_f29_20241112.pdf — FUENTE_OFICIAL_INDIRECTA",
+    "_nota": "Débito y crédito no se asocian a un solo código: el F29 los desglosa por tipo de documento (p. ej. 502 débito de facturas, 538 total débitos, 537 total créditos). Use el desglose de la propuesta del SII.",
+    "remanente_anterior": "504",
+    "remanente_siguiente": "77",
+    "base_ppm": "563",
+    "ppm": "62",
+    "retencion_honorarios": "151",
+    "impuesto_unico": "48",
+    "total_a_pagar": "91"
+  },
+  "feriados": {
+    "_nota": "Cargue aquí los feriados del año (AAAA-MM-DD) desde una fuente oficial. Vacío = no se consideran.",
+    "fechas": []
+  }
+}

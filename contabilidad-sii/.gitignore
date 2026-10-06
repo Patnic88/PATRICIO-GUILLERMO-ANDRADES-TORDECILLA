@@ -1,0 +1,10 @@
+__pycache__/
+*.db
+*.xlsx
+salida/
+mis_empresas/
+empaquetado/salida/
+entrega/
+build/
+dist/
+*.spec

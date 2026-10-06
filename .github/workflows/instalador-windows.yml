@@ -1,0 +1,119 @@
+name: Instalador Windows (Mi Contabilidad)
+
+# Construye MiContabilidad.exe (no requiere Python en el computador del usuario),
+# lo prueba, arma el instalador con Inno Setup, lo instala y lo vuelve a probar.
+# Publica los archivos como artefactos del workflow y en una versión preliminar
+# (pre-release) del repositorio.
+
+on:
+  push:
+    paths:
+      - "contabilidad-sii/**"
+      - ".github/workflows/instalador-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  VERSION: "0.1.0"
+  ETIQUETA: "mi-contabilidad-v0.1.0"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: contabilidad-sii
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar herramientas de empaquetado
+        run: python -m pip install --upgrade pip pyinstaller openpyxl cryptography
+
+      - name: Pruebas unitarias
+        run: python -m unittest discover -s tests -v
+
+      - name: Prueba real con el SII (ambiente de certificación)
+        continue-on-error: true
+        run: python empaquetado/prueba_sii_real.py "$env:RUNNER_TEMP/prueba.pfx"
+
+      - name: Diagnóstico de autenticación con el SII (informativo)
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet pypdf
+          python empaquetado/diagnostico_sii.py
+
+      - name: Construir MiContabilidad.exe
+        run: |
+          pyinstaller --noconfirm --clean --console `
+            --name MiContabilidad `
+            --icon empaquetado/icono.ico `
+            --paths . `
+            --collect-submodules contasii `
+            --hidden-import openpyxl `
+            --add-data "contasii/web;contasii/web" `
+            --add-data "contasii/datos;contasii/datos" `
+            --add-data "contasii/parametros;contasii/parametros" `
+            empaquetado/mi_contabilidad.py
+          Get-ChildItem dist/MiContabilidad | Select-Object -First 10
+
+      - name: Probar el .exe portátil
+        run: ./empaquetado/prueba_humo.ps1 -Exe "dist/MiContabilidad/MiContabilidad.exe" -Puerto 8799 -Carpeta "$env:RUNNER_TEMP/datos_portable"
+
+      - name: Construir el instalador
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          $fuente = (Resolve-Path dist/MiContabilidad).Path
+          $salida = Join-Path $PWD "empaquetado/salida"
+          & $iscc "/DSourceDir=$fuente" "/DMyAppVersion=$env:VERSION" "/O$salida" empaquetado/instalador.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló" }
+          Get-ChildItem empaquetado/salida
+
+      - name: Instalar en silencio y probar el programa instalado
+        run: |
+          $p = Start-Process empaquetado/salida/Instalar-MiContabilidad.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "El instalador terminó con código $($p.ExitCode)" }
+          $exe = Join-Path $env:LOCALAPPDATA "Programs\Mi Contabilidad\MiContabilidad.exe"
+          if (-not (Test-Path $exe)) { throw "No se encontró $exe" }
+          ./empaquetado/prueba_humo.ps1 -Exe $exe -Puerto 8798 -EsperarDocumentos
+
+      - name: Preparar archivos de descarga
+        run: |
+          New-Item -ItemType Directory -Force -Path entrega | Out-Null
+          Copy-Item empaquetado/salida/Instalar-MiContabilidad.exe entrega/
+          Compress-Archive -Path dist/MiContabilidad -DestinationPath entrega/MiContabilidad-portable.zip -Force
+          Get-FileHash entrega/* -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } | Set-Content entrega/SHA256.txt
+          Get-Content entrega/SHA256.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiContabilidad-Windows
+          path: contabilidad-sii/entrega/*
+
+      - name: Publicar versión preliminar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete $env:ETIQUETA --yes --cleanup-tag 2>$null
+          $global:LASTEXITCODE = 0
+          $notas = @"
+          Instalador de Mi Contabilidad para Windows (versión preliminar, commit $env:GITHUB_SHA).
+
+          - Instalar-MiContabilidad.exe: instalador; no requiere Python ni permisos de administrador.
+          - MiContabilidad-portable.zip: versión sin instalar; descomprima y abra MiContabilidad.exe.
+          - SHA256.txt: huellas para verificar la descarga.
+
+          El programa no está firmado digitalmente: Windows puede mostrar «Windows protegió su PC».
+          Presione «Más información» y luego «Ejecutar de todos modos».
+          "@
+          gh release create $env:ETIQUETA entrega/* --prerelease --target $env:GITHUB_SHA --title "Mi Contabilidad $env:VERSION (preliminar)" --notes $notas
+          if ($LASTEXITCODE -ne 0) { throw "No se pudo publicar la versión" }
