@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radar Dropshipping</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>🎯 Radar Dropshipping</h1>
+        <p class="subtitle">Analiza lo que funciona en redes y adáptalo a tu tienda Shopify</p>
+      </div>
+      <span class="counter" id="counter">0 analizados</span>
+    </div>
+    <nav class="tabs header-inner" id="tabs">
+      <button class="tab active" data-tab="registrar">1 · Registrar</button>
+      <button class="tab" data-tab="ranking">2 · Ranking</button>
+      <button class="tab" data-tab="patrones">3 · Patrones</button>
+      <button class="tab" data-tab="aplicar">4 · Aplicar a mi tienda</button>
+      <button class="tab" data-tab="meta">Meta Ad Library</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- 1. REGISTRAR ---------------------------------------------------- -->
+    <section class="panel" id="panel-registrar">
+      <p class="ayuda">Anota un anuncio o video que veas funcionando. Copia solo los datos visibles
+        (vistas, likes, comentarios) y describe la <strong>estructura</strong>; no copies el texto ni el video.</p>
+      <form id="formGanador" autocomplete="off">
+        <input type="hidden" name="id" />
+        <fieldset>
+          <legend>Fuente</legend>
+          <div class="grid">
+            <label>Producto *<input name="producto" required placeholder="Ej.: corrector de postura" /></label>
+            <label>Nicho<input name="nicho" list="nichos" placeholder="Ej.: salud y bienestar" /></label>
+            <label>Plataforma
+              <select name="plataforma">
+                <option>TikTok</option><option>Instagram Reels</option><option>Facebook</option>
+                <option>Meta Ads (Biblioteca)</option><option>YouTube Shorts</option><option>Otro</option>
+              </select>
+            </label>
+            <label>Enlace<input name="enlace" type="url" placeholder="https://…" /></label>
+            <label>Fecha de publicación<input name="fechaPublicacion" type="date" /></label>
+            <label>Días activo (si es anuncio pagado)<input name="diasActivo" type="number" min="0" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Métricas visibles</legend>
+          <div class="grid">
+            <label>Vistas<input name="vistas" type="number" min="0" /></label>
+            <label>Likes<input name="likes" type="number" min="0" /></label>
+            <label>Comentarios<input name="comentarios" type="number" min="0" /></label>
+            <label>Compartidos<input name="compartidos" type="number" min="0" /></label>
+            <label title="Cuenta en una muestra de comentarios cuántos preguntan dónde comprar, precio o link">
+              Comentarios con intención de compra<input name="comentariosCompra" type="number" min="0" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Estructura del anuncio</legend>
+          <div class="grid">
+            <label>Tipo de gancho (primeros 3 s)<select name="tipoGancho" id="selGancho"></select></label>
+            <label>Formato<select name="formato" id="selFormato"></select></label>
+            <label>Oferta
+              <select name="oferta">
+                <option>Ninguna</option><option>Envío gratis</option><option>Descuento %</option>
+                <option>2x1 / pack</option><option>Regalo incluido</option>
+                <option>Pago contra entrega</option><option>Garantía de devolución</option>
+              </select>
+            </label>
+            <label>Llamado a la acción<input name="cta" placeholder="Ej.: Pídelo hoy con envío gratis" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Números del negocio</legend>
+          <div class="grid">
+            <label>Precio de venta observado<input name="precioVenta" type="number" min="0" step="any" /></label>
+            <label>Costo del producto (proveedor)<input name="costoProducto" type="number" min="0" step="any" /></label>
+            <label>Costo de envío<input name="costoEnvio" type="number" min="0" step="any" /></label>
+            <label>Plazo de entrega del proveedor<input name="tiempoEnvio" placeholder="Ej.: 7 a 12 días hábiles" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Para tu ficha (con tus palabras)</legend>
+          <div class="grid">
+            <label class="ancho">Problema que resuelve<input name="problema" placeholder="Ej.: dolor de espalda por estar sentado" /></label>
+            <label class="ancho">Beneficio principal<input name="beneficioPrincipal" placeholder="Ej.: mejorar tu postura en minutos al día" /></label>
+            <label>Beneficio 1<input name="beneficio1" /></label>
+            <label>Beneficio 2<input name="beneficio2" /></label>
+            <label>Beneficio 3<input name="beneficio3" /></label>
+            <label>Qué incluye<input name="incluye" placeholder="Ej.: 1 corrector ajustable + manual" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Checklist de producto ganador</legend>
+          <div id="criterios" class="criterios"></div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="reset" class="btn-ghost" id="btnLimpiar">Limpiar</button>
+          <button type="submit" class="btn-primary">Guardar y puntuar</button>
+        </div>
+      </form>
+      <datalist id="nichos"></datalist>
+    </section>
+
+    <!-- 2. RANKING ------------------------------------------------------ -->
+    <section class="panel oculto" id="panel-ranking">
+      <p class="ayuda">Puntaje 0–100 = demanda (30) + margen (25) + prueba de rentabilidad (15) + checklist (30).
+        Los umbrales son heurísticos y se ajustan en <code>scoring.js</code>.</p>
+      <ul class="lista" id="ranking"></ul>
+      <p class="empty oculto" id="rankingVacio">Aún no registras productos. Empieza en la pestaña 1.</p>
+      <div class="barra-acciones">
+        <button class="btn-ghost" id="btnExportar">⬇ Respaldo JSON</button>
+        <label class="btn-ghost">⬆ Restaurar respaldo<input type="file" id="inputImportar" accept=".json" hidden /></label>
+      </div>
+    </section>
+
+    <!-- 3. PATRONES ----------------------------------------------------- -->
+    <section class="panel oculto" id="panel-patrones">
+      <p class="ayuda">Qué tienen en común tus productos mejor puntuados (puntaje ≥ <span id="umbralPatron">50</span>, sin "No apto").
+        Con menos de 5 registros los patrones son poco confiables.</p>
+      <div id="patrones" class="patrones"></div>
+    </section>
+
+    <!-- 4. APLICAR ------------------------------------------------------ -->
+    <section class="panel oculto" id="panel-aplicar">
+      <div class="grid">
+        <label>Producto<select id="selAplicar"></select></label>
+        <label>Moneda
+          <select id="selMoneda"><option>CLP</option><option>USD</option><option>EUR</option><option>MXN</option></select>
+        </label>
+        <label>Multiplicador de precio<input id="inputMult" type="number" min="1.5" max="6" step="0.1" value="2.8" /></label>
+        <label class="check"><input type="checkbox" id="chkComparar" /> Mostrar precio "antes" tachado</label>
+      </div>
+      <p class="aviso oculto" id="avisoComparar">⚠ Un precio "antes" que nunca cobraste puede ser publicidad engañosa
+        frente a la normativa de protección al consumidor de tu país. Úsalo solo si es un precio real anterior.</p>
+      <div id="salidaAplicar"></div>
+      <div class="barra-acciones">
+        <button class="btn-primary" id="btnCSV">⬇ CSV para Shopify (todos los aptos)</button>
+      </div>
+    </section>
+
+    <!-- 5. META --------------------------------------------------------- -->
+    <section class="panel oculto" id="panel-meta">
+      <p class="ayuda">Busca anuncios activos en la Biblioteca de Anuncios de Meta. <strong>Limitación:</strong> la API solo
+        entrega anuncios comerciales mostrados en la UE o Reino Unido; para Chile u otros países devuelve, en la práctica,
+        solo anuncios políticos. Úsala para detectar tendencias en Europa antes de que lleguen a tu mercado.</p>
+      <div class="grid">
+        <label class="ancho">Token de acceso<input id="metaToken" type="password" placeholder="Token de tu app de Meta" /></label>
+        <label>Término<input id="metaTerminos" placeholder="Ej.: envío gratis" /></label>
+        <label>País (UE/UK)<input id="metaPais" value="ES" maxlength="2" /></label>
+        <label>Versión API<input id="metaVersion" value="v25.0" /></label>
+      </div>
+      <div class="barra-acciones"><button class="btn-primary" id="btnMeta">Buscar</button></div>
+      <p class="aviso oculto" id="metaError"></p>
+      <ul class="lista" id="metaResultados"></ul>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    Los datos se guardan solo en este navegador. Respalda con "⬇ Respaldo JSON" en la pestaña Ranking.
+  </footer>
+
+  <script src="scoring.js"></script>
+  <script src="generadores.js"></script>
+  <script src="meta-api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

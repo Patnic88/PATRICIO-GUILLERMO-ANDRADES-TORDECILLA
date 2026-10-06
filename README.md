@@ -79,3 +79,11 @@ completadas y las que agregaste a mano.
 - ✅ Recordatorios en **Google Calendar** para las tareas de alta prioridad.
 - ✅ Borradores de respuesta guardados en Gmail para los correos que requieren
   contestación.
+
+---
+
+## 🎯 Radar Dropshipping
+
+En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
+para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
+a una tienda Shopify. Ver su README.
