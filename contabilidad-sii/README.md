@@ -1,18 +1,63 @@
 # contasii — contabilidad automatizada para contribuyentes chilenos
 
-Sistema de línea de comandos, en Python y sin dependencias obligatorias, que lleva la
-contabilidad de **una empresa o una persona natural** a partir de los archivos que
-entrega el SII:
+Programa para llevar la contabilidad de **una empresa o una persona natural** a partir de
+los archivos que entrega el SII:
 
 - detalle del **Registro de Compras y Ventas (RCV)**,
 - boletas de honorarios electrónicas, recibidas y emitidas.
 
-Con eso genera los asientos, los libros y una propuesta de trabajo del F29.
+Con eso genera los asientos, los libros y un borrador del F29. Se usa con **ventanas y
+botones en el navegador**, sin escribir comandos. También tiene una versión de línea de
+comandos para contadores.
 
-> **Alcance.** Es una herramienta de apoyo para el contador. La propuesta de F29 es
-> un borrador para cotejar con la propuesta del SII en sii.cl. No reemplaza la
-> declaración ni la revisión profesional. Antes de presentar cualquier cifra ante el
-> SII o un cliente, haga la verificación documental.
+> **Alcance.** Es una herramienta de apoyo. El cálculo del F29 es un borrador para
+> cotejar con la propuesta del SII en sii.cl. No reemplaza la declaración ni la revisión
+> profesional. Antes de presentar cualquier cifra ante el SII o un cliente, haga la
+> verificación documental.
+
+## Cómo empezar (para cualquier persona)
+
+1. **Instale Python** (una sola vez) desde <https://www.python.org/downloads/>.
+   En Windows, al instalar, marque la casilla **"Add Python to PATH"**.
+2. **Copie la carpeta `contabilidad-sii`** a su computador, por ejemplo al Escritorio.
+3. **Haga doble clic en el archivo de inicio:**
+   - Windows: `ABRIR CONTABILIDAD (Windows).bat`
+   - Mac: `Abrir contabilidad (Mac).command`. La primera vez puede pedir permiso: clic
+     derecho → Abrir.
+
+Se abre una ventana negra y, enseguida, el navegador con el programa. **No cierre la
+ventana negra mientras trabaja**; al terminar, ciérrela.
+
+Si falta Python, el archivo de inicio lo avisa y abre la página de descarga. La primera
+vez también instala solo el complemento para Excel, lo que requiere internet.
+
+### Qué verá
+
+Cada mes se trabaja en **4 pasos**, en lenguaje simple:
+
+| Paso | Qué hace la persona |
+|---|---|
+| 1. Subir los archivos del SII | Arrastra los CSV de compras, ventas y boletas. El programa reconoce cuál es cuál, muestra cuántos documentos y qué total trae cada uno, y pide confirmar antes de registrarlos. |
+| 2. Registrar pagos y cobros | Elige lo que pasó ("Me pagó un cliente", "Pagué a un proveedor", "Pagué el impuesto mensual"…), escribe monto y fecha, e indica banco o efectivo. El programa arma el asiento contable. |
+| 3. Calcular el impuesto (F29) | Ve el total a pagar, la fecha límite y el detalle explicado en palabras simples, y confirma para registrarlo. |
+| 4. Revisar y cerrar el mes | Ve las comprobaciones de cuadratura en verde o rojo y cierra el mes. |
+
+La pantalla de inicio muestra el dinero en el banco y en efectivo, cuánto le deben los
+clientes y cuánto debe a proveedores. Las acciones que no se pueden deshacer, como
+anular un registro o cerrar el mes, piden confirmación en pantalla. En "Libros e
+informes" están el Diario, el Mayor, el Balance de 8 columnas, el estado de resultados
+y la descarga a Excel.
+
+![Inicio del mes](docs/pantalla-inicio.png)
+![Impuesto del mes](docs/pantalla-f29.png)
+![Pagos y cobros](docs/pantalla-movimientos.png)
+
+### Dónde quedan los datos
+
+Todo se guarda en la carpeta **`mis_empresas/`**, junto al programa, con un archivo por
+RUT. Nada se envía a internet: el programa solo acepta conexiones desde el mismo
+computador. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
+pendrive.
 
 ## Qué automatiza
 
@@ -34,7 +79,7 @@ Con eso genera los asientos, los libros y una propuesta de trabajo del F29.
 Regímenes: `14A` (general), `14D3` (Pro Pyme general), `14D8` (Pro Pyme transparente)
 y `PN_HONORARIOS` (persona natural con rentas del art. 42 N°2 LIR).
 
-## Uso rápido
+## Uso por línea de comandos (contadores)
 
 ```bash
 cd contabilidad-sii
@@ -106,7 +151,9 @@ de 2026. Revise el Diario Oficial antes de usar tasas de 2027 en adelante.
 
 **Debe cargar usted:**
 
-- la UTM de cada mes (`utm`), necesaria para reajustar el remanente y calcular el impuesto único;
+- la UTM de cada mes (`utm`), necesaria para reajustar el remanente y calcular el impuesto único.
+  En la interfaz gráfica, la pantalla del F29 la pide cuando falta y la guarda en
+  `mis_empresas/parametros_locales.json`;
 - los feriados del año (`feriados`);
 - la regla de prórroga del vencimiento en días inhábiles.
 
@@ -139,8 +186,14 @@ contasii/
   obligaciones.py   obligaciones por régimen
   reportes.py       texto, CSV y Excel
   cli.py            línea de comandos
+  web.py            interfaz gráfica (servidor local en 127.0.0.1)
+  web/index.html    pantallas de la interfaz
+  operaciones.py    operaciones en lenguaje simple ("Me pagó un cliente"...)
+  controles.py      cuadraturas del período
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026
 ejemplos/           datos ficticios
 tests/              pruebas unitarias
+docs/               capturas de pantalla
+ABRIR CONTABILIDAD (Windows).bat / Abrir contabilidad (Mac).command   archivos de inicio
 ```

@@ -73,6 +73,12 @@
     "resultado_ejercicio": "3.1.03",
     "resultados_acumulados": "3.1.02",
     "otros_impuestos_pagar": "2.1.12",
-    "impuesto_unico_pagar": "2.1.05"
+    "impuesto_unico_pagar": "2.1.05",
+    "caja": "1.1.01",
+    "banco": "1.1.02",
+    "gastos_generales": "5.2.03",
+    "capital": "3.1.01",
+    "retiros": "3.1.04",
+    "otros_ingresos": "4.1.09"
   }
 }

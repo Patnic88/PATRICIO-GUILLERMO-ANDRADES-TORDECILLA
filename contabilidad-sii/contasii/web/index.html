@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Contabilidad</title>
+<style>
+/* Layout: barra superior fija + una columna central; el inicio del mes es una ruta de 4 pasos en orden real */
+:root {
+  --bg: #f3f6f8;
+  --surface: #ffffff;
+  --fg: #16232b;
+  --muted: #586973;
+  --line: #d5dee3;
+  --accent: #0d6e6e;
+  --accent-ink: #ffffff;
+  --accent-soft: #e0f0ef;
+  --ok: #1d7a3e; --ok-soft: #e3f3e8;
+  --warn: #8a5a00; --warn-soft: #fcf2dc;
+  --bad: #b3261e; --bad-soft: #fbe6e4;
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f171b; --surface: #172227; --fg: #e4ecef; --muted: #9db0b8; --line: #2a3a41;
+    --accent: #4fc1bd; --accent-ink: #062322; --accent-soft: #163332;
+    --ok: #6fd18f; --ok-soft: #173123; --warn: #e9bb5f; --warn-soft: #30281a; --bad: #f08a80; --bad-soft: #3a1f1d;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 17px; line-height: 1.5; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .in { max-width: 980px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.brand { font-weight: 700; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; }
+.top .emp { color: var(--muted); font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 200px; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; display: grid; gap: 24px; }
+h1 { font-size: 28px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-size: 22px; margin: 0; text-wrap: balance; }
+h3 { font-size: 18px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.stack, #f29, #rev, #lib, #lista, #cola { display: grid; gap: 12px; min-width: 0; }
+#f29, #rev, #lib { gap: 16px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 8px; padding: 10px 18px; cursor: pointer; font-weight: 600; text-decoration: none; color: var(--fg); min-height: 46px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn.link { border: 0; background: none; color: var(--accent); padding: 6px 4px; min-height: 0; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+label { font-weight: 600; display: grid; gap: 6px; }
+label .hint { font-weight: 400; color: var(--muted); font-size: 14px; }
+input[type=text], input[type=date], input[type=number], select {
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); min-height: 46px; width: 100%; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+.tile .k { color: var(--muted); font-size: 14px; }
+.tile .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.steps { display: grid; gap: 12px; }
+.step { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 16px; cursor: pointer; text-align: left; width: 100%; }
+.step:hover { border-color: var(--accent); }
+.step .n { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 19px;
+  background: var(--accent-soft); color: var(--accent); }
+.step.done .n { background: var(--ok-soft); color: var(--ok); }
+.step .t { display: grid; gap: 2px; min-width: 0; }
+.step .t b { font-size: 18px; }
+.step .st { font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.step.done .st { color: var(--ok); }
+.pill { display: inline-block; font-size: 13px; font-weight: 600; border-radius: 99px; padding: 2px 10px; background: var(--accent-soft); color: var(--accent); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.warn { background: var(--warn-soft); color: var(--warn); } .pill.bad { background: var(--bad-soft); color: var(--bad); }
+.msg { border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; }
+.msg.ok { background: var(--ok-soft); color: var(--ok); }
+.msg.warn { background: var(--warn-soft); color: var(--warn); }
+.msg.bad { background: var(--bad-soft); color: var(--bad); }
+.msg.info { background: var(--accent-soft); color: var(--fg); }
+.msg ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 32px 16px; text-align: center; display: grid; gap: 8px; place-items: center; cursor: pointer; background: var(--bg); }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop svg { width: 40px; height: 40px; color: var(--accent); }
+.ops { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.op { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; cursor: pointer; display: grid; gap: 4px; }
+.op:hover, .op.sel { border-color: var(--accent); }
+.op.sel { background: var(--accent-soft); }
+.op b { font-size: 17px; } .op span { color: var(--muted); font-size: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 10px 16px; cursor: pointer; min-height: 46px; }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--bg); position: sticky; top: 0; }
+td.fecha { white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.sum td { font-weight: 700; border-top: 2px solid var(--line); }
+tr.head td { background: var(--bg); font-weight: 600; }
+tr.anulado td { color: var(--muted); text-decoration: line-through; }
+.big { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.hero { display: grid; gap: 6px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; background: none; padding: 10px 14px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected=true] { color: var(--accent); border-bottom-color: var(--accent); }
+details { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--surface); }
+details summary { cursor: pointer; font-weight: 600; }
+details[open] summary { margin-bottom: 10px; }
+.check { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.check .i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; }
+.check .i.ok { background: var(--ok-soft); color: var(--ok); } .check .i.bad { background: var(--bad-soft); color: var(--bad); }
+.confirm { border: 2px solid var(--warn); background: var(--warn-soft); border-radius: 10px; padding: 14px; display: grid; gap: 10px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 12px 20px;
+  border-radius: 8px; font-weight: 600; z-index: 20; max-width: calc(100% - 32px); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; cursor: pointer; display: grid; gap: 4px; }
+.card:hover { border-color: var(--accent); }
+.card.add { border-style: dashed; place-items: center; color: var(--accent); font-weight: 700; min-height: 110px; }
+.lines td input, .lines td select { min-height: 40px; padding: 6px 8px; }
+dl.glos { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 8px 16px; margin: 0; }
+dl.glos dt { font-weight: 700; } dl.glos dd { margin: 0; }
+@media (max-width: 560px) { .step { grid-template-columns: 44px minmax(0,1fr); } .step .st { grid-column: 2; white-space: normal; } dl.glos { grid-template-columns: 1fr; } .big { font-size: 28px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Mi Contabilidad</div>
+  <div class="emp" id="topEmp"></div>
+  <button class="btn link" id="btnAyuda" type="button">Ayuda</button>
+  <button class="btn" id="btnEmpresas" type="button" hidden>Cambiar empresa</button>
+</div></div>
+<main id="app"><p class="muted">Cargando…</p></main>
+
+<script>
+"use strict";
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+const S = { empresa: null, info: null, periodo: null, vista: "inicio" };
+const $ = (sel, el = document) => el.querySelector(sel);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const peso = n => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n || 0)).toLocaleString("es-CL");
+const nomMes = p => { const [y, m] = p.split("-"); return MESES[+m - 1] + " " + y; };
+const nomMesCap = p => { const t = nomMes(p); return t[0].toUpperCase() + t.slice(1); };
+const fechaLarga = iso => { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`; };
+const hoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const mesAnterior = () => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+const finMes = p => { const [y, m] = p.split("-").map(Number); return `${p}-${String(new Date(y, m, 0).getDate()).padStart(2,"0")}`; };
+
+async function api(ruta, cuerpo) {
+  const opts = cuerpo === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json", "X-Contasii": "1" }, body: JSON.stringify(cuerpo) };
+  let r;
+  try { r = await fetch("/api/" + ruta, opts); }
+  catch (e) { throw new Error("No hay conexión con el programa. ¿Cerró la ventana negra? Ábralo de nuevo con doble clic."); }
+  const j = await r.json().catch(() => ({ error: "Respuesta inválida del programa." }));
+  if (!r.ok) throw new Error(j.error || "Ocurrió un error.");
+  return j;
+}
+const E = r => `e/${encodeURIComponent(S.empresa)}/${r}`;
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; d.setAttribute("role", "status"); document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
+function error(el, e) { el.innerHTML = `<div class="msg bad" role="alert">${esc(e.message || e)}</div>`; }
+function render(html) { const a = $("#app"); a.innerHTML = html; window.scrollTo(0, 0); return a; }
+function volver() { return `<div><button class="btn link" type="button" data-ir="inicio">← Volver a ${esc(nomMes(S.periodo))}</button></div>`; }
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
+
+/* ------------------------------------------------------------ empresas */
+async function pantallaEmpresas() {
+  S.empresa = null; S.info = null;
+  $("#topEmp").textContent = ""; $("#btnEmpresas").hidden = true;
+  const a = render(`<div class="stack"><h1>¿De quién es la contabilidad?</h1><p class="muted">Elija una empresa o persona, o agregue una nueva.</p></div><div id="lista" class="cards"></div><div id="nueva"></div>`);
+  try {
+    const d = await api("empresas");
+    S.regimenes = d.regimenes;
+    $("#lista").innerHTML = d.empresas.map(e => `<button class="card" type="button" data-arch="${esc(e.archivo)}"><b>${esc(e.nombre)}</b><span class="muted">RUT ${esc(e.rut)}</span><span class="small muted">${esc(e.regimen_texto)}</span></button>`).join("")
+      + `<button class="card add" type="button" id="btnNueva">+ Agregar empresa o persona</button>`;
+    a.querySelectorAll("[data-arch]").forEach(b => b.onclick = () => abrirEmpresa(b.dataset.arch));
+    $("#btnNueva").onclick = formNueva;
+    if (!d.empresas.length) formNueva();
+  } catch (e) { error($("#lista"), e); }
+}
+
+function formNueva() {
+  const reg = S.regimenes || {};
+  $("#nueva").innerHTML = `<form class="panel" id="fNueva" novalidate>
+    <h2>Agregar empresa o persona</h2>
+    <div class="grid2">
+      <label for="nRut">RUT<span class="hint">Con dígito verificador. Ejemplo: 76.123.456-7</span><input id="nRut" type="text" autocomplete="off" required></label>
+      <label for="nNombre">Nombre o razón social<input id="nNombre" type="text" required></label>
+    </div>
+    <div class="stack"><b>¿Es una empresa o una persona?</b>
+      <div class="seg" role="group" aria-label="Tipo"><button type="button" data-tipo="empresa" aria-pressed="true">Empresa</button><button type="button" data-tipo="persona_natural" aria-pressed="false">Persona</button></div></div>
+    <label for="nReg">Régimen tributario<span class="hint">Aparece en su carpeta tributaria del SII. Si no lo sabe, pregunte a su contador antes de seguir.</span>
+      <select id="nReg" required><option value="">Elija…</option>${Object.entries(reg).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
+    <label for="nGiro">Giro o actividad <span class="hint">(opcional)</span><input id="nGiro" type="text"></label>
+    <div id="nErr"></div>
+    <div class="row"><button class="btn primary" type="submit">Crear</button><button class="btn" type="button" id="nCancel">Cancelar</button></div>
+  </form>`;
+  let tipo = "empresa";
+  $("#fNueva").querySelectorAll("[data-tipo]").forEach(b => b.onclick = () => {
+    tipo = b.dataset.tipo; $("#fNueva").querySelectorAll("[data-tipo]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    if (tipo === "persona_natural" && !$("#nReg").value) $("#nReg").value = "PN_HONORARIOS";
+  });
+  $("#nCancel").onclick = () => $("#nueva").innerHTML = "";
+  $("#fNueva").onsubmit = async ev => {
+    ev.preventDefault();
+    try {
+      const r = await api("empresa", { rut: $("#nRut").value, nombre: $("#nNombre").value, tipo, regimen: $("#nReg").value, giro: $("#nGiro").value });
+      toast("Empresa creada"); abrirEmpresa(r.archivo);
+    } catch (e) { error($("#nErr"), e); }
+  };
+  $("#nRut").focus();
+}
+
+async function abrirEmpresa(arch) {
+  S.empresa = arch;
+  let r;
+  try { r = await api(E("resumen")); } catch (e) { S.empresa = null; render(`<div id="x"></div>`); error($("#x"), e); return; }
+  const abiertos = r.periodos.filter(Boolean);
+  S.periodo = abiertos[0] || mesAnterior();
+  try { const g = localStorage.getItem("periodo:" + arch); if (g) S.periodo = g; } catch (e) {}
+  $("#btnEmpresas").hidden = false;
+  ir("inicio");
+}
+
+/* ------------------------------------------------------------ navegación */
+async function ir(vista) {
+  S.vista = vista;
+  try { localStorage.setItem("periodo:" + S.empresa, S.periodo); } catch (e) {}
+  if (!S.empresa) return pantallaEmpresas();
+  try {
+    S.info = await api(E("resumen") + "?periodo=" + S.periodo);
+    $("#topEmp").textContent = `${S.info.nombre} · RUT ${S.info.rut}`;
+    ({ inicio: pantallaInicio, archivos: pantallaArchivos, movimientos: pantallaMovimientos, f29: pantallaF29,
+       cierre: pantallaCierre, libros: pantallaLibros, ayuda: pantallaAyuda })[vista]();
+  } catch (e) { render(`<div id="x"></div>`); error($("#x"), e); }
+}
+
+function selectorMes() {
+  const [y, m] = S.periodo.split("-").map(Number);
+  const anios = []; for (let a = new Date().getFullYear() + 1; a >= 2020; a--) anios.push(a);
+  return `<div class="row"><label for="selMes" class="row" style="gap:8px">Mes de trabajo</label>
+    <select id="selMes" style="width:auto">${MESES.map((n, i) => `<option value="${i + 1}" ${i + 1 === m ? "selected" : ""}>${n}</option>`).join("")}</select>
+    <select id="selAnio" style="width:auto" aria-label="Año">${anios.map(a => `<option ${a === y ? "selected" : ""}>${a}</option>`).join("")}</select></div>`;
+}
+function conectarMes() {
+  const f = () => { S.periodo = `${$("#selAnio").value}-${String($("#selMes").value).padStart(2, "0")}`; ir(S.vista); };
+  $("#selMes").onchange = f; $("#selAnio").onchange = f;
+}
+
+/* ------------------------------------------------------------ inicio del mes */
+function pantallaInicio() {
+  const i = S.info, d = i.documentos;
+  const nDocs = Object.values(d).reduce((s, x) => s + x.n, 0);
+  const resumenDocs = [["compra", "compras"], ["venta", "ventas"], ["honorario_recibido", "boletas recibidas"], ["honorario_emitido", "boletas emitidas"]]
+    .filter(([k]) => d[k]).map(([k, n]) => `${d[k].n} ${n}`).join(" · ");
+  render(`
+    <div class="stack"><h1>${esc(nomMesCap(S.periodo))}</h1>${selectorMes()}
+      ${i.cerrado ? `<div class="msg ok">Este mes está cerrado. Puede consultarlo, pero no agregar movimientos.</div>` : ""}</div>
+    <div class="tiles">
+      <div class="tile"><span class="k">Dinero en el banco</span><span class="v">${peso(i.banco)}</span></div>
+      <div class="tile"><span class="k">Dinero en efectivo</span><span class="v">${peso(i.caja)}</span></div>
+      <div class="tile"><span class="k">Le deben sus clientes</span><span class="v">${peso(i.por_cobrar)}</span></div>
+      <div class="tile"><span class="k">Usted debe a proveedores</span><span class="v">${peso(i.por_pagar)}</span></div>
+    </div>
+    <div class="stack"><h2>Pasos del mes</h2><p class="muted">Hágalos en este orden. Puede volver a cualquiera cuando quiera.</p>
+    <div class="steps">
+      ${paso(1, "archivos", "Subir los archivos del SII", "Compras, ventas y boletas de honorarios del mes.", nDocs ? "✓ " + resumenDocs : "Pendiente", nDocs > 0)}
+      ${paso(2, "movimientos", "Registrar pagos y cobros", "Lo que pagó o le pagaron: proveedores, clientes, gastos, retiros.", i.asientos_mes ? `${i.asientos_mes} registros en el mes` : "Pendiente", false)}
+      ${paso(3, "f29", "Calcular el impuesto del mes (F29)", "Cuánto pagar al SII y hasta qué día.", i.f29_registrado ? "✓ Registrado" : "Ver cálculo", i.f29_registrado)}
+      ${paso(4, "cierre", "Revisar y cerrar el mes", "Comprobar que todo cuadre y cerrar.", i.cerrado ? "✓ Mes cerrado" : "Pendiente", i.cerrado)}
+    </div></div>
+    <div class="row"><button class="btn" type="button" data-ir="libros">Ver libros e informes</button>
+      <a class="btn" href="/api/${E("excel")}?periodo=${S.periodo}">Descargar Excel del mes</a></div>`);
+  conectarMes();
+}
+function paso(n, vista, titulo, sub, estado, hecho) {
+  return `<button class="step ${hecho ? "done" : ""}" type="button" data-ir="${vista}"><span class="n">${hecho ? "✓" : n}</span>
+    <span class="t"><b>${esc(titulo)}</b><span class="muted small">${esc(sub)}</span></span><span class="st">${esc(estado)}</span></button>`;
+}
+
+/* ------------------------------------------------------------ paso 1: archivos */
+function pantallaArchivos() {
+  const a = render(`${volver()}
+    <div class="stack"><h1>Subir los archivos del SII</h1><p class="muted">Mes: <b>${esc(nomMes(S.periodo))}</b>. Puede subir varios archivos a la vez; el programa reconoce cuál es cuál.</p></div>
+    ${S.info.cerrado ? `<div class="msg warn">Este mes está cerrado: no se pueden agregar documentos.</div>` : `
+    <label class="drop" id="drop" for="fileIn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      <b>Arrastre aquí los archivos</b><span class="muted">o haga clic para buscarlos en su computador (archivos .csv)</span>
+      <input id="fileIn" type="file" accept=".csv,.txt" multiple hidden></label>`}
+    <div id="cola" class="stack"></div>
+    <details><summary>¿Dónde consigo estos archivos?</summary><div class="stack small">
+      <p><b>Compras y ventas:</b> en sii.cl, ingrese con su RUT y clave al <b>Registro de Compras y Ventas</b>, elija el mes y use la opción para descargar el detalle. Descargue un archivo para compras y otro para ventas.</p>
+      <p><b>Boletas de honorarios:</b> en sii.cl, en la sección de boletas de honorarios electrónicas, descargue el informe de boletas recibidas (o emitidas) del mes.</p>
+      <p class="muted">Si importa dos veces el mismo archivo no pasa nada: los documentos repetidos se omiten.</p></div></details>`);
+  if (S.info.cerrado) return;
+  const drop = $("#drop"), inp = $("#fileIn");
+  ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => [...e.dataTransfer.files].forEach(analizarArchivo));
+  inp.onchange = () => { [...inp.files].forEach(analizarArchivo); inp.value = ""; };
+}
+const NOMBRE_TIPO = { compra: "Compras (facturas recibidas)", venta: "Ventas (facturas emitidas)", honorario_recibido: "Boletas de honorarios recibidas", honorario_emitido: "Boletas de honorarios emitidas" };
+function aBase64(file) { return new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1] || ""); r.onerror = () => mal(new Error("No se pudo leer el archivo.")); r.readAsDataURL(file); }); }
+async function analizarArchivo(file) {
+  const box = document.createElement("div"); box.className = "panel"; $("#cola").prepend(box);
+  box.innerHTML = `<b>${esc(file.name)}</b><p class="muted">Revisando…</p>`;
+  try {
+    const contenido = await aBase64(file);
+    const r = await api(E("analizar"), { contenido });
+    const otroMes = r.mes_sugerido && r.mes_sugerido !== S.periodo;
+    box.innerHTML = `<div class="row" style="justify-content:space-between"><b>${esc(file.name)}</b><span class="pill">${esc(NOMBRE_TIPO[r.tipo])}</span></div>
+      <p>${r.documentos} documentos por un total de <b>${peso(r.total)}</b>.</p>
+      ${otroMes ? `<div class="msg warn">Los documentos son mayormente de <b>${esc(nomMes(r.mes_sugerido))}</b>, pero usted está trabajando en <b>${esc(nomMes(S.periodo))}</b>. Elija abajo el mes del registro del SII al que corresponde el archivo.</div>` : ""}
+      <div class="row"><label class="row" style="gap:8px">Registrar en el mes
+        <select class="selP" style="width:auto">${[S.periodo, r.mes_sugerido].filter((v, i, a) => v && a.indexOf(v) === i).map(p => `<option value="${p}">${esc(nomMes(p))}</option>`).join("")}</select></label>
+        <button class="btn primary bImp" type="button">Importar</button><button class="btn bNo" type="button">Descartar</button></div><div class="res"></div>`;
+    $(".bNo", box).onclick = () => box.remove();
+    $(".bImp", box).onclick = async () => {
+      const b = $(".bImp", box); b.disabled = true; b.textContent = "Importando…";
+      try {
+        const x = await api(E("importar"), { contenido, tipo: r.tipo, periodo: $(".selP", box).value, nombre: file.name });
+        b.remove(); $(".bNo", box).remove();
+        $(".res", box).innerHTML = `<div class="msg ok"><b>Listo: ${x.importados} documentos registrados en la contabilidad.</b>
+          ${x.duplicados ? `<span>${x.duplicados} ya estaban registrados y se omitieron.</span>` : ""}${x.anuladas ? `<span>${x.anuladas} boletas anuladas se omitieron.</span>` : ""}</div>
+          ${x.alertas.length ? `<div class="msg warn"><b>Para revisar con su contador (${x.alertas.length}):</b><ul>${x.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}`;
+        toast("Archivo importado");
+      } catch (e) { b.disabled = false; b.textContent = "Importar"; error($(".res", box), e); }
+    };
+  } catch (e) { box.innerHTML = `<b>${esc(file.name)}</b>`; const d = document.createElement("div"); box.appendChild(d); error(d, e); }
+}
+
+/* ------------------------------------------------------------ paso 2: movimientos */
+async function pantallaMovimientos() {
+  const a = render(`${volver()}<div class="stack"><h1>Registrar pagos y cobros</h1><p class="muted">Elija qué pasó. El programa hace el registro contable por usted.</p></div>
+    ${S.info.cerrado ? `<div class="msg warn">Este mes está cerrado: no se pueden agregar movimientos.</div>` : `<div class="ops" id="ops"></div><div id="form"></div>`}
+    <div class="stack"><h2>Registros de ${esc(nomMes(S.periodo))}</h2><div id="lista"><p class="muted">Cargando…</p></div></div>`);
+  try {
+    const c = await api(E("catalogo"));
+    S.catalogo = c;
+    if (!S.info.cerrado) {
+      $("#ops").innerHTML = c.operaciones.map(o => `<button class="op" type="button" data-op="${o.clave}"><b>${esc(o.titulo)}</b><span>${esc(o.ayuda)}</span></button>`).join("")
+        + `<button class="op" type="button" data-op="pago_f29"><b>Pagué el impuesto mensual (F29)</b><span>El pago del formulario 29 al SII.</span></button>`
+        + `<button class="op" type="button" data-op="avanzado"><b>Otro (para contadores)</b><span>Asiento con cargos y abonos.</span></button>`;
+      a.querySelectorAll("[data-op]").forEach(b => b.onclick = () => { a.querySelectorAll(".op").forEach(x => x.classList.toggle("sel", x === b)); formMovimiento(b.dataset.op); });
+    }
+    listaMovimientos();
+  } catch (e) { error($("#lista"), e); }
+}
+function fechaDefecto() { const h = hoy(); return h.slice(0, 7) === S.periodo ? h : finMes(S.periodo); }
+function campoMedio(texto) {
+  return `<div class="stack"><b>${texto}</b><div class="seg" role="group" aria-label="${texto}" id="medio">
+    <button type="button" data-m="banco" aria-pressed="true">Banco (transferencia, cheque, tarjeta)</button><button type="button" data-m="caja" aria-pressed="false">Efectivo</button></div></div>`;
+}
+function conectarMedio() {
+  let medio = "banco";
+  document.querySelectorAll("#medio [data-m]").forEach(b => b.onclick = () => { medio = b.dataset.m; document.querySelectorAll("#medio [data-m]").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+  return () => medio;
+}
+function formMovimiento(op) {
+  const c = S.catalogo, f = $("#form");
+  if (op === "pago_f29") {
+    f.innerHTML = `<form class="panel" id="fMov" novalidate><h2>Pagué el impuesto mensual (F29)</h2>
+      <p class="muted">Los montos vienen prellenados con lo que la contabilidad registra como pendiente de pago. Corríjalos si pagó otra cifra.</p>
+      <label for="mFecha">Fecha del pago<input id="mFecha" type="date" value="${fechaDefecto()}" required></label>
+      <div class="grid2">${c.pago_f29.map(x => `<label for="pf_${x.clave}">${esc(x.nombre)}<input id="pf_${x.clave}" type="number" min="0" step="1" value="${x.pendiente || ""}" placeholder="0"></label>`).join("")}</div>
+      ${campoMedio("¿Cómo pagó?")}<div id="mErr"></div>
+      <div class="row"><button class="btn primary" type="submit">Registrar el pago</button></div></form>`;
+    const medio = conectarMedio();
+    $("#fMov").onsubmit = async ev => { ev.preventDefault();
+      const montos = {}; c.pago_f29.forEach(x => montos[x.clave] = +($("#pf_" + x.clave).value || 0));
+      enviarMov({ operacion: "pago_f29", fecha: $("#mFecha").value, montos, medio: medio(), periodo: S.periodo }); };
+  } else if (op === "avanzado") {
+    const opts = c.cuentas.map(x => `<option value="${x.codigo}">${x.codigo} ${esc(x.nombre)}</option>`).join("");
+    const fila = () => `<tr><td><select class="lc"><option value="">Cuenta…</option>${opts}</select></td><td><input class="ld" type="number" min="0" step="1"></td><td><input class="lh" type="number" min="0" step="1"></td></tr>`;
+    f.innerHTML = `<form class="panel" id="fMov" novalidate><h2>Asiento manual</h2><p class="muted">Cada fila usa Debe o Haber. El total del Debe debe ser igual al del Haber.</p>
+      <div class="grid2"><label for="mFecha">Fecha<input id="mFecha" type="date" value="${fechaDefecto()}"></label><label for="mGlosa">Descripción<input id="mGlosa" type="text"></label></div>
+      <div class="tablewrap"><table class="lines"><thead><tr><th>Cuenta</th><th class="num">Debe</th><th class="num">Haber</th></tr></thead><tbody id="lb">${fila()}${fila()}</tbody>
+      <tfoot><tr class="sum"><td>Totales</td><td class="num" id="tD">$0</td><td class="num" id="tH">$0</td></tr></tfoot></table></div>
+      <div class="row"><button class="btn" type="button" id="addL">+ Agregar fila</button></div><div id="mErr"></div>
+      <div class="row"><button class="btn primary" type="submit">Registrar asiento</button></div></form>`;
+    const tot = () => { let d = 0, h = 0; f.querySelectorAll("#lb tr").forEach(r => { d += +($(".ld", r).value || 0); h += +($(".lh", r).value || 0); });
+      $("#tD").textContent = peso(d); $("#tH").textContent = peso(h); };
+    $("#lb").addEventListener("input", tot);
+    $("#addL").onclick = () => $("#lb").insertAdjacentHTML("beforeend", fila());
+    $("#fMov").onsubmit = ev => { ev.preventDefault();
+      const lineas = [...f.querySelectorAll("#lb tr")].map(r => ({ cuenta: $(".lc", r).value, debe: +($(".ld", r).value || 0), haber: +($(".lh", r).value || 0) })).filter(l => l.cuenta && (l.debe || l.haber));
+      enviarMov({ operacion: "avanzado", fecha: $("#mFecha").value, glosa: $("#mGlosa").value, lineas }); };
+  } else {
+    const o = c.operaciones.find(x => x.clave === op);
+    const entra = ["cobro_cliente", "otro_ingreso", "aporte_capital"].includes(op);
+    f.innerHTML = `<form class="panel" id="fMov" novalidate><h2>${esc(o.titulo)}</h2>
+      <div class="grid2"><label for="mFecha">Fecha<input id="mFecha" type="date" value="${fechaDefecto()}" required></label>
+      <label for="mMonto">Monto en pesos<span class="hint">Sin puntos. Ejemplo: 1190000</span><input id="mMonto" type="number" min="1" step="1" required></label></div>
+      ${op === "deposito" ? "" : campoMedio(entra ? "¿Dónde entró el dinero?" : "¿Cómo pagó?")}
+      <div class="grid2">${o.pide_rut ? `<label for="mRut">RUT de ${op === "cobro_cliente" ? "el cliente" : "quien recibió el pago"} <span class="hint">(opcional)</span><input id="mRut" type="text"></label>` : ""}
+      <label for="mDet">Detalle <span class="hint">(opcional; ej. "factura 1001")</span><input id="mDet" type="text"></label></div>
+      <div id="mErr"></div><div class="row"><button class="btn primary" type="submit">Registrar</button></div></form>`;
+    const medio = op === "deposito" ? () => "banco" : conectarMedio();
+    $("#mMonto").focus();
+    $("#fMov").onsubmit = ev => { ev.preventDefault();
+      enviarMov({ operacion: op, fecha: $("#mFecha").value, monto: +$("#mMonto").value, medio: medio(), rut: $("#mRut")?.value || "", detalle: $("#mDet").value }); };
+  }
+  f.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function enviarMov(cuerpo) {
+  if (cuerpo.fecha && cuerpo.fecha.slice(0, 7) !== S.periodo) {
+    if (!$("#mErr").dataset.ok) { $("#mErr").dataset.ok = "1"; $("#mErr").innerHTML = `<div class="msg warn">La fecha es de ${esc(nomMes(cuerpo.fecha.slice(0, 7)))}, no de ${esc(nomMes(S.periodo))}. Si está bien, presione el botón otra vez.</div>`; return; }
+  }
+  try {
+    const r = await api(E("movimiento"), cuerpo);
+    toast(`Registrado (N° ${r.numero})`);
+    $("#form").innerHTML = `<div class="msg ok">Listo. El movimiento quedó registrado con el número ${r.numero}.</div>`;
+    document.querySelectorAll(".op").forEach(x => x.classList.remove("sel"));
+    S.catalogo = await api(E("catalogo"));
+    listaMovimientos();
+  } catch (e) { error($("#mErr"), e); delete $("#mErr").dataset.ok; }
+}
+async function listaMovimientos() {
+  const l = $("#lista");
+  try {
+    const d = await api(E("diario") + "?periodo=" + S.periodo);
+    if (!d.asientos.length) { l.innerHTML = `<p class="muted">Todavía no hay registros en este mes.</p>`; return; }
+    l.innerHTML = `<div class="tablewrap"><table><thead><tr><th>N°</th><th>Fecha</th><th>Descripción</th><th class="num">Monto</th><th></th></tr></thead><tbody>
+      ${d.asientos.slice().reverse().map(a => { const m = a.lineas.reduce((s, x) => s + x.debe, 0);
+        return `<tr class="${a.anulado || a.tipo === "anulacion" ? "anulado" : ""}"><td>${a.numero}</td><td class="fecha">${a.fecha.split("-").reverse().join("-")}</td><td>${esc(a.glosa)}</td><td class="num">${peso(m)}</td>
+        <td>${!S.info.cerrado && !a.anulado && a.tipo !== "anulacion" ? `<button class="btn link small" type="button" data-anular="${a.numero}">Anular</button>` : ""}</td></tr>`; }).join("")}
+      </tbody></table></div><div id="anu"></div>`;
+    l.querySelectorAll("[data-anular]").forEach(b => b.onclick = () => {
+      const n = b.dataset.anular;
+      $("#anu").innerHTML = `<div class="confirm"><b>¿Anular el registro N° ${n}?</b><p>No se borra: se agrega un registro contrario que lo deja sin efecto, como exige la contabilidad.</p>
+        <label for="anMot">Motivo<input id="anMot" type="text" placeholder="Ej.: monto mal ingresado"></label><div id="anErr"></div>
+        <div class="row"><button class="btn danger" type="button" id="anSi">Sí, anular</button><button class="btn" type="button" id="anNo">No</button></div></div>`;
+      $("#anMot").focus();
+      $("#anNo").onclick = () => $("#anu").innerHTML = "";
+      $("#anSi").onclick = async () => { try { await api(E("anular"), { numero: +n, motivo: $("#anMot").value }); toast("Registro anulado"); listaMovimientos(); } catch (e) { error($("#anErr"), e); } };
+      $("#anu").scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  } catch (e) { error(l, e); }
+}
+
+/* ------------------------------------------------------------ paso 3: F29 */
+const EXPLICA = {
+  debito_fiscal: "IVA que cobró en sus ventas", iva_retenido_fc: "IVA que usted retuvo al emitir facturas de compra", credito_fiscal: "IVA que pagó en sus compras",
+  credito_uso_comun: "Parte del IVA de compras de uso común", remanente_anterior: "Crédito de IVA que sobró del mes anterior",
+  iva_determinado: "Diferencia entre el IVA de ventas y el de compras", remanente_siguiente: "IVA a favor que pasa al mes siguiente",
+  base_ppm: "Ventas del mes sobre las que se calcula el PPM", ppm: "Pago provisional del impuesto a la renta",
+  retencion_honorarios: "Impuesto que retuvo de las boletas de honorarios", impuesto_unico: "Impuesto de los sueldos de sus trabajadores",
+};
+async function pantallaF29(opc = {}) {
+  const a = render(`${volver()}<div class="stack"><h1>Impuesto de ${esc(nomMes(S.periodo))}</h1>
+    <p class="muted">Este cálculo es un borrador de apoyo. Antes de declarar, compárelo con la propuesta que le muestra el SII en sii.cl.</p></div><div id="f29"><p class="muted">Calculando…</p></div>`);
+  const qs = new URLSearchParams({ periodo: S.periodo, ...opc });
+  try {
+    const r = await api(E("f29") + "?" + qs);
+    const L = Object.fromEntries(r.lineas.map(x => [x.clave, x]));
+    const sinUtm = !S.info.utm;
+    $("#f29").innerHTML = `
+      <div class="panel hero">
+        <span class="muted">Total a pagar al SII</span><span class="big">${peso(r.total)}</span>
+        <span>Plazo: hasta el <b>${esc(fechaLarga(r.vencimiento))}</b></span>
+        ${r.remanente_siguiente ? `<span class="pill ok">Le queda un IVA a favor de ${peso(r.remanente_siguiente)} para el próximo mes</span>` : ""}
+      </div>
+      ${sinUtm ? `<div class="msg warn"><b>Falta la UTM de ${esc(nomMes(S.periodo))}.</b><span>Se usa para actualizar el IVA a favor del mes anterior y para el impuesto de los trabajadores. Búsquela en sii.cl, sección «Valores y fechas», y escríbala aquí:</span>
+        <div class="row"><input id="utmV" type="number" min="1" step="1" style="max-width:200px" placeholder="Ej.: 72151" aria-label="Valor UTM"><button class="btn" type="button" id="utmG">Guardar UTM</button></div><div id="utmE"></div></div>` : ""}
+      <div class="tablewrap"><table><thead><tr><th>Concepto</th><th class="num">Monto</th><th>Código F29</th></tr></thead><tbody>
+        ${["debito_fiscal", "iva_retenido_fc", "credito_fiscal", "credito_uso_comun", "remanente_anterior", "iva_determinado", "remanente_siguiente", "base_ppm", "ppm", "retencion_honorarios", "impuesto_unico"]
+          .filter(k => L[k] && (L[k].monto || ["debito_fiscal", "credito_fiscal", "iva_determinado", "ppm"].includes(k)))
+          .map(k => `<tr><td><b>${esc(EXPLICA[k] || L[k].texto)}</b><br><span class="small muted">${esc(L[k].texto)}</span></td><td class="num">${peso(L[k].monto)}</td><td class="small muted">${esc(L[k].codigo)}</td></tr>`).join("")}
+        <tr class="sum"><td>Total a pagar</td><td class="num">${peso(r.total)}</td><td class="small muted">${esc(L.total_a_pagar?.codigo || "")}</td></tr>
+      </tbody></table></div>
+      ${r.alertas.length ? `<div class="msg warn"><b>Para revisar:</b><ul>${r.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}
+      ${r.verificar.length ? `<details><summary>Datos legales usados que deben confirmarse (${r.verificar.length})</summary><div class="stack small">
+        <p>Estos valores se obtuvieron de fuentes oficiales en forma indirecta, sin lectura directa de la norma. Su contador debe confirmarlos.</p>
+        <ul>${r.verificar.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div></details>` : ""}
+      <details id="avz"><summary>Opciones avanzadas (para su contador)</summary><form class="stack" id="fAv">
+        <div class="grid2">
+          <label for="oIU">Impuesto único de trabajadores ($)<span class="hint">Del libro de remuneraciones</span><input id="oIU" type="number" min="0" value="${esc(opc.impuesto_unico || "")}"></label>
+          <label for="oPPM">Tasa de PPM (%)<span class="hint">Obligatoria en régimen 14 A. Ej.: 1</span><input id="oPPM" type="number" min="0" step="0.001" value="${esc(opc.tasa_ppm || "")}"></label>
+          <label for="oUC">Proporción IVA uso común (%)<input id="oUC" type="number" min="0" max="100" step="0.01" value="${esc(opc.factor_uso_comun || "")}"></label>
+          <label for="oRem">IVA a favor del mes anterior ($)<span class="hint">Solo si no está registrado</span><input id="oRem" type="number" min="0" value="${esc(opc.remanente_anterior || "")}"></label>
+        </div>
+        <label class="row" style="gap:8px;font-weight:400"><input type="checkbox" id="oPap" ${opc.papel ? "checked" : ""}> No emite documentos electrónicos (plazo hasta el día 12)</label>
+        <div><button class="btn" type="submit">Recalcular</button></div></form></details>
+      ${S.info.cerrado ? `<div class="msg ok">El mes está cerrado.</div>` : r.contabilizado
+        ? `<div class="msg ok">El impuesto de este mes ya está registrado en la contabilidad. Cuando lo pague, regístrelo en «Registrar pagos y cobros» → «Pagué el impuesto mensual».</div>`
+        : `<div class="panel"><h3>¿El cálculo coincide con la propuesta del SII?</h3><p class="muted">Al confirmar, el programa registra en la contabilidad el impuesto por pagar y guarda el IVA a favor para el próximo mes.</p>
+           <div id="cf"><button class="btn primary" type="button" id="bConf">Sí, registrar en la contabilidad</button></div></div>`}`;
+    if (Object.keys(opc).length) $("#avz").open = true;
+    $("#fAv").onsubmit = ev => { ev.preventDefault();
+      const o = {}; if ($("#oIU").value) o.impuesto_unico = $("#oIU").value; if ($("#oPPM").value) o.tasa_ppm = $("#oPPM").value;
+      if ($("#oUC").value) o.factor_uso_comun = $("#oUC").value; if ($("#oRem").value) o.remanente_anterior = $("#oRem").value; if ($("#oPap").checked) o.papel = "1";
+      pantallaF29(o); };
+    if (sinUtm) $("#utmG").onclick = async () => { try { await api("utm", { periodo: S.periodo, valor: $("#utmV").value }); toast("UTM guardada"); S.info.utm = 1; pantallaF29(opc); } catch (e) { error($("#utmE"), e); } };
+    const bc = $("#bConf");
+    if (bc) bc.onclick = () => {
+      $("#cf").innerHTML = `<div class="confirm"><b>¿Confirmar el impuesto de ${esc(nomMes(S.periodo))} por ${peso(r.total)}?</b><div id="cfE"></div>
+        <div class="row"><button class="btn primary" type="button" id="cfSi">Sí, confirmar</button><button class="btn" type="button" id="cfNo">Cancelar</button></div></div>`;
+      $("#cfNo").onclick = () => pantallaF29(opc);
+      $("#cfSi").onclick = async () => { try { await api(E("f29-confirmar"), { periodo: S.periodo, ...opc }); toast("Impuesto registrado"); pantallaF29(opc); } catch (e) { error($("#cfE"), e); } };
+    };
+  } catch (e) { error($("#f29"), e); }
+}
+
+/* ------------------------------------------------------------ paso 4: revisión y cierre */
+async function pantallaCierre() {
+  render(`${volver()}<div class="stack"><h1>Revisar y cerrar ${esc(nomMes(S.periodo))}</h1>
+    <p class="muted">El programa comprueba que lo registrado cuadre. Cerrar el mes evita cambios accidentales; las correcciones posteriores se hacen en el mes siguiente.</p></div><div id="rev"><p class="muted">Revisando…</p></div>`);
+  try {
+    const r = await api(E("revision") + "?periodo=" + S.periodo);
+    const todoOk = r.controles.every(c => c.ok);
+    $("#rev").innerHTML = `<div class="panel"><h2>Comprobaciones</h2>
+      ${r.controles.map(c => `<div class="check"><span class="i ${c.ok ? "ok" : "bad"}" aria-hidden="true">${c.ok ? "✓" : "!"}</span><div><b>${esc(c.nombre)}</b> — ${c.ok ? "correcto" : "revisar"}<br><span class="small muted">${esc(c.detalle)}</span></div></div>`).join("")}
+      ${todoOk ? `<div class="msg ok">Todo cuadra.</div>` : `<div class="msg bad">Hay diferencias. Revíselas con su contador antes de cerrar.</div>`}</div>
+      ${r.cerrado ? `<div class="msg ok"><b>Este mes ya está cerrado.</b></div>` : `<div class="panel"><h2>Cerrar el mes</h2><div id="cz"><button class="btn primary" type="button" id="bCerrar">Cerrar ${esc(nomMes(S.periodo))}</button></div></div>`}
+      <details><summary>Obligaciones según su régimen</summary><div class="stack small">${r.obligaciones.map(o => `<div><b>${esc(o.texto)}</b><br><span class="muted">${esc(o.norma)}${o.estado !== "VERIFICADO" ? ` · <span class="pill warn">por confirmar</span>` : ""}</span></div>`).join("")}</div></details>`;
+    const b = $("#bCerrar");
+    if (b) b.onclick = () => {
+      $("#cz").innerHTML = `<div class="confirm"><b>¿Cerrar ${esc(nomMes(S.periodo))}?</b><p>Después no podrá agregar ni anular movimientos de este mes.</p><div id="czE"></div>
+        <div class="row"><button class="btn primary" type="button" id="czSi">Sí, cerrar el mes</button><button class="btn" type="button" id="czNo">Cancelar</button></div></div>`;
+      $("#czNo").onclick = pantallaCierre;
+      $("#czSi").onclick = async () => { try { await api(E("cerrar"), { periodo: S.periodo }); toast("Mes cerrado"); ir("cierre"); } catch (e) { error($("#czE"), e); } };
+    };
+  } catch (e) { error($("#rev"), e); }
+}
+
+/* ------------------------------------------------------------ libros */
+let pestana = "resultados";
+async function pantallaLibros() {
+  const a = render(`${volver()}<div class="stack"><h1>Libros e informes</h1>
+    <div class="row"><span>Mostrar:</span><div class="seg" role="group" id="alc"><button type="button" data-a="mes" aria-pressed="true">${esc(nomMes(S.periodo))}</button><button type="button" data-a="anio" aria-pressed="false">Todo ${S.periodo.slice(0, 4)}</button></div>
+    <a class="btn" id="xls" href="#">Descargar Excel</a></div></div>
+    <div class="tabs" role="tablist">${[["resultados", "Ganancias y pérdidas"], ["documentos", "Documentos"], ["diario", "Libro Diario"], ["mayor", "Libro Mayor"], ["balance", "Balance 8 columnas"]]
+      .map(([k, t]) => `<button type="button" role="tab" data-t="${k}" aria-selected="${k === pestana}">${t}</button>`).join("")}</div><div id="lib"></div>`);
+  let alc = "mes";
+  const q = () => alc === "mes" ? "periodo=" + S.periodo : "anio=" + S.periodo.slice(0, 4);
+  const pintar = () => { $("#xls").href = `/api/${E("excel")}?${q()}`; libro(pestana, q()); };
+  a.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { pestana = b.dataset.t; a.querySelectorAll("[data-t]").forEach(x => x.setAttribute("aria-selected", x === b)); pintar(); });
+  a.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { alc = b.dataset.a; a.querySelectorAll("[data-a]").forEach(x => x.setAttribute("aria-pressed", x === b)); pintar(); });
+  pintar();
+}
+async function libro(t, q) {
+  const el = $("#lib"); el.innerHTML = `<p class="muted">Cargando…</p>`;
+  try {
+    if (t === "resultados") {
+      const r = await api(E("resultados") + "?" + q);
+      const ing = r.detalle.filter(x => x.tipo === "ingreso"), gas = r.detalle.filter(x => x.tipo === "gasto");
+      el.innerHTML = `<div class="tiles"><div class="tile"><span class="k">Ingresos</span><span class="v">${peso(r.ingresos)}</span></div>
+        <div class="tile"><span class="k">Gastos y costos</span><span class="v">${peso(r.gastos)}</span></div>
+        <div class="tile"><span class="k">${r.resultado >= 0 ? "Ganancia" : "Pérdida"}</span><span class="v">${peso(r.resultado)}</span></div></div>
+        <div class="tablewrap"><table><tbody><tr class="head"><td>Ingresos</td><td></td></tr>${ing.map(x => `<tr><td>${esc(x.nombre)}</td><td class="num">${peso(x.monto)}</td></tr>`).join("")}
+        <tr class="head"><td>Gastos y costos</td><td></td></tr>${gas.map(x => `<tr><td>${esc(x.nombre)}</td><td class="num">${peso(x.monto)}</td></tr>`).join("")}
+        <tr class="sum"><td>Resultado</td><td class="num">${peso(r.resultado)}</td></tr></tbody></table></div>
+        <p class="small muted">Resultado contable según lo registrado. No es la renta líquida imponible del F22.</p>`;
+    } else if (t === "documentos") {
+      if (!q.startsWith("periodo")) { el.innerHTML = `<p class="muted">Elija un mes para ver sus documentos.</p>`; return; }
+      const r = await api(E("documentos") + "?" + q);
+      const nom = { compra: "Compra", venta: "Venta", honorario_recibido: "Boleta recibida", honorario_emitido: "Boleta emitida" };
+      el.innerHTML = r.documentos.length ? `<div class="tablewrap"><table><thead><tr><th>Tipo</th><th>Documento</th><th>Fecha</th><th>RUT</th><th>Nombre</th><th class="num">Neto/Bruto</th><th class="num">IVA/Retención</th><th class="num">Total</th></tr></thead><tbody>
+        ${r.documentos.map(d => `<tr><td>${nom[d.libro]}</td><td>${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td>${d.fecha.split("-").reverse().join("-")}</td><td>${esc(d.rut_contraparte)}</td><td>${esc(d.razon_social)}</td>
+          <td class="num">${peso(d.bruto || d.neto + d.exento)}</td><td class="num">${peso(d.retencion || d.iva)}</td><td class="num">${peso(d.total)}</td></tr>`).join("")}</tbody></table></div>`
+        : `<p class="muted">No hay documentos en este mes.</p>`;
+    } else if (t === "diario") {
+      const r = await api(E("diario") + "?" + q);
+      el.innerHTML = r.asientos.length ? `<div class="tablewrap"><table><thead><tr><th>N°</th><th>Fecha</th><th>Cuenta</th><th class="num">Debe</th><th class="num">Haber</th></tr></thead><tbody>
+        ${r.asientos.map(a => `<tr class="head ${a.anulado ? "anulado" : ""}"><td>${a.numero}</td><td>${a.fecha.split("-").reverse().join("-")}</td><td colspan="3">${esc(a.glosa)}</td></tr>`
+          + a.lineas.map(l => `<tr><td></td><td></td><td>${esc(l.cuenta)} ${esc(l.nombre)}</td><td class="num">${l.debe ? peso(l.debe) : ""}</td><td class="num">${l.haber ? peso(l.haber) : ""}</td></tr>`).join("")).join("")}
+        </tbody></table></div>` : `<p class="muted">Sin registros.</p>`;
+    } else if (t === "mayor") {
+      const c = S.catalogo || (S.catalogo = await api(E("catalogo")));
+      el.innerHTML = `<label for="mc" style="max-width:420px">Cuenta<select id="mc">${c.cuentas.map(x => `<option value="${x.codigo}">${x.codigo} ${esc(x.nombre)}</option>`).join("")}</select></label><div id="mt"></div>`;
+      const cargar = async () => { const r = await api(E("mayor") + `?${q}&cuenta=${encodeURIComponent($("#mc").value)}`);
+        $("#mt").innerHTML = `<div class="tablewrap"><table><thead><tr><th>N°</th><th>Fecha</th><th>Descripción</th><th class="num">Debe</th><th class="num">Haber</th><th class="num">Saldo</th></tr></thead><tbody>
+          <tr class="head"><td colspan="5">Saldo inicial</td><td class="num">${peso(r.inicial)}</td></tr>
+          ${r.movimientos.map(m => `<tr><td>${m.numero}</td><td>${m.fecha.split("-").reverse().join("-")}</td><td>${esc(m.glosa)}</td><td class="num">${m.debe ? peso(m.debe) : ""}</td><td class="num">${m.haber ? peso(m.haber) : ""}</td><td class="num">${peso(m.saldo)}</td></tr>`).join("")}</tbody></table></div>`; };
+      $("#mc").onchange = cargar; $("#mc").value = "1.1.02"; cargar();
+    } else if (t === "balance") {
+      const r = await api(E("balance") + "?" + q);
+      const H = ["Débitos", "Créditos", "Deudor", "Acreedor", "Activo", "Pasivo", "Pérdida", "Ganancia"];
+      el.innerHTML = `<div class="tablewrap"><table><thead><tr><th>Cuenta</th>${H.map(h => `<th class="num">${h}</th>`).join("")}</tr></thead><tbody>
+        ${r.filas.map(f => `<tr><td>${esc(f.codigo)} ${esc(f.nombre)}</td>${f.v.map(x => `<td class="num">${x ? peso(x) : ""}</td>`).join("")}</tr>`).join("")}
+        <tr class="sum"><td>Sumas</td>${r.totales.map(x => `<td class="num">${peso(x)}</td>`).join("")}</tr>
+        <tr><td>${r.resultado >= 0 ? "Utilidad" : "Pérdida"} del ejercicio</td><td></td><td></td><td></td><td></td>
+          <td class="num">${r.resultado < 0 ? peso(-r.resultado) : ""}</td><td class="num">${r.resultado >= 0 ? peso(r.resultado) : ""}</td>
+          <td class="num">${r.resultado >= 0 ? peso(r.resultado) : ""}</td><td class="num">${r.resultado < 0 ? peso(-r.resultado) : ""}</td></tr></tbody></table></div>`;
+    }
+  } catch (e) { error(el, e); }
+}
+
+/* ------------------------------------------------------------ ayuda */
+function pantallaAyuda() {
+  render(`${S.empresa ? volver() : `<div><button class="btn link" type="button" id="ayV">← Volver</button></div>`}
+    <div class="stack"><h1>Ayuda</h1><p>Este programa lleva la contabilidad con los archivos que usted descarga del SII. Cada mes siga los cuatro pasos de la pantalla de inicio.</p></div>
+    <div class="panel"><h2>Palabras que verá</h2><dl class="glos">
+      <dt>IVA débito</dt><dd>El IVA que usted cobró en sus ventas. Se lo debe al SII.</dd>
+      <dt>IVA crédito</dt><dd>El IVA que usted pagó en sus compras. Se descuenta del IVA débito.</dd>
+      <dt>IVA a favor (remanente)</dt><dd>Si pagó más IVA en compras que el que cobró en ventas, la diferencia pasa al mes siguiente.</dd>
+      <dt>PPM</dt><dd>Pago provisional mensual: un adelanto del impuesto a la renta anual, calculado sobre sus ventas.</dd>
+      <dt>Retención de honorarios</dt><dd>Parte de una boleta de honorarios que quien la paga retiene y entera al SII.</dd>
+      <dt>F29</dt><dd>Formulario mensual del SII donde se declaran y pagan el IVA, el PPM y las retenciones.</dd>
+      <dt>RCV</dt><dd>Registro de Compras y Ventas que el SII arma con sus facturas electrónicas.</dd>
+      <dt>Anular</dt><dd>En contabilidad nada se borra: un error se corrige con un registro contrario.</dd>
+      <dt>Cerrar el mes</dt><dd>Bloquear el mes para que no se modifique después de declarar.</dd>
+    </dl></div>
+    <div class="panel"><h2>Sus datos</h2><p>Todo se guarda en su computador, en la carpeta <b>mis_empresas</b> que está junto al programa. Nada se envía a internet.</p>
+      <p><b>Haga una copia de esa carpeta</b> regularmente, por ejemplo en un pendrive o en OneDrive.</p></div>
+    <div class="panel"><h2>Importante</h2><p>Los cálculos de impuestos son un borrador de apoyo. Compárelos siempre con la propuesta del SII y consulte a su contador ante cualquier duda. Las alertas en amarillo indican casos que el programa no resuelve solo.</p></div>`);
+  const b = $("#ayV"); if (b) b.onclick = pantallaEmpresas;
+}
+
+$("#btnEmpresas").onclick = pantallaEmpresas;
+$("#btnAyuda").onclick = () => S.empresa ? ir("ayuda") : pantallaAyuda();
+pantallaEmpresas();
+</script>
+</body>
+</html>

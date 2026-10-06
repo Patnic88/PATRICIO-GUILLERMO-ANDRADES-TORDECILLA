@@ -7,7 +7,7 @@ import argparse
 import sys
 from calendar import monthrange
 
-from . import honorarios, impuestos, obligaciones, rcv, reportes
+from . import controles, honorarios, impuestos, obligaciones, rcv, reportes
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros
 
@@ -136,27 +136,9 @@ def cmd_verificar(lib, a):
 
 
 def cmd_controles(lib, a):
-    desde, hasta = _rango(a.periodo)
-    problemas = lib.verificar_integridad()
-    A = lib.cuenta_auto
-    out = []
-    for libro_doc, cuenta, campo in (("venta", A("iva_df"), "haber-debe"), ("compra", A("iva_cf"), "debe-haber")):
-        doc = lib.con.execute(
-            f"SELECT COALESCE(SUM(iva*{impuestos._signo_sql()}),0) FROM documento WHERE libro=? AND periodo=? "
-            f"AND (tipo_dte IS NULL OR tipo_dte NOT IN (45,46))", (libro_doc, a.periodo)).fetchone()[0]
-        mov = lib.con.execute(
-            f"SELECT COALESCE(SUM(l.{campo.split('-')[0]} - l.{campo.split('-')[1]}),0) FROM linea l "
-            "JOIN asiento s ON s.numero=l.asiento WHERE l.cuenta=? AND s.origen=? AND s.periodo=?",
-            (cuenta, f"rcv-{libro_doc}", a.periodo)).fetchone()[0]
-        estado = "OK" if doc == mov else "DIFERENCIA"
-        out.append(f"IVA {libro_doc}s: auxiliar {reportes.pesos(doc)} vs contabilidad {reportes.pesos(mov)} → {estado}")
-    sin_rut = lib.con.execute("SELECT COUNT(*) FROM documento WHERE periodo=? AND rut_contraparte NOT LIKE '%-%'",
-                              (a.periodo,)).fetchone()[0]
     print(reportes.encabezado(lib, f"CONTROLES DEL PERÍODO {a.periodo}"))
-    for o in out:
-        print("  • " + o)
-    print(f"  • Documentos sin RUT válido: {sin_rut}")
-    print("  • Integridad: " + ("OK" if not problemas else "; ".join(problemas)))
+    for nombre, ok, detalle in controles.controles(lib, a.periodo):
+        print(f"  • {nombre}: {'OK' if ok else 'REVISAR'} ({detalle})")
     print(f"  • Período {'CERRADO' if lib.periodo_cerrado(a.periodo) else 'abierto'}")
 
 
