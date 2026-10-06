@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JurisBot</title>
+<style>
+:root {
+  --fondo: #f7f7f5; --panel: #ffffff; --texto: #1d2125; --suave: #5b6570;
+  --borde: #dcdfe3; --acento: #1f4e79; --aviso: #8a5a00; --aviso-fondo: #fff4dc;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fondo: #15181b; --panel: #1e2226; --texto: #e6e8ea; --suave: #9aa4ad;
+          --borde: #343a40; --acento: #7fb0de; --aviso: #f0c46c; --aviso-fondo: #3a2f17; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto);
+       font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 960px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+p.sub { color: var(--suave); margin: 0 0 16px; }
+.panel { background: var(--panel); border: 1px solid var(--borde); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.fila { display: flex; flex-wrap: wrap; gap: 8px; }
+.fila > * { flex: 1 1 160px; }
+input, select, button { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--borde);
+                        background: var(--panel); color: var(--texto); min-width: 0; }
+button { background: var(--acento); color: var(--panel); border: none; cursor: pointer; flex: 0 0 auto; }
+label { font-size: .85rem; color: var(--suave); display: block; }
+.res { border-top: 1px solid var(--borde); padding: 12px 0; }
+.res h3 { margin: 0 0 4px; font-size: 1rem; }
+.meta { color: var(--suave); font-size: .85rem; }
+.chip { display: inline-block; border: 1px solid var(--borde); border-radius: 999px; padding: 0 8px; margin: 2px 4px 2px 0; font-size: .8rem; }
+.sinverif { color: var(--aviso); background: var(--aviso-fondo); border-color: var(--aviso); }
+.ia { font-size: .9rem; margin-top: 6px; }
+a { color: var(--acento); }
+#estado { color: var(--suave); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>JurisBot</h1>
+  <p class="sub">Sentencias de la Corte Suprema y del Tribunal Constitucional, dictámenes de la Contraloría y de la Dirección del Trabajo, y circulares del SII, clasificados por materia.</p>
+
+  <div class="panel">
+    <div class="fila">
+      <div><label for="clave">Clave API</label><input id="clave" placeholder="jb_..." autocomplete="off"></div>
+      <div id="plan" class="meta" style="align-self:end"></div>
+    </div>
+  </div>
+
+  <form class="panel" id="form">
+    <div class="fila">
+      <div style="flex:3 1 260px"><label for="q">Buscar en el texto</label><input id="q" placeholder="ej.: honorarios municipales confianza legítima"></div>
+      <div><label for="fuente">Fuente</label><select id="fuente"><option value="">Todas</option></select></div>
+      <div><label for="materia">Materia</label><select id="materia"><option value="">Todas</option></select></div>
+    </div>
+    <div class="fila" style="margin-top:8px">
+      <div><label for="desde">Desde</label><input type="date" id="desde"></div>
+      <div><label for="hasta">Hasta</label><input type="date" id="hasta"></div>
+      <button type="submit" style="align-self:end">Buscar</button>
+    </div>
+  </form>
+
+  <div id="estado"></div>
+  <div id="resultados"></div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let catalogo = {fuentes: {}, materias: {}};
+
+try { $("clave").value = localStorage.getItem("jb_clave") || ""; } catch (e) {}
+
+async function api(ruta) {
+  const r = await fetch(ruta, {headers: {"X-API-Key": $("clave").value.trim()}});
+  const cuerpo = await r.json();
+  if (!r.ok) throw new Error(cuerpo.error || r.statusText);
+  return cuerpo;
+}
+
+async function iniciar() {
+  catalogo = await (await fetch("/api/catalogo")).json();
+  for (const [k, v] of Object.entries(catalogo.fuentes)) $("fuente").add(new Option(v, k));
+  for (const [k, v] of Object.entries(catalogo.materias)) $("materia").add(new Option(v, k));
+  mostrarPlan();
+}
+
+async function mostrarPlan() {
+  if (!$("clave").value.trim()) { $("plan").textContent = "Ingrese su clave para buscar."; return; }
+  try {
+    const yo = await api("/api/yo");
+    const l = yo.limites;
+    $("plan").textContent = `Plan ${catalogo.planes[yo.plan].nombre}` +
+      (l.retraso_dias ? ` · ve documentos con ${l.retraso_dias} días de antigüedad` : " · acceso al día");
+  } catch (e) { $("plan").textContent = e.message; }
+}
+
+$("clave").addEventListener("change", () => {
+  try { localStorage.setItem("jb_clave", $("clave").value.trim()); } catch (e) {}
+  mostrarPlan();
+});
+
+$("form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const p = new URLSearchParams();
+  for (const k of ["q", "fuente", "materia", "desde", "hasta"]) if ($(k).value) p.set(k, $(k).value);
+  $("estado").textContent = "Buscando…";
+  try {
+    const r = await api("/api/buscar?" + p);
+    $("estado").textContent = `${r.resultados.length} resultado(s)`;
+    $("resultados").innerHTML = r.resultados.map(pintar).join("") || "";
+  } catch (e) { $("estado").textContent = e.message; $("resultados").innerHTML = ""; }
+});
+
+function pintar(d) {
+  const verif = d.verificacion === "verificado_fuente_oficial"
+    ? '<span class="chip">Cotejado con fuente oficial</span>'
+    : '<span class="chip sinverif">Sin verificar</span>';
+  const materias = d.materias.map((m) => `<span class="chip">${esc(catalogo.materias[m] || m)}</span>`).join("");
+  const normas = d.normas_citadas.length ? `<div class="meta">Normas citadas en el texto: ${esc(d.normas_citadas.join("; "))}</div>` : "";
+  const resumen = d.resumen ? `<div class="ia"><strong>Resumen generado por IA (revisar contra el texto):</strong> ${esc(d.resumen)}</div>` : "";
+  const enlace = d.url ? ` · <a href="${esc(d.url)}" target="_blank" rel="noopener">Fuente oficial</a>` : "";
+  return `<div class="res">
+    <h3>${esc(catalogo.fuentes[d.fuente])} · ${esc(d.tipo)} ${esc(d.identificador)}</h3>
+    <div class="meta">${esc(d.fecha || "sin fecha")}${enlace}</div>
+    <div>${esc(d.titulo)}</div>
+    <div>${verif}${materias}</div>${normas}${resumen}
+  </div>`;
+}
+
+iniciar();
+</script>
+</body>
+</html>
