@@ -37,6 +37,25 @@ class ErrorSII(Exception):
     """Error comprensible para el usuario al conectarse con el SII."""
 
 
+# Estados de GetTokenFromSeed según el manual de Autenticación Automática del SII
+# (tabla «Estados de Salida de GetTokenFromSeed» y ejemplos del capítulo 6), con una
+# explicación para el usuario. Los textos entre comillas del SII se muestran tal cual.
+EXPLICACION_ESTADOS = {
+    "01": "Problema en el formato del mensaje firmado (no es responsabilidad del usuario).",
+    "02": "Problema en el formato del mensaje firmado (no es responsabilidad del usuario).",
+    "03": "Problema en el formato del mensaje firmado (no es responsabilidad del usuario).",
+    "04": "El SII no encontró la firma en el mensaje.",
+    "05": "El SII consideró inválida la firma.",
+    "06": "El SII no encontró la semilla en el mensaje.",
+    "10": "El SII recibió la firma, pero no reconoce el certificado. Use un certificado vigente emitido por "
+          "un proveedor acreditado.",
+    "11": "El SII recibió la firma, pero no reconoce el certificado. Use un certificado vigente emitido por "
+          "un proveedor acreditado.",
+    "-07": "El SII no pudo validar el RUT asociado al certificado.",
+    "-3": "Error de autenticación informado por el SII.",
+}
+
+
 # ------------------------------------------------------------------ certificado
 def cargar_pfx(contenido: bytes, clave: str):
     """Abre un archivo .pfx/.p12. Devuelve (clave_privada, certificado)."""
@@ -184,7 +203,9 @@ def obtener_token(llave, cert, ambiente: str = "certificacion", timeout: float =
     interna = _respuesta_interna(soap, "getTokenReturn")
     estado, token, glosa = _campo(interna, "ESTADO"), _campo(interna, "TOKEN"), _campo(interna, "GLOSA")
     if estado != "00" or not token:
-        raise ErrorSII(f"El SII rechazó el certificado (estado {estado or '?'}): {glosa or interna[:200]}")
+        explicacion = EXPLICACION_ESTADOS.get(estado, "")
+        raise ErrorSII(f"El SII no entregó el permiso de acceso (estado {estado or '?'}: «{glosa or interna[:200]}»)."
+                       + (f" {explicacion}" if explicacion else ""))
     return {"token": token, "estado": estado, "glosa": glosa}
 
 

@@ -108,9 +108,22 @@ La firma XML (`contasii/sii_ws.py`) tiene estas características:
 - su KeyInfo incluye KeyValue y X509Data;
 - se verificó con libxmlsec1 en las pruebas automáticas.
 
-El formato de los mensajes sigue el manual del SII y una implementación pública de
-referencia. **No se ha probado con un certificado real**: falta esa prueba con su
-certificado.
+### Resultado de la prueba contra el SII real
+
+Se probó el 06-10-2026 en el ambiente de certificación, desde GitHub Actions:
+
+- **Semilla:** el SII la entregó con estado `00`.
+- **Formato:** la definición del servicio (WSDL) confirma la operación `getToken` con el
+  parámetro `pszXml`.
+- **Certificado autofirmado de prueba:** el SII respondió *«XML Inválido, elemento
+  ‘Certificate’ no existe, función getCertificado»*.
+
+Según el manual oficial, los errores de formato o de firma son los estados 01 a 05 y la
+falta de semilla es el 06. Se infiere, sin confirmación expresa del SII, que la firma pasó
+la validación y que se rechazó el certificado por no ser reconocido. El manual indica que
+solo se permite autenticarse con un certificado digital válido.
+
+**Falta la prueba con un certificado real.**
 
 ## Qué automatiza
 
