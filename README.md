@@ -87,3 +87,12 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+---
+
+## 🧾 Facturador A&A (programa descargable)
+
+En la carpeta [`facturacion/`](facturacion/README.md) hay un **programa de escritorio para
+Windows, macOS y Linux** que automatiza la facturación y cobranza: clientes, cobros
+mensuales que se generan solos, documentos numerados, pagos, recordatorios y exportación
+a Excel. Los ejecutables se construyen automáticamente en GitHub Actions; ver su README.

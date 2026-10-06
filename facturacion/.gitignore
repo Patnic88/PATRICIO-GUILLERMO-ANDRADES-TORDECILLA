@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+build/
+dist/
+datos-prueba/
+*.db
+*.zip
