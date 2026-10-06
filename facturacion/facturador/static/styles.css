@@ -1,0 +1,135 @@
+:root {
+  --fondo: #f4f6f8; --tarjeta: #ffffff; --texto: #1f2933; --suave: #627d98; --borde: #d9e2ec;
+  --primario: #1d4ed8; --primario-osc: #1e40af; --peligro: #b91c1c; --exito: #15803d;
+  --alerta: #b45309; --alerta-fondo: #fef3c7; --exito-fondo: #dcfce7; --peligro-fondo: #fee2e2;
+  --radio: 8px; --sombra: 0 1px 3px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px;
+       background: var(--fondo); color: var(--texto); }
+.oculta { display: none !important; }
+a { color: var(--primario); }
+h1 { font-size: 22px; margin: 0 0 14px; }
+h2 { font-size: 17px; margin: 18px 0 10px; }
+small, .suave { color: var(--suave); }
+
+.barra-superior { background: #0f172a; color: #fff; display: flex; align-items: center; gap: 24px;
+  padding: 10px 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 20; }
+.marca { display: flex; align-items: center; gap: 10px; }
+.marca .logo { font-size: 26px; }
+.marca strong { display: block; font-size: 16px; }
+.marca small { color: #94a3b8; }
+#navegacion { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+#navegacion button { background: transparent; color: #cbd5e1; border: 0; padding: 8px 12px;
+  border-radius: 6px; cursor: pointer; font-size: 14px; }
+#navegacion button:hover { background: #1e293b; color: #fff; }
+#navegacion button.activo { background: var(--primario); color: #fff; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 22px 20px 60px; }
+
+.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio);
+  padding: 16px 18px; box-shadow: var(--sombra); margin-bottom: 16px; }
+.cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.cifra { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio);
+  padding: 14px 16px; box-shadow: var(--sombra); }
+.cifra .etiqueta { color: var(--suave); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.cifra .valor { font-size: 24px; font-weight: 600; margin-top: 4px; }
+.cifra .detalle { font-size: 12px; color: var(--suave); margin-top: 2px; }
+.cifra.peligro .valor { color: var(--peligro); }
+.cifra.exito .valor { color: var(--exito); }
+
+.banner { border-radius: var(--radio); padding: 12px 16px; margin-bottom: 16px; display: flex;
+  gap: 12px; align-items: center; flex-wrap: wrap; }
+.banner.alerta { background: var(--alerta-fondo); border: 1px solid #fcd34d; color: #78350f; }
+.banner.info { background: #dbeafe; border: 1px solid #93c5fd; color: #1e3a8a; }
+.banner .acciones { margin-left: auto; display: flex; gap: 8px; }
+
+.acciones-vista { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.acciones-vista .derecha { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.filtros { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
+.filtros label { display: flex; flex-direction: column; font-size: 12px; color: var(--suave); gap: 3px; }
+
+button, .boton { font: inherit; border-radius: 6px; border: 1px solid var(--borde); background: #fff;
+  color: var(--texto); padding: 7px 12px; cursor: pointer; text-decoration: none; display: inline-block; }
+button:hover, .boton:hover { background: #f1f5f9; }
+button.primario, .boton.primario { background: var(--primario); border-color: var(--primario); color: #fff; }
+button.primario:hover, .boton.primario:hover { background: var(--primario-osc); }
+button.peligro { color: var(--peligro); border-color: #fca5a5; }
+button.peligro:hover { background: var(--peligro-fondo); }
+button.exito { color: var(--exito); border-color: #86efac; }
+button.exito:hover { background: var(--exito-fondo); }
+button.pequeno { padding: 3px 8px; font-size: 12px; }
+button:disabled { opacity: .5; cursor: default; }
+
+input, select, textarea { font: inherit; padding: 7px 9px; border: 1px solid var(--borde);
+  border-radius: 6px; background: #fff; color: var(--texto); min-width: 0; }
+input:focus, select:focus, textarea:focus { outline: 2px solid #bfdbfe; border-color: var(--primario); }
+textarea { resize: vertical; min-height: 60px; }
+input[type="number"] { text-align: right; }
+
+table { width: 100%; border-collapse: collapse; background: var(--tarjeta); border: 1px solid var(--borde);
+  border-radius: var(--radio); overflow: hidden; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--borde); text-align: left; vertical-align: middle; }
+th { background: #f8fafc; font-size: 12px; text-transform: uppercase; color: var(--suave); letter-spacing: .03em; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #f8fafc; }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.acciones { white-space: nowrap; text-align: right; }
+td.acciones button { margin-left: 4px; }
+.vacio { padding: 24px; text-align: center; color: var(--suave); }
+.inactivo { opacity: .55; }
+
+.chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.chip.BORRADOR { background: #e2e8f0; color: #334155; }
+.chip.EMITIDA { background: #dbeafe; color: #1e40af; }
+.chip.VENCIDA { background: var(--peligro-fondo); color: var(--peligro); }
+.chip.PAGADA { background: var(--exito-fondo); color: var(--exito); }
+.chip.ANULADA { background: #f1f5f9; color: #64748b; text-decoration: line-through; }
+
+.formulario { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 14px; }
+.formulario label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--suave); }
+.formulario .ancho { grid-column: 1 / -1; }
+.formulario label.fila { flex-direction: row; align-items: center; gap: 8px; color: var(--texto); font-size: 14px; }
+.formulario input, .formulario select, .formulario textarea { font-size: 14px; color: var(--texto); }
+.ayuda { font-size: 12px; color: var(--suave); margin: 4px 0 0; }
+.error-campo { color: var(--peligro); font-size: 12px; }
+
+#modal-fondo { position: fixed; inset: 0; background: rgba(15, 23, 42, .55); display: flex;
+  align-items: flex-start; justify-content: center; padding: 30px 12px; overflow-y: auto; z-index: 50; }
+#modal { background: #fff; border-radius: 10px; padding: 20px 22px; width: 100%; max-width: 760px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+#modal h2 { margin-top: 0; }
+#modal.ancho { max-width: 960px; }
+.pie-modal { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.pie-modal .izquierda { margin-right: auto; }
+
+table.lineas input { width: 100%; }
+table.lineas td { padding: 4px 6px; }
+table.lineas .col-cant { width: 80px; }
+table.lineas .col-precio { width: 130px; }
+table.lineas .col-ex { width: 60px; text-align: center; }
+table.lineas .col-sub { width: 120px; }
+table.lineas .col-x { width: 36px; }
+.totales { margin-left: auto; width: 300px; margin-top: 10px; }
+.totales div { display: flex; justify-content: space-between; padding: 3px 6px; }
+.totales .total { font-weight: 700; border-top: 2px solid var(--texto); font-size: 16px; margin-top: 4px; }
+
+#avisos { position: fixed; bottom: 18px; right: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 60; }
+.aviso { padding: 10px 14px; border-radius: 6px; background: #0f172a; color: #fff; box-shadow: var(--sombra);
+  max-width: 360px; animation: aparecer .2s ease-out; }
+.aviso.error { background: var(--peligro); }
+.aviso.exito { background: var(--exito); }
+@keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.nota { font-size: 13px; color: var(--suave); background: #f8fafc; border-left: 3px solid var(--borde);
+  padding: 8px 12px; margin: 8px 0; }
+.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+pre.texto { white-space: pre-wrap; font: inherit; background: #f8fafc; padding: 12px; border-radius: 6px;
+  border: 1px solid var(--borde); }
+
+@media (max-width: 720px) {
+  .formulario, .dos-columnas { grid-template-columns: 1fr; }
+  main { padding: 14px 10px 50px; }
+  td.acciones { white-space: normal; }
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facturador A&amp;A</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%A7%BE%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="barra-superior">
+    <div class="marca">
+      <span class="logo">🧾</span>
+      <div>
+        <strong>Facturador A&amp;A</strong>
+        <small id="emisor-nombre">Emisor sin configurar</small>
+      </div>
+    </div>
+    <nav id="navegacion">
+      <button data-vista="panel" class="activo">Panel</button>
+      <button data-vista="documentos">Documentos</button>
+      <button data-vista="clientes">Clientes</button>
+      <button data-vista="servicios">Servicios</button>
+      <button data-vista="planes">Cobros automáticos</button>
+      <button data-vista="configuracion">Configuración</button>
+    </nav>
+  </header>
+
+  <main id="contenido">
+    <section id="vista-panel" class="vista"></section>
+    <section id="vista-documentos" class="vista oculta"></section>
+    <section id="vista-clientes" class="vista oculta"></section>
+    <section id="vista-servicios" class="vista oculta"></section>
+    <section id="vista-planes" class="vista oculta"></section>
+    <section id="vista-configuracion" class="vista oculta"></section>
+  </main>
+
+  <div id="avisos"></div>
+  <div id="modal-fondo" class="oculta">
+    <div id="modal" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

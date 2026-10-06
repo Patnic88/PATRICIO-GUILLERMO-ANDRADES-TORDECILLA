@@ -1,0 +1,93 @@
+name: Facturador A&A - ejecutables
+
+# Genera los programas descargables (Windows, macOS y Linux).
+# - En cada push que toque facturacion/ se ejecutan las pruebas y se publican los
+#   ejecutables como "artifacts" del workflow.
+# - Al crear una etiqueta facturador-vX.Y.Z se adjuntan además a un Release de GitHub.
+on:
+  push:
+    paths: ["facturacion/**", ".github/workflows/facturador-ejecutables.yml"]
+    tags: ["facturador-v*"]
+  pull_request:
+    paths: ["facturacion/**", ".github/workflows/facturador-ejecutables.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pruebas unitarias
+        working-directory: facturacion
+        run: python -m unittest discover -s tests -t . -v
+
+  ejecutables:
+    needs: pruebas
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            nombre: FacturadorAA-Windows
+            binario: FacturadorAA.exe
+          - os: macos-latest
+            nombre: FacturadorAA-macOS
+            binario: FacturadorAA
+          - os: ubuntu-latest
+            nombre: FacturadorAA-Linux
+            binario: FacturadorAA
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+      - name: Construir ejecutable
+        working-directory: facturacion
+        run: python -m PyInstaller --clean --noconfirm empaquetado/facturador.spec
+      - name: Probar que el ejecutable arranca
+        working-directory: facturacion
+        shell: bash
+        run: |
+          ./dist/${{ matrix.binario }} --version
+          ./dist/${{ matrix.binario }} --puerto 8899 --sin-navegador --datos ./datos-prueba &
+          PID=$!
+          sleep 4
+          curl -fsS http://127.0.0.1:8899/api/estado | head -c 200
+          echo
+          curl -fsS http://127.0.0.1:8899/ | grep -q "Facturador"
+          kill $PID
+      - name: Empaquetar
+        working-directory: facturacion
+        shell: bash
+        run: |
+          mkdir -p paquete
+          cp dist/${{ matrix.binario }} paquete/
+          cp README.md paquete/LEEME.md
+          cd paquete
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a ../${{ matrix.nombre }}.zip .
+          else
+            zip -r ../${{ matrix.nombre }}.zip .
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.nombre }}
+          path: facturacion/${{ matrix.nombre }}.zip
+      - name: Publicar en el Release
+        if: startsWith(github.ref, 'refs/tags/facturador-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: facturacion/${{ matrix.nombre }}.zip
+          name: Facturador A&A ${{ github.ref_name }}
+          body: |
+            Programa descargable de facturación y cobranza. Descarga el .zip de tu sistema,
+            descomprímelo y ejecuta FacturadorAA. Instrucciones en LEEME.md.
