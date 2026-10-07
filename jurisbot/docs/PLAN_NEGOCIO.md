@@ -73,7 +73,12 @@ compararlos con lo que cobra la competencia [VERIFICAR].
 
 ## 5. Costos variables
 
-**Clasificación con IA** [HECHO: tarifas de la API de Anthropic para el modelo
+**Clasificación con IA.** Puede costar cero: con `JURISBOT_IA=ollama` el modelo
+corre en el propio servidor o computador y no se paga por documento. El costo
+pasa a ser el equipo: se necesita memoria suficiente para el modelo y la
+calidad suele ser menor que la de un modelo grande en la nube [INFERENCIA:
+medir con una muestra revisada a mano]. Si se usa la API de Anthropic, aplican
+estas tarifas [HECHO: tarifas de la API de Anthropic para el modelo
 `claude-opus-5-5`, USD 4 por millón de tokens de entrada y USD 20 por millón de
 salida, según la tabla de la documentación oficial consultada el 2026-10-06;
 confirme en la página de precios antes de presupuestar]:
@@ -90,8 +95,10 @@ confirme en la página de precios antes de presupuestar]:
 (SQLite soporta bien decenas de miles de documentos con pocos usuarios). Para
 cientos de usuarios simultáneos, conviene migrar a PostgreSQL.
 
-**Correo**: los boletines (`python -m jurisbot boletin`) pueden enviarse con un
-servicio de correo transaccional, como Resend, que ya está conectado a su cuenta.
+**Correo**: `python -m jurisbot boletin --enviar` usa SMTP, que funciona con una
+cuenta de correo gratuita para el piloto [VERIFICAR límites de envío diarios de
+la cuenta elegida]. Con muchos suscriptores conviene un servicio transaccional
+(por ejemplo Resend) por entregabilidad.
 
 ## 6. Cobro
 
@@ -129,13 +136,17 @@ suscripciones, comisiones vigentes y requisitos de afiliación].
 3. **Propiedad intelectual de los textos oficiales** [VERIFICAR: Ley N° 17.336
    sobre el régimen de sentencias, dictámenes y actos administrativos]. Los
    resúmenes y la clasificación son obra propia.
-4. **Responsabilidad por resúmenes con IA.** Cada resumen se rotula como
+4. **Envío de textos a servicios de IA en la nube.** Algunos planes gratuitos
+   de proveedores de IA pueden usar lo que se les envía para mejorar sus
+   modelos [VERIFICAR en las condiciones del servicio elegido]. Con sentencias
+   que contienen datos personales, el modelo local (Ollama) evita ese riesgo.
+5. **Responsabilidad por resúmenes con IA.** Cada resumen se rotula como
    generado por IA y "sin verificar", y se enlaza al texto oficial. Los términos
    del servicio deben decir que no constituye asesoría jurídica.
-5. **Tributario del propio negocio.** IVA y documento tributario aplicables a la
+6. **Tributario del propio negocio.** IVA y documento tributario aplicables a la
    venta de suscripciones digitales [VERIFICAR con su contador y con la normativa
    del SII vigente].
-6. **Su situación como funcionario municipal.** Si usted sigue en la DAJ de la
+7. **Su situación como funcionario municipal.** Si usted sigue en la DAJ de la
    Municipalidad de Los Vilos, revise las incompatibilidades y prohibiciones
    del régimen de probidad antes de vender a municipios, en especial a la propia
    municipalidad [VERIFICAR: Ley N° 18.575, título de probidad, y Ley N° 18.883].
@@ -156,10 +167,10 @@ suscripciones, comisiones vigentes y requisitos de afiliación].
 
 Hecho: modelo de datos, SQLite con búsqueda de texto completo sin tildes,
 importación de PDF/HTML/TXT, recolector genérico con robots.txt y pausas,
-clasificador por reglas, extracción de normas, clasificación con Claude que
-descarta lo que no está en el texto, planes, límites, alertas, boletín, API e
-interfaz web. 29 pruebas automáticas.
+clasificador por reglas, extracción de normas, clasificación con IA
+intercambiable (Ollama local gratuito, servicios compatibles con OpenAI o
+Claude) que descarta lo que no está en el texto, planes, límites, alertas,
+boletín con envío por SMTP, API e interfaz web. 36 pruebas automáticas.
 
-Falta: conectores verificados para CS, CGR, DT y TC; anonimización; envío real
-de correos; integración de pagos; registro de usuarios desde la web; HTTPS y
+Falta: conectores verificados para CS, CGR, DT y TC; anonimización; integración de pagos; registro de usuarios desde la web; HTTPS y
 despliegue; cron.

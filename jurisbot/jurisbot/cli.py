@@ -62,20 +62,24 @@ def cmd_importar(a):
 
 
 def cmd_clasificar_ia(a):
-    from .clasificar_ia import clasificar_con_claude
+    from .proveedores_ia import ConfigIA, clasificar as clasificar_ia
+    config = ConfigIA.desde_entorno(a.proveedor)
+    if a.modelo:
+        config.modelo = a.modelo
     con = db.conectar(a.db)
     sql = "SELECT clave, titulo, texto FROM documentos"
     if not a.todos:
         sql += " WHERE clasificado_por IS NULL OR clasificado_por = 'reglas'"
     filas = con.execute(sql + " LIMIT ?", (a.limite,)).fetchall()
+    print(f"Proveedor: {config.etiqueta}")
     for f in filas:
         try:
-            r, descartes = clasificar_con_claude(f["texto"], f["titulo"])
+            r, descartes = clasificar_ia(f["texto"], f["titulo"], config)
         except Exception as e:  # se informa y se sigue con el siguiente
             print(f"  ERROR {f['clave']}: {e}")
             continue
         db.actualizar_clasificacion(con, f["clave"], r.materias, r.normas_citadas,
-                                    r.resumen, "ia:claude")
+                                    r.resumen, config.etiqueta)
         extra = f" ({len(descartes)} descartes)" if descartes else ""
         print(f"  {f['clave']}  {', '.join(r.materias)}{extra}")
 
@@ -118,7 +122,17 @@ def cmd_boletin(a):
     u = sus.usuario_por_clave(con, a.clave_api)
     if not u:
         sys.exit("Clave API desconocida")
-    print(sus.boletin_texto(sus.boletin(con, u, marcar_enviado=not a.prueba)))
+    if a.enviar:
+        from .correo import config_smtp, enviar
+        config = config_smtp()
+        momento = db.ahora()
+        cuerpo = sus.boletin_texto(sus.boletin(con, u, marcar_enviado=False))
+        enviar(u["email"], "JurisBot: novedades de sus alertas", cuerpo, config)
+        # Solo tras un envío exitoso se marcan las alertas: si falla, el próximo intento repite.
+        sus.marcar_enviadas(con, u, momento)
+        print(f"Boletín enviado a {u['email']}")
+    else:
+        print(sus.boletin_texto(sus.boletin(con, u, marcar_enviado=not a.prueba)))
 
 
 def cmd_estadisticas(a):
@@ -158,7 +172,10 @@ def main(argv=None):
     x.add_argument("--tipo", choices=sorted({t for ts in TIPOS.values() for t in ts}))
     x.set_defaults(f=cmd_importar)
 
-    x = s.add_parser("clasificar-ia", help="clasifica y resume con Claude (requiere API)")
+    x = s.add_parser("clasificar-ia", help="clasifica y resume con IA (por defecto, modelo local gratuito)")
+    x.add_argument("--proveedor", choices=["ollama", "compatible_openai", "anthropic"],
+                   help="por defecto la variable JURISBOT_IA, o ollama")
+    x.add_argument("--modelo", help="por defecto la variable JURISBOT_IA_MODELO")
     x.add_argument("--limite", type=int, default=20)
     x.add_argument("--todos", action="store_true", help="incluye los ya clasificados por IA")
     x.set_defaults(f=cmd_clasificar_ia)
@@ -195,6 +212,7 @@ def main(argv=None):
     x = s.add_parser("boletin", help="genera el boletín de alertas de un suscriptor")
     x.add_argument("clave_api")
     x.add_argument("--prueba", action="store_true", help="no marca las alertas como enviadas")
+    x.add_argument("--enviar", action="store_true", help="envía el boletín por correo (SMTP)")
     x.set_defaults(f=cmd_boletin)
 
     x = s.add_parser("estadisticas")
@@ -215,7 +233,7 @@ def main(argv=None):
     try:
         a.f(a)
     except (NotImplementedError, PermissionError, ValueError, LookupError,
-            FileNotFoundError, sus.LimiteExcedido) as e:
+            OSError, sus.LimiteExcedido) as e:  # OSError incluye fallas de red y SMTP
         sys.exit(f"Error: {e}")
 
 

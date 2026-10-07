@@ -305,5 +305,106 @@ class Servidor(unittest.TestCase):
                 srv.server_close()
 
 
+class ProveedoresGratuitos(unittest.TestCase):
+    RESPUESTA = {"materias": ["municipal", "inventada"], "normas_citadas": ["Ley 18.695", "Ley N° 12.345"],
+                 "resumen": "r", "decision": "acoge", "calidad_texto": "completo"}
+
+    def test_ollama_local(self):
+        from jurisbot.proveedores_ia import ConfigIA, clasificar as clasificar_ia
+        llamadas = []
+
+        def http(url, cuerpo, enc):
+            llamadas.append((url, cuerpo, enc))
+            return {"message": {"content": json.dumps(self.RESPUESTA)}}
+
+        c = ConfigIA(proveedor="ollama", modelo="modelo-local", url="http://localhost:11434")
+        r, desc = clasificar_ia(LABORAL_MUNICIPAL, "t", c, http=http)
+        self.assertEqual(r.materias, ["municipal"])
+        self.assertEqual(r.normas_citadas, ["Ley 18.695"])
+        self.assertEqual(len(desc), 2)
+        url, cuerpo, enc = llamadas[0]
+        self.assertEqual(url, "http://localhost:11434/api/chat")
+        self.assertFalse(cuerpo["stream"])
+        self.assertEqual(enc, {})  # sin clave
+
+    def test_compatible_openai_con_bloque_markdown_y_reintento(self):
+        import urllib.error
+        from jurisbot.proveedores_ia import ConfigIA, clasificar as clasificar_ia
+        cuerpos = []
+
+        def http(url, cuerpo, enc):
+            cuerpos.append(dict(cuerpo))
+            if "response_format" in cuerpo:
+                raise urllib.error.HTTPError(url, 400, "no soportado", {}, None)
+            contenido = "```json\n" + json.dumps(self.RESPUESTA) + "\n```"
+            return {"choices": [{"message": {"content": contenido}}]}
+
+        c = ConfigIA(proveedor="compatible_openai", modelo="m", url="https://api.ejemplo.invalid/v1", clave="k")
+        r, _ = clasificar_ia(LABORAL_MUNICIPAL, "t", c, http=http)
+        self.assertEqual(r.materias, ["municipal"])
+        self.assertEqual(len(cuerpos), 2)
+        self.assertNotIn("response_format", cuerpos[1])
+
+    def test_json_invalido_es_error(self):
+        from jurisbot.proveedores_ia import ConfigIA, clasificar as clasificar_ia
+        c = ConfigIA(proveedor="ollama", modelo="m", url="http://x.invalid")
+        with self.assertRaises(RuntimeError):
+            clasificar_ia("texto", "t", c, http=lambda u, b, e: {"message": {"content": "no sé"}})
+
+    def test_documento_largo_se_rechaza_sin_truncar(self):
+        from jurisbot.proveedores_ia import ConfigIA, clasificar as clasificar_ia
+        c = ConfigIA(proveedor="ollama", modelo="m", max_caracteres=10)
+        with self.assertRaises(ValueError):
+            clasificar_ia("x" * 11, config=c, http=lambda *a: self.fail("no debe llamar"))
+
+    def test_configuracion_desde_entorno(self):
+        import os
+        from unittest import mock
+        from jurisbot.proveedores_ia import ConfigIA
+        with mock.patch.dict(os.environ, {"JURISBOT_IA_MODELO": "m"}, clear=True):
+            c = ConfigIA.desde_entorno()
+            self.assertEqual((c.proveedor, c.url), ("ollama", "http://localhost:11434"))
+        with mock.patch.dict(os.environ, {"JURISBOT_IA": "compatible_openai"}, clear=True):
+            with self.assertRaises(ValueError):
+                ConfigIA.desde_entorno()
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(ValueError):  # ollama sin modelo
+                ConfigIA.desde_entorno()
+
+
+class Correo(unittest.TestCase):
+    def test_envio_smtp(self):
+        from jurisbot.correo import enviar
+        registro = {}
+
+        class SMTPFalso:
+            def __init__(self, host, puerto, timeout):
+                registro["destino"] = (host, puerto)
+            def __enter__(self):
+                return self
+            def __exit__(self, *a):
+                return False
+            def starttls(self):
+                registro["tls"] = True
+            def login(self, u, c):
+                registro["login"] = u
+            def send_message(self, msg):
+                registro["msg"] = msg
+
+        conf = {"host": "smtp.ejemplo.invalid", "puerto": 587, "usuario": "u@ejemplo.cl",
+                "clave": "x", "remitente": "u@ejemplo.cl"}
+        enviar("d@ejemplo.cl", "Asunto", "Cuerpo", conf, smtp_cls=SMTPFalso)
+        self.assertTrue(registro["tls"])
+        self.assertEqual(registro["msg"]["To"], "d@ejemplo.cl")
+
+    def test_falta_configuracion(self):
+        import os
+        from unittest import mock
+        from jurisbot.correo import config_smtp
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(ValueError):
+                config_smtp()
+
+
 if __name__ == "__main__":
     unittest.main()

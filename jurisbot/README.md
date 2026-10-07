@@ -26,7 +26,7 @@ Requiere Python 3.10 o superior. El núcleo no usa paquetes externos.
 
 ```bash
 cd jurisbot
-pip install -r requirements.txt   # pypdf (leer PDF) y anthropic (clasificación con IA), ambos opcionales
+pip install -r requirements.txt   # pypdf (leer PDF) y pydantic (clasificación con IA); anthropic solo si usa Claude
 python -m unittest discover -s tests -v
 ```
 
@@ -43,7 +43,7 @@ python -m jurisbot importar sentencias/ --fuente cs --tipo sentencia
 # Recolectar automáticamente (solo fuentes con estrategia indice_enlaces)
 python -m jurisbot recolectar sii --anio 2026 --contacto su-correo@dominio.cl
 
-# Clasificar y resumir con Claude (opcional; requiere ANTHROPIC_API_KEY)
+# Clasificar y resumir con IA (opcional; por defecto un modelo local gratuito, ver abajo)
 python -m jurisbot clasificar-ia --limite 20
 
 # Buscar
@@ -57,6 +57,7 @@ python -m jurisbot usuario crear cliente@dominio.cl --plan gratis
 python -m jurisbot usuario activar cliente@dominio.cl --plan profesional --hasta 2026-11-30
 python -m jurisbot alerta <clave_api> "Municipal CGR" --fuente cgr --materia municipal
 python -m jurisbot boletin <clave_api> --prueba
+python -m jurisbot boletin <clave_api> --enviar      # por correo SMTP, ver abajo
 
 # Interfaz web y API en http://127.0.0.1:8000
 python -m jurisbot servir
@@ -79,10 +80,78 @@ cs_12345_2025.pdf,cs,sentencia,12.345-2025,2025-08-14,https://...,Unificación d
    se asigna cuando aparecen al menos *N* términos distintos. Las normas citadas
    se extraen literalmente del texto (leyes, D.L., D.F.L., artículos de códigos
    y de la Constitución).
-2. **IA** (opcional): `clasificar-ia` envía el texto a Claude, que devuelve
-   materias, normas, resumen y decisión. Las materias fuera de la taxonomía y
+2. **IA** (opcional): `clasificar-ia` envía el texto a un modelo de lenguaje
+   (local o en la nube, ver la sección siguiente), que devuelve materias,
+   normas, resumen y decisión. Las materias fuera de la taxonomía y
    las normas que no aparecen en el texto se **descartan**. El resumen queda
    rotulado como generado por IA y el documento sigue "sin verificar".
+
+## Servicios externos: opciones gratuitas
+
+El bot funciona completo **sin ninguna clave**: importación, clasificación por
+reglas, búsqueda, suscriptores, alertas y la interfaz web no llaman a servicios
+externos. Solo dos funciones opcionales usan servicios de terceros, y ambas
+aceptan opciones gratuitas.
+
+### Clasificación con IA (`clasificar-ia`)
+
+| `JURISBOT_IA` | Costo | Clave | Privacidad del texto |
+|---|---|---|---|
+| `ollama` (por defecto) | gratis | no | no sale de su computador |
+| `compatible_openai` | depende del plan del servicio; varios tienen nivel gratuito | sí | se envía al servicio |
+| `anthropic` | pago por uso | sí (`ANTHROPIC_API_KEY`) | se envía a Anthropic |
+
+**Ollama (gratis, local).** Instale Ollama desde su sitio oficial, descargue un
+modelo y ejecute:
+
+```bash
+ollama pull <modelo>                  # elija un modelo que maneje bien el español
+export JURISBOT_IA_MODELO=<modelo>
+python -m jurisbot clasificar-ia --limite 5
+```
+
+Necesita un computador con memoria suficiente para el modelo elegido.
+[VERIFICAR] en la documentación de Ollama los requisitos del modelo y que su
+versión acepte salida estructurada (`format` con esquema JSON). Los modelos
+pequeños clasifican peor que los grandes: revise una muestra a mano antes de
+confiar en ellos.
+
+**Servicio en la nube compatible con OpenAI (plan gratuito).** Sirve cualquier
+servicio que ofrezca el formato `/v1/chat/completions`:
+
+```bash
+export JURISBOT_IA=compatible_openai
+export JURISBOT_IA_URL=<url base, terminada en /v1>
+export JURISBOT_IA_MODELO=<modelo>
+export JURISBOT_IA_CLAVE=<su clave>
+```
+
+[VERIFICAR] antes de usar uno: límites del plan gratuito, y sobre todo si sus
+condiciones permiten **usar los textos enviados para entrenar modelos**. Las
+sentencias contienen datos personales; con un plan gratuito de ese tipo,
+prefiera Ollama.
+
+Con cualquier proveedor se aplican las mismas salvaguardas: las materias fuera
+de la taxonomía y las normas que no aparecen en el texto se descartan, y un
+documento más largo que `JURISBOT_IA_MAX_CARACTERES` (100.000 por defecto) se
+rechaza en vez de recortarse.
+
+### Envío de boletines (`boletin --enviar`)
+
+Por SMTP, con cualquier cuenta de correo que lo permita (por ejemplo, una cuenta
+gratuita de Gmail con contraseña de aplicación [VERIFICAR límites diarios de envío]):
+
+```bash
+export JURISBOT_SMTP_HOST=smtp.gmail.com
+export JURISBOT_SMTP_PUERTO=587
+export JURISBOT_SMTP_USUARIO=su-cuenta@gmail.com
+export JURISBOT_SMTP_CLAVE=<contraseña de aplicación>
+```
+
+Las alertas se marcan como enviadas solo después de un envío exitoso.
+
+Las variables también se pueden definir en la configuración del entorno donde
+corra el bot. Nunca las escriba dentro del código ni las suba al repositorio.
 
 ## API
 
@@ -116,7 +185,9 @@ del sitio. Ver `docs/PLAN_NEGOCIO.md`.
 | `jurisbot/modelo.py` | estructura `Documento`, fuentes y tipos |
 | `jurisbot/db.py` | SQLite + búsqueda de texto completo (FTS5) |
 | `jurisbot/clasificar.py` | taxonomía, clasificador por reglas, extracción de normas y roles |
-| `jurisbot/clasificar_ia.py` | clasificación y resumen con Claude, con validación anti-invención |
+| `jurisbot/clasificar_ia.py` | esquema, instrucciones y validación anti-invención; conexión con Claude |
+| `jurisbot/proveedores_ia.py` | proveedores intercambiables: Ollama (local), compatible con OpenAI, Anthropic |
+| `jurisbot/correo.py` | envío de boletines por SMTP |
 | `jurisbot/fuentes/` | recolector genérico y `fuentes.json` |
 | `jurisbot/importar.py` | importación de PDF/HTML/TXT |
 | `jurisbot/suscripciones.py` | planes, usuarios, límites, alertas y boletín |

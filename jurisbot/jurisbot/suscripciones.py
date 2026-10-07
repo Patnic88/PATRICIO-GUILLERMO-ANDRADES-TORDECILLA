@@ -148,6 +148,12 @@ def boletin(con, usuario: dict, marcar_enviado: bool = True) -> list[dict]:
     return salida
 
 
+def marcar_enviadas(con, usuario: dict, momento: str):
+    """Marca las alertas como enviadas en 'momento' (tomado antes de armar el boletín)."""
+    con.execute("UPDATE alertas SET ultimo_envio = ? WHERE usuario_id = ?", (momento, usuario["id"]))
+    con.commit()
+
+
 def boletin_texto(entregas: list[dict]) -> str:
     """Cuerpo de correo en texto plano."""
     lineas = []
