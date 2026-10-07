@@ -1,0 +1,53 @@
+{
+  "_advertencia": "Ninguna URL ni patrón de este archivo fue comprobado contra el sitio oficial: el entorno donde se escribió no tenía acceso a esos dominios. Antes de usar una fuente, abra el sitio, confirme la URL del índice y el formato de los enlaces, ajuste los campos y cambie 'verificado' a true.",
+  "fuentes": [
+    {
+      "clave": "sii",
+      "nombre": "SII - Circulares",
+      "tipo": "circular",
+      "estrategia": "indice_enlaces",
+      "verificado": false,
+      "sitio_oficial": "https://www.sii.cl",
+      "url_indice": "https://www.sii.cl/normativa_legislacion/circulares/{anio}/indcir{anio}.htm",
+      "patron_enlace": "/circulares/\\d{4}/(?P<id>circu\\d+)\\.(?:pdf|htm)",
+      "pausa_segundos": 3,
+      "nota": "[VERIFICAR] URL del índice anual y nombre de archivo de cada circular, escritos de memoria."
+    },
+    {
+      "clave": "dt",
+      "nombre": "Dirección del Trabajo - Dictámenes y circulares",
+      "tipo": "dictamen",
+      "estrategia": "manual",
+      "verificado": false,
+      "sitio_oficial": "https://www.dt.gob.cl",
+      "nota": "[VERIFICAR] Falta inspeccionar la sección de legislación y jurisprudencia administrativa para definir índice y patrón."
+    },
+    {
+      "clave": "cgr",
+      "nombre": "Contraloría - Dictámenes",
+      "tipo": "dictamen",
+      "estrategia": "manual",
+      "verificado": false,
+      "sitio_oficial": "https://www.contraloria.cl",
+      "nota": "[VERIFICAR] El buscador de dictámenes funciona con consultas dinámicas; hay que inspeccionar las solicitudes del navegador o consultar a la CGR si ofrece datos abiertos o una API."
+    },
+    {
+      "clave": "cs",
+      "nombre": "Corte Suprema - Sentencias",
+      "tipo": "sentencia",
+      "estrategia": "manual",
+      "verificado": false,
+      "sitio_oficial": "https://juris.pjud.cl",
+      "nota": "[VERIFICAR] El Buscador Unificado de Sentencias es una aplicación dinámica; revisar sus condiciones de uso y si el Poder Judicial ofrece acceso por convenio antes de automatizar."
+    },
+    {
+      "clave": "tc",
+      "nombre": "Tribunal Constitucional - Sentencias",
+      "tipo": "sentencia",
+      "estrategia": "manual",
+      "verificado": false,
+      "sitio_oficial": "https://www.tribunalconstitucional.cl",
+      "nota": "[VERIFICAR] Falta inspeccionar el buscador de sentencias para definir índice y patrón."
+    }
+  ]
+}

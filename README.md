@@ -87,3 +87,13 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+---
+
+## ⚖️ JurisBot
+
+En la carpeta [`jurisbot/`](jurisbot/README.md) hay un recolector y clasificador de
+sentencias (Corte Suprema, Tribunal Constitucional), dictámenes (Contraloría,
+Dirección del Trabajo) y circulares del SII, con búsqueda, alertas y planes de
+suscripción. El plan de negocio está en
+[`jurisbot/docs/PLAN_NEGOCIO.md`](jurisbot/docs/PLAN_NEGOCIO.md).

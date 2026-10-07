@@ -1,0 +1,5 @@
+# Opcionales. El núcleo (recolección HTML, base de datos, búsqueda, servidor, correo SMTP)
+# usa solo la biblioteca estándar.
+pypdf>=4.0        # leer documentos PDF
+pydantic>=2.0     # esquema de salida de clasificar-ia (cualquier proveedor)
+# anthropic>=1.0  # solo si usa JURISBOT_IA=anthropic (pago por uso)
