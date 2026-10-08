@@ -87,3 +87,10 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+### 🤖 Asistente IA Dropshipping
+
+En [`dropshipping/asistente-ia/`](dropshipping/asistente-ia/README.md) hay un
+generador de **prompts, skills y loops** de IA personalizados con los datos de
+tu tienda (Claude, ChatGPT o Gemini), ordenados como ruta para montar una
+tienda online. Abre `dropshipping/asistente-ia/index.html`.
