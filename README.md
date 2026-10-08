@@ -22,6 +22,33 @@ cargar la lista original.
 | `styles.css` | Estilos |
 | `app.js` | Lógica: filtros, alta/baja, persistencia |
 | `tasks.seed.js` | Tareas extraídas de tus correos (datos editables) |
+| `pdf-lector.html` | Lector de PDF en voz alta |
+| `pdf-lector.css` | Estilos del lector de PDF |
+| `pdf-lector.js` | Lógica del lector: extracción de texto y voz |
+
+## 🔊 Lector de PDF en voz alta
+
+Abre `pdf-lector.html` (o pulsa **🔊 Lector de PDF** en el encabezado de la
+lista de tareas) para hacer que tu navegador lea documentos PDF en voz alta.
+
+**Cómo usarlo:**
+
+1. Arrastra un PDF a la zona de carga (o haz clic para elegirlo).
+2. El texto se extrae en tu propio navegador con [`pdf.js`](https://mozilla.github.io/pdf.js/) — **el archivo no se sube a ningún servidor**.
+3. Pulsa **▶︎ Reproducir**. La **palabra** que se está leyendo se resalta en amarillo y la frase completa queda sombreada.
+4. Puedes **pausar**, **reanudar** o **detener**, y hacer clic en cualquier frase para empezar a leer desde ahí.
+5. En documentos de varias páginas, elige el rango **«Leer páginas X a Y»** para escuchar solo una parte.
+6. Pulsa **⬇️ Descargar texto** para guardar todo el texto extraído como archivo `.txt`.
+7. En **⚙️ Ajustes de voz** eliges la voz (las de español aparecen primero), la velocidad y el tono.
+
+**Atajos de teclado:** <kbd>Espacio</kbd> reproducir/pausar · <kbd>Esc</kbd> detener · <kbd>←</kbd> / <kbd>→</kbd> frase anterior / siguiente.
+
+> El resaltado palabra por palabra usa el evento `boundary` de la voz del
+> navegador. En navegadores que no lo emiten, se resalta la frase completa.
+
+> La lectura usa la API de voz del navegador (Web Speech). Funciona mejor en
+> **Chrome, Edge y Safari**. Si un PDF está escaneado (solo imágenes, sin texto
+> seleccionable), no habrá texto que leer.
 
 ## Actualizar las tareas desde el correo
 
