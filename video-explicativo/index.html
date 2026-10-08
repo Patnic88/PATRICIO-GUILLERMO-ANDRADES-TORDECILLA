@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Tu equipo contable con IA</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0c1116;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: Inter, sans-serif;
+        color: #f2f5f8;
+      }
+
+      #bg {
+        position: absolute;
+        inset: 0;
+        background: #0c1116;
+      }
+
+      #bg-glow {
+        position: absolute;
+        left: 260px;
+        top: 120px;
+        width: 1400px;
+        height: 900px;
+        border-radius: 50%;
+        background: radial-gradient(closest-side, rgba(232, 184, 75, 0.14), rgba(12, 17, 22, 0));
+      }
+
+      #progress-track {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 5px;
+        background: rgba(242, 245, 248, 0.09);
+      }
+
+      #progress-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 5px;
+        background: #e8b84b;
+        transform-origin: 0% 50%;
+      }
+
+      #brand {
+        position: absolute;
+        left: 140px;
+        bottom: 52px;
+        font-size: 22px;
+        letter-spacing: 4px;
+        color: #94a1ad;
+      }
+
+      .clip {
+        position: absolute;
+        inset: 0;
+        padding: 0 140px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .kicker {
+        margin: 0 0 28px 0;
+        font-size: 26px;
+        letter-spacing: 7px;
+        color: #e8b84b;
+        text-transform: uppercase;
+      }
+
+      .h1 {
+        margin: 0;
+        font-size: 112px;
+        line-height: 1.06;
+        font-weight: 700;
+        letter-spacing: -2px;
+      }
+
+      .h2 {
+        margin: 0;
+        font-size: 70px;
+        line-height: 1.12;
+        font-weight: 700;
+        letter-spacing: -1px;
+      }
+
+      .sub {
+        margin: 32px 0 0 0;
+        font-size: 40px;
+        line-height: 1.35;
+        color: #9fb0c0;
+        font-weight: 400;
+      }
+
+      .rule {
+        width: 220px;
+        height: 8px;
+        background: #e8b84b;
+        margin: 44px 0 0 0;
+        transform-origin: 0% 50%;
+      }
+
+      .bubble {
+        margin: 48px 0 0 0;
+        padding: 40px 50px;
+        background: #16202b;
+        border-left: 10px solid #e8b84b;
+        border-radius: 10px;
+        font-size: 44px;
+        line-height: 1.3;
+        color: #f2f5f8;
+        max-width: 1400px;
+        box-sizing: border-box;
+      }
+
+      .row {
+        display: flex;
+        align-items: baseline;
+        gap: 28px;
+        padding: 13px 0;
+        border-bottom: 2px solid rgba(242, 245, 248, 0.09);
+      }
+
+      .row-name {
+        width: 420px;
+        flex: none;
+        font-size: 38px;
+        font-weight: 700;
+        color: #e8b84b;
+      }
+
+      .row-desc {
+        font-size: 34px;
+        color: #cbd7e2;
+      }
+
+      .cards {
+        display: flex;
+        gap: 38px;
+        margin-top: 52px;
+      }
+
+      .card {
+        flex: 1;
+        background: #16202b;
+        border-radius: 14px;
+        padding: 42px 36px;
+        box-sizing: border-box;
+        border-top: 8px solid #e8b84b;
+      }
+
+      .card-num {
+        font-size: 32px;
+        font-weight: 700;
+        color: #e8b84b;
+        margin: 0 0 18px 0;
+      }
+
+      .card-title {
+        font-size: 42px;
+        font-weight: 700;
+        margin: 0 0 16px 0;
+        line-height: 1.15;
+      }
+
+      .card-note {
+        font-size: 30px;
+        color: #9fb0c0;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .formula {
+        margin: 0;
+        font-size: 96px;
+        font-weight: 700;
+        letter-spacing: -2px;
+        line-height: 1.1;
+      }
+
+      .formula-accent {
+        color: #e8b84b;
+      }
+
+      .tag {
+        align-self: flex-start;
+        margin: 44px 0 0 0;
+        padding: 28px 42px;
+        background: rgba(232, 184, 75, 0.13);
+        border: 3px dashed #e8b84b;
+        border-radius: 10px;
+        font-size: 44px;
+        color: #e8b84b;
+        font-weight: 700;
+      }
+
+      .no-row {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-top: 38px;
+      }
+
+      .no-mark {
+        width: 72px;
+        height: 72px;
+        flex: none;
+        border-radius: 50%;
+        background: rgba(232, 106, 90, 0.16);
+        color: #e86a5a;
+        font-size: 42px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .no-text {
+        font-size: 48px;
+        color: #f2f5f8;
+      }
+
+      .closing {
+        margin: 0;
+        font-size: 88px;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -1px;
+      }
+
+      .closing-muted {
+        color: #9fb0c0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="94"
+    >
+      <div id="bg">
+        <div id="bg-glow"></div>
+      </div>
+
+      <div id="progress-track">
+        <div id="progress-fill"></div>
+      </div>
+
+      <div id="brand">CONTABILIDAD CHILE · ASISTENTES IA</div>
+
+      <!-- ESCENA 1 -->
+      <section id="s1" class="clip" data-start="0" data-duration="7" data-track-index="1">
+        <p id="s1-kicker" class="kicker">Estudio contable · Chile</p>
+        <h1 id="s1-title" class="h1">Tu equipo contable con IA</h1>
+        <p id="s1-sub" class="sub">Siete asistentes especializados, conectados a tu Google Drive.</p>
+        <div id="s1-rule" class="rule"></div>
+      </section>
+
+      <!-- ESCENA 2 -->
+      <section id="s2" class="clip" data-start="7" data-duration="12" data-track-index="2">
+        <p id="s2-kicker" class="kicker">Cómo se usa</p>
+        <h2 id="s2-title" class="h2">No es un programa que haya que aprender</h2>
+        <p id="s2-sub" class="sub">Le escribes lo que necesitas, en español normal.</p>
+        <div id="s2-bubble" class="bubble">
+          «Cuánto paga de IVA Comercial Los Vilos SpA en julio 2026»
+        </div>
+      </section>
+
+      <!-- ESCENA 3 -->
+      <section id="s3" class="clip" data-start="19" data-duration="17" data-track-index="1">
+        <p id="s3-kicker" class="kicker">El equipo</p>
+        <h2 id="s3-title" class="h2">Los siete especialistas</h2>
+        <div id="s3-r1" class="row">
+          <div class="row-name">Jefe de estudio</div>
+          <div class="row-desc">Organiza el trabajo y reparte el encargo</div>
+        </div>
+        <div id="s3-r2" class="row">
+          <div class="row-name">Tributario</div>
+          <div class="row-desc">IVA, F29, PPM y trámites del SII</div>
+        </div>
+        <div id="s3-r3" class="row">
+          <div class="row-name">Archivista</div>
+          <div class="row-desc">Ordena y nombra las carpetas en Drive</div>
+        </div>
+        <div id="s3-r4" class="row">
+          <div class="row-name">Conciliador</div>
+          <div class="row-desc">Cuadra el RCV contra el F29 declarado</div>
+        </div>
+        <div id="s3-r5" class="row">
+          <div class="row-name">Remuneraciones</div>
+          <div class="row-desc">Sueldos, Previred y finiquitos</div>
+        </div>
+        <div id="s3-r6" class="row">
+          <div class="row-name">Cierre de Renta</div>
+          <div class="row-desc">RLI, F22 y declaraciones juradas</div>
+        </div>
+        <div id="s3-r7" class="row">
+          <div class="row-name">Calendario</div>
+          <div class="row-desc">Vencimientos, atrasos y control de plazos</div>
+        </div>
+      </section>
+
+      <!-- ESCENA 4 -->
+      <section id="s4" class="clip" data-start="36" data-duration="15" data-track-index="2">
+        <p id="s4-kicker" class="kicker">Qué documentos necesita</p>
+        <h2 id="s4-title" class="h2">Con estos tres, por cliente y por mes, ya puedes trabajar</h2>
+        <div class="cards">
+          <div id="s4-c1" class="card">
+            <p class="card-num">01</p>
+            <p class="card-title">RCV de compras y ventas</p>
+            <p class="card-note">El archivo CSV que se descarga del SII</p>
+          </div>
+          <div id="s4-c2" class="card">
+            <p class="card-num">02</p>
+            <p class="card-title">Formulario 29</p>
+            <p class="card-note">El del mes anterior, para el remanente</p>
+          </div>
+          <div id="s4-c3" class="card">
+            <p class="card-num">03</p>
+            <p class="card-title">Comprobante de Previred</p>
+            <p class="card-note">Solo si la empresa tiene trabajadores</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ESCENA 5 -->
+      <section id="s5" class="clip" data-start="51" data-duration="10" data-track-index="1">
+        <p id="s5-kicker" class="kicker">La fórmula para pedir</p>
+        <p id="s5-formula" class="formula">
+          Cliente <span class="formula-accent">+</span> Período
+          <span class="formula-accent">+</span> Qué necesitas
+        </p>
+        <div id="s5-bubble" class="bubble">
+          «Cuadra el RCV con el F29 de Constructora Peña Ltda, año 2025»
+        </div>
+      </section>
+
+      <!-- ESCENA 6 -->
+      <section id="s6" class="clip" data-start="61" data-duration="13" data-track-index="2">
+        <p id="s6-kicker" class="kicker">La regla más importante</p>
+        <h2 id="s6-title" class="h2">Nunca inventa una cifra</h2>
+        <p id="s6-sub" class="sub">Si le falta un dato, lo deja marcado a la vista:</p>
+        <div id="s6-tag" class="tag">[FALTA: F29 de junio 2026]</div>
+        <p id="s6-note" class="sub">
+          Un informe con vacíos marcados es útil. Uno con cifras inventadas, no.
+        </p>
+      </section>
+
+      <!-- ESCENA 7 -->
+      <section id="s7" class="clip" data-start="74" data-duration="12" data-track-index="1">
+        <p id="s7-kicker" class="kicker">Los límites</p>
+        <h2 id="s7-title" class="h2">Lo que no hace</h2>
+        <div id="s7-n1" class="no-row">
+          <div class="no-mark">×</div>
+          <div class="no-text">No presenta declaraciones en el SII</div>
+        </div>
+        <div id="s7-n2" class="no-row">
+          <div class="no-mark">×</div>
+          <div class="no-text">No usa las claves de tus clientes</div>
+        </div>
+        <div id="s7-n3" class="no-row">
+          <div class="no-mark">×</div>
+          <div class="no-text">No borra ni reemplaza archivos de Drive</div>
+        </div>
+      </section>
+
+      <!-- ESCENA 8 -->
+      <section id="s8" class="clip" data-start="86" data-duration="8" data-track-index="2">
+        <p id="s8-line1" class="closing">Él prepara el trabajo.</p>
+        <p id="s8-line2" class="closing closing-muted">Tú revisas y firmas.</p>
+        <div id="s8-rule" class="rule"></div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const RISE = { opacity: 0, y: 44 };
+      const SETTLE = { opacity: 1, y: 0, duration: 0.62, ease: "power3.out" };
+
+      function rise(target, at, delay) {
+        tl.fromTo(target, RISE, SETTLE, at + (delay || 0));
+      }
+
+      function riseAll(ids, at, step) {
+        ids.forEach(function (id, i) {
+          rise(id, at, i * step);
+        });
+      }
+
+      tl.fromTo("#progress-fill", { scaleX: 0 }, { scaleX: 1, duration: 94, ease: "none" }, 0);
+
+      riseAll(["#s1-kicker", "#s1-title", "#s1-sub"], 0.2, 0.28);
+      tl.fromTo(
+        "#s1-rule",
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.7, ease: "power3.out" },
+        1.3,
+      );
+
+      riseAll(["#s2-kicker", "#s2-title", "#s2-sub"], 7.2, 0.26);
+      tl.fromTo(
+        "#s2-bubble",
+        { opacity: 0, y: 54, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.72, ease: "power3.out" },
+        8.5,
+      );
+
+      riseAll(["#s3-kicker", "#s3-title"], 19.2, 0.26);
+      riseAll(["#s3-r1", "#s3-r2", "#s3-r3", "#s3-r4", "#s3-r5", "#s3-r6", "#s3-r7"], 20.2, 0.42);
+
+      riseAll(["#s4-kicker", "#s4-title"], 36.2, 0.26);
+      riseAll(["#s4-c1", "#s4-c2", "#s4-c3"], 37.5, 0.34);
+
+      riseAll(["#s5-kicker", "#s5-formula"], 51.2, 0.3);
+      tl.fromTo(
+        "#s5-bubble",
+        { opacity: 0, y: 54 },
+        { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" },
+        52.6,
+      );
+
+      riseAll(["#s6-kicker", "#s6-title", "#s6-sub"], 61.2, 0.28);
+      tl.fromTo(
+        "#s6-tag",
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.66, ease: "back.out(1.6)" },
+        63,
+      );
+      rise("#s6-note", 64.6);
+
+      riseAll(["#s7-kicker", "#s7-title"], 74.2, 0.26);
+      riseAll(["#s7-n1", "#s7-n2", "#s7-n3"], 75.4, 0.62);
+
+      riseAll(["#s8-line1", "#s8-line2"], 86.3, 0.5);
+      tl.fromTo(
+        "#s8-rule",
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.7, ease: "power3.out" },
+        87.8,
+      );
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

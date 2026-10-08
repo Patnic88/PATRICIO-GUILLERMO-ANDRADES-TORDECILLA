@@ -1,0 +1,10 @@
+{
+  "name": "video-explicativo-agentes-contables",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.89 preview",
+    "check": "npx --yes hyperframes@0.7.89 check",
+    "render": "npx --yes hyperframes@0.7.89 render --quality high --output equipo-contable-ia.mp4"
+  }
+}
