@@ -59,6 +59,10 @@ assert.strictEqual(pHaiku.betas, undefined);
 assert.throws(() => IA.peticionExtraccion({ texto: "x".repeat(IA.MAX_CARACTERES_TEXTO + 1) }), /máximo/);
 assert.throws(() => IA.peticionExtraccion({ texto: "   " }), /Pega el texto/);
 assert.throws(() => IA.peticionVerificacion({ evento: { fuente_url: "" } }), /enlace/);
+// La lectura web con filtrado dinámico es solo para Opus y Sonnet; Haiku usa la básica.
+const evPrueba = { fecha: "2015-03-25", localidad: "X", fuente_url: "https://ejemplo.cl" };
+assert.strictEqual(IA.peticionVerificacion({ evento: evPrueba, modelo: "claude-haiku-5-5" }).tools[0].type, "web_fetch_20250910");
+assert.strictEqual(IA.peticionVerificacion({ evento: evPrueba, modelo: "claude-sonnet-5-5" }).tools[0].type, "web_fetch_20260209");
 
 // ---- Validación de la extracción --------------------------------------------
 const val = IA.validarExtraccion({

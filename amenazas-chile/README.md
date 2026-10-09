@@ -91,6 +91,22 @@ Salida estructurada con esquema JSON para la extracción y herramienta con
 rechaza una solicitud por una regla de seguridad, la API la reintenta en otro
 modelo, y el costo se calcula al precio del más caro.
 
+**Prueba real con la API** (gasta créditos; con Haiku 5.5 se estima en
+menos de US$ 0,01 la prueba básica y unos US$ 0,10 verificando el catálogo
+completo):
+
+```bash
+AMENAZAS_CLAUDE_API_KEY=sk-ant-... node tests/prueba-real-ia.js                  # explicar, extraer y verificar 1 evento
+AMENAZAS_CLAUDE_API_KEY=sk-ant-... node tests/prueba-real-ia.js --verificar-todo \
+  --salida verificacion.json                                                       # verifica las 28 fuentes del catálogo
+```
+
+Usa Haiku 5.5 por defecto (`--modelo` para otro) y se detiene al llegar a
+`--tope` dólares (0,25 por defecto; 1 con `--verificar-todo`). La clave se lee
+de la variable de entorno y no se guarda en ningún archivo. Las
+verificaciones del script **no** marcan eventos como verificados: el
+resultado es para que una persona revise cada fuente.
+
 ## Cómo se calcula el indicador de factores
 
 El indicador es **heurístico y orientativo: no es una alerta oficial**. Las
@@ -193,6 +209,7 @@ Preventiva, Amarilla o Roja.
 | `vendor/` | SDK oficial de Anthropic empaquetado (ver `vendor/LEEME.md`) |
 | `tests/nucleo.test.js` | Pruebas del núcleo: `node tests/nucleo.test.js` |
 | `tests/ia.test.js` | Pruebas de IA con respuestas simuladas: `node tests/ia.test.js` |
+| `tests/prueba-real-ia.js` | Prueba contra la API real de Claude (gasta créditos; ver arriba) |
 
 ## Pendiente de verificación
 

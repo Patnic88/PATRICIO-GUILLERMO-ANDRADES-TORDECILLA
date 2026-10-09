@@ -26,12 +26,15 @@
   };
   const PRECIO_DESCONOCIDO = { entrada: 10, salida: 50 }; // modelo no listado: se cobra como el más caro
 
+  // webFetch: versión de la herramienta de lectura web que acepta cada modelo
+  // (la de filtrado dinámico, 20260209, es solo para Opus y Sonnet).
   const MODELOS = [
-    { id: "claude-opus-5-5", nombre: "Claude Opus 5.5 (recomendado)", respaldo: true },
-    { id: "claude-sonnet-5-5", nombre: "Claude Sonnet 5.5 (la mitad del precio)", respaldo: true },
+    { id: "claude-opus-5-5", nombre: "Claude Opus 5.5 (recomendado)", respaldo: true, webFetch: "web_fetch_20260209" },
+    { id: "claude-sonnet-5-5", nombre: "Claude Sonnet 5.5 (la mitad del precio)", respaldo: true, webFetch: "web_fetch_20260209" },
     // Haiku 5.5 no tiene respaldo automático del lado del servidor.
-    { id: "claude-haiku-5-5", nombre: "Claude Haiku 5.5 (el más barato)", respaldo: false },
+    { id: "claude-haiku-5-5", nombre: "Claude Haiku 5.5 (el más barato)", respaldo: false, webFetch: "web_fetch_20250910" },
   ];
+  const infoModelo = (id) => MODELOS.find((m) => m.id === id) || MODELOS[0];
   const MODELO_POR_DEFECTO = "claude-opus-5-5";
   const MAX_CARACTERES_TEXTO = 60000;
 
@@ -109,7 +112,7 @@
   // del servidor: si el modelo rechaza la solicitud por una regla de
   // seguridad, la API la reintenta en el modelo que Anthropic recomienda.
   function peticionBase(modelo, maxTokens, esfuerzo) {
-    const info = MODELOS.find((m) => m.id === modelo) || MODELOS[0];
+    const info = infoModelo(modelo);
     const p = { model: info.id, max_tokens: maxTokens, output_config: { effort: esfuerzo } };
     if (info.respaldo) {
       p.betas = ["server-side-fallback-2026-07-01"];
@@ -286,7 +289,7 @@
       ...peticionBase(modelo, 8000, "medium"),
       system: SISTEMA_VERIFICACION,
       // max_content_tokens acota el largo de la página leída (y su costo).
-      tools: [{ type: "web_fetch_20260209", name: "web_fetch", max_uses: 2, max_content_tokens: 30000 }, HERRAMIENTA_VEREDICTO],
+      tools: [{ type: infoModelo(modelo).webFetch, name: "web_fetch", max_uses: 2, max_content_tokens: 30000 }, HERRAMIENTA_VEREDICTO],
       messages: [{ role: "user", content: `Registro:\n${JSON.stringify(registro, null, 2)}\n\nURL de la fuente: ${evento.fuente_url}` }],
     };
   }
