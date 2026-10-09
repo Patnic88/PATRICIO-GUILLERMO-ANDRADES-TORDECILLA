@@ -87,3 +87,11 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+---
+
+## 🤖 Mesa de trading multi-agente (prompt maestro)
+
+En la carpeta [`mesa-trading-ia/`](mesa-trading-ia/README.md) está el prompt maestro
+para que Claude Code construya una mesa de trading 24/7 con seis agentes de IA en
+Robinhood Chain (modo simulado por defecto). Ver su README.
