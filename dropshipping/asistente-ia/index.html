@@ -14,6 +14,7 @@
       <span class="logo">🤖 Asistente IA Dropshipping</span>
       <div class="header-acciones">
         <a class="btn-header" href="../index.html" title="Volver al Radar Dropshipping">🎯 Radar</a>
+        <button class="btn-header" id="btnClaude" aria-haspopup="dialog">🔌 Claude</button>
         <button class="btn-header" id="btnAyuda" aria-haspopup="dialog">❓ ¿Cómo funciona?</button>
       </div>
     </div>
@@ -168,6 +169,21 @@
         <button type="button" class="btn-prim" id="btnKit">⬇ Descargar kit</button>
       </div>
     </section>
+
+    <!-- PASO 3: EJECUTAR CON CLAUDE ============================================ -->
+    <section class="tarjeta" id="pasoClaude" aria-labelledby="tituloClaude">
+      <div class="encabezado-paso">
+        <span class="num" aria-hidden="true">3</span>
+        <h2 id="tituloClaude">Ejecútalo aquí con Claude <span class="opcional">(opcional)</span></h2>
+      </div>
+      <p class="ayuda">Con una clave de la Consola de Claude, los prompts, skills y loops corren dentro de esta página con Haiku o Sonnet, sin copiar y pegar. Se descuenta de tu saldo de la API.</p>
+      <div class="estado-claude" id="estadoClaude"></div>
+      <div class="fila-botones">
+        <button type="button" class="btn-sec" id="btnConfigClaude">🔌 Conectar y ajustes</button>
+      </div>
+      <h3>💬 Mis conversaciones</h3>
+      <ul class="lista-conv" id="listaConv"></ul>
+    </section>
   </main>
 
   <!-- RESULTADO ============================================================= -->
@@ -205,6 +221,79 @@
       <div class="fila-botones">
         <button class="btn-prim" id="btnCopiar">📋 Copiar</button>
         <button class="btn-sec" id="btnDescargar">⬇ Descargar</button>
+        <button class="btn-sec ejecutar" id="btnEjecutar">▶ Ejecutar con Claude</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- CONEXIÓN CON CLAUDE ===================================================== -->
+  <dialog id="dlgClaude" aria-labelledby="claudeTitulo">
+    <div class="dlg-cuerpo">
+      <div class="dlg-cabecera">
+        <h2 id="claudeTitulo">🔌 Conectar con Claude</h2>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <ol class="pasos-uso">
+        <li>Entra a <b>platform.claude.com</b> con la cuenta que tiene el saldo.</li>
+        <li>En la sección de claves de API (<b>API Keys</b>) crea una clave nueva <b>solo para esta app</b>. Empieza con <code>sk-ant-</code>.</li>
+        <li>Pégala aquí y pulsa «Guardar y probar». La prueba no gasta saldo.</li>
+      </ol>
+      <form id="formClaude" autocomplete="off">
+        <label class="campo">Clave de API
+          <input id="inpClave" type="password" spellcheck="false" placeholder="sk-ant-…" />
+        </label>
+        <label class="check"><input type="checkbox" id="chkRecordar" /> Recordar la clave en este navegador</label>
+        <p class="nota">Si no la recuerdas, se borra al cerrar la página. Si la recuerdas, otros archivos HTML que abras en este mismo navegador desde tu computadora podrían leerla: usa una clave exclusiva para esta app y revócala en la Consola si dejas de usarla.</p>
+
+        <p class="pregunta">Modelo por defecto</p>
+        <div class="opciones-modelo" id="opcionesModelo"></div>
+
+        <div class="campos-grid">
+          <label class="campo">Presupuesto para esta app (USD)
+            <input id="inpPresupuesto" type="number" min="1" step="1" inputmode="decimal" />
+          </label>
+          <div class="campo">Gastado (estimado)
+            <div class="gastado"><span id="txtGastado">USD 0</span> <button type="button" class="btn-link" id="btnReiniciarGasto">Reiniciar contador</button></div>
+          </div>
+        </div>
+        <p class="aviso">El contador de esta app es una estimación en tu navegador. Para un tope real, configura también un límite en la Consola de Claude: <b>Settings → Billing → Spend limits</b>.</p>
+
+        <div class="fila-botones">
+          <button type="submit" class="btn-prim">Guardar y probar</button>
+          <button type="button" class="btn-sec" id="btnOlvidarClave">Olvidar clave</button>
+        </div>
+        <p class="msg-claude" id="msgClaude" role="status"></p>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- CONVERSACIÓN ============================================================ -->
+  <dialog id="dlgChat" class="dlg-chat" aria-labelledby="chatTitulo">
+    <div class="chat">
+      <div class="dlg-cabecera">
+        <div>
+          <span class="insignia" id="chatTipo"></span>
+          <h2 id="chatTitulo"></h2>
+        </div>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <div class="chat-config" id="chatConfig">
+        <label>Modelo <select id="chatModelo"></select></label>
+        <label>Profundidad <select id="chatEsfuerzo"></select></label>
+        <label class="check"><input type="checkbox" id="chatBusqueda" /> Búsqueda web <small>(USD 0,01 por búsqueda; máx. 5 por respuesta)</small></label>
+      </div>
+      <p class="nota" id="chatNota"></p>
+      <div class="chat-costos" id="chatCostos"></div>
+      <div class="chat-mensajes" id="chatMensajes" aria-live="polite"></div>
+      <div class="chat-entrada">
+        <label class="sr" for="chatTexto">Tu mensaje</label>
+        <textarea id="chatTexto" rows="3" placeholder="Escribe tu mensaje…"></textarea>
+        <div class="fila-botones">
+          <button type="button" class="btn-prim" id="chatEnviar">Enviar</button>
+          <button type="button" class="btn-sec oculto" id="chatContinuar">➡️ CONTINUAR</button>
+          <button type="button" class="btn-sec oculto" id="chatDetener">⏹ Detener</button>
+          <button type="button" class="btn-sec" id="chatDescargar">⬇ Guardar .md</button>
+        </div>
       </div>
     </div>
   </dialog>
@@ -229,19 +318,26 @@
       <h3>🔁 Loop</h3>
       <p>Un proceso por ciclos: la IA hace un paso, mide, aprende y repite hasta cumplir una meta (por ejemplo, encontrar 3 productos buenos). Al final de cada ciclo escribes <b>CONTINUAR</b>. Algunos tienen versión para Claude Code, que se repite sola cada cierto tiempo.</p>
 
+      <h3>▶ Ejecutar con Claude (opcional)</h3>
+      <p>Si tienes saldo en la Consola de Claude, conecta una clave en el paso 3 y pulsa <b>▶ Ejecutar con Claude</b> en cualquier resultado. <b>Haiku</b> es muy barato y rápido; <b>Sonnet</b> da más calidad y cuesta unas 20 veces más. Cada respuesta muestra su costo estimado.</p>
+
       <h3>Las marcas en el texto</h3>
       <ul>
         <li><b>[COMPLETAR: …]</b>: un dato que no llenaste. La IA te lo preguntará.</li>
         <li><b>[VERIFICAR: …]</b>: la IA debe usar esta marca cuando no está segura de un dato. Revísalo antes de publicar o gastar dinero.</li>
       </ul>
-      <p class="nota">Todo funciona en tu navegador: no se envía nada a ningún servidor. Los textos legales que genere la IA son borradores y deben revisarse con un abogado.</p>
+      <p class="nota">Todo funciona en tu navegador. Solo si conectas Claude (paso 3), lo que ejecutes se envía a la API de Anthropic. Los textos legales que genere la IA son borradores y deben revisarse con un abogado.</p>
     </div>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="vendor/anthropic-sdk.js"></script>
+  <script src="markdown.js"></script>
+  <script src="claude.js"></script>
   <script src="motor.js"></script>
   <script src="plantillas.js"></script>
   <script src="app.js"></script>
+  <script src="chat.js"></script>
 </body>
 </html>

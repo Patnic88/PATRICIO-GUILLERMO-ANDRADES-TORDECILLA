@@ -229,6 +229,9 @@
     const texto = actual.ediciones[v.id] != null ? actual.ediciones[v.id] : v.texto;
     $("resTexto").value = texto;
     $("btnDescargar").textContent = v.zip ? "⬇ Descargar ZIP" : "⬇ Descargar archivo";
+    // La versión para Claude Code no se ejecuta aquí; los skills se prueban.
+    $("btnEjecutar").classList.toggle("oculto", v.id === "code");
+    $("btnEjecutar").textContent = actual.plantilla.tipo === "skill" ? "▶ Probar este skill con Claude" : "▶ Ejecutar con Claude";
     actualizarAviso(texto);
   }
 
@@ -411,6 +414,18 @@
       if (e.target === d || e.target.closest("[data-cerrar]")) cerrarDialogo(d);
     });
   });
+
+  // Lo que necesita chat.js para ejecutar el resultado abierto con Claude.
+  window.AppAsistente = {
+    contextoActual() {
+      if (!actual) return null;
+      const v = varianteActual();
+      return { plantilla: actual.plantilla, variante: v, texto: $("resTexto").value, skill: actual.g.skill || null, perfil };
+    },
+    perfil() { sincronizarPerfil(); return perfil; },
+    cerrarResultado() { cerrarDialogo($("dlgResultado")); },
+    abrirDialogo, cerrarDialogo, aviso, descargar,
+  };
 
   // ---- Inicio -------------------------------------------------------------------------
 

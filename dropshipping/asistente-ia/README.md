@@ -53,6 +53,94 @@ Radar** (`../scoring.js`): Demanda 30, Margen 25, Señales de venta 15 y
 Checklist 30, con los mismos umbrales y criterios bloqueantes. Son
 heurísticos, no un modelo validado con datos de ventas.
 
+## ▶ Ejecutar con Claude (API)
+
+Con una clave de la Consola de Claude (platform.claude.com), los prompts,
+skills y loops se ejecutan **dentro de la página**, sin copiar y pegar, con
+cargo al saldo de la API (es aparte de la suscripción de claude.ai).
+
+1. **Paso 3 → 🔌 Conectar y ajustes** (o el botón **🔌 Claude** arriba): pega
+   la clave, elige el modelo por defecto y el presupuesto (100 USD por
+   defecto). «Guardar y probar» consulta la ficha del modelo, que no gasta
+   tokens.
+2. En cualquier resultado pulsa **▶ Ejecutar con Claude** (en los skills,
+   **▶ Probar este skill**). Se abre una conversación con el prompt listo;
+   eliges modelo, profundidad y si permites búsqueda web, y pulsas **Enviar**.
+3. Cada respuesta muestra su **costo estimado**; arriba se ve el total de la
+   conversación y el gastado contra el presupuesto. En los loops aparece el
+   botón **➡️ CONTINUAR**.
+4. Las conversaciones quedan en **Mis conversaciones** (este navegador, máx.
+   30) y se pueden retomar o descargar en `.md`.
+
+### Modelos y precios (USD por millón de tokens)
+
+Fuente: [platform.claude.com/docs/en/about-claude/pricing](https://platform.claude.com/docs/en/about-claude/pricing), consultada el 9-oct-2026.
+
+| Modelo | ID | Entrada | Salida | Lectura de caché | Escritura de caché (5 min) |
+|---|---|---|---|---|---|
+| Claude Haiku 5.5 (prompts ≤ 100.000 tokens) | `claude-haiku-5-5` | 0,10 | 0,50 | 0,01 | 0,125 |
+| Claude Haiku 5.5 (prompts > 100.000 tokens) | `claude-haiku-5-5` | 0,50 | 2,50 | 0,05 | 0,625 |
+| Claude Sonnet 5.5 | `claude-sonnet-5-5` | 2 | 10 | 0,10 | 2,50 |
+
+Búsqueda web: **USD 10 por cada 1.000 búsquedas**, más los tokens de los
+resultados, que se cobran como entrada. El razonamiento del modelo se cobra
+como salida.
+
+**Costos aproximados (ESTIMACIÓN, calculada con la tabla; varía según el
+largo real):**
+
+| Uso | Supuesto | Haiku 5.5 | Sonnet 5.5 |
+|---|---|---|---|
+| Un prompt | ~3.000 tokens de entrada y ~2.500 de salida | ≈ USD 0,002 | ≈ USD 0,03 |
+| Un loop de 6 ciclos, sin búsqueda | historial reenviado en cada ciclo (~63.000 de entrada en total) y ~18.000 de salida, sin descontar la caché | ≈ USD 0,02 | ≈ USD 0,31 |
+| Con búsqueda web | hasta 5 búsquedas por respuesta (USD 0,05) más resultados como entrada | sube poco | puede pasar de USD 0,10 por respuesta |
+
+Con 100 USD alcanzaría, según esos supuestos, para decenas de miles de prompts
+con Haiku o unos 3.000 con Sonnet.
+
+### Presupuesto y límite real
+
+- El presupuesto y el gastado de la app son una **estimación** calculada con
+  el `usage` de cada respuesta. Al llegar al presupuesto, la app deja de
+  enviar. Al 80 % muestra un aviso.
+- El tope que de verdad corta el gasto se configura en la Consola:
+  **Settings → Billing → Spend limits** (según la página oficial de
+  [rate limits](https://platform.claude.com/docs/en/api/rate-limits)). Al
+  alcanzarlo, la API responde con un error que la app traduce.
+
+### Seguridad de la clave
+
+- La app llama a la API directamente desde el navegador (opción
+  `dangerouslyAllowBrowser` del SDK). Comprobé que la API responde a esas
+  llamadas (`access-control-allow-origin: *`).
+- Si no marcas «Recordar», la clave vive solo en memoria y se borra al cerrar
+  la página. Si la recuerdas, queda en el `localStorage` del navegador; en
+  Chrome los archivos abiertos desde el disco comparten ese almacenamiento, así
+  que **usa una clave exclusiva para esta app** y revócala si dejas de usarla.
+- Lo que ejecutas se envía a la API de Anthropic. El resto de la app sigue
+  funcionando sin conexión.
+
+### Cómo llama a la API
+
+- SDK oficial `@anthropic-ai/sdk` 0.132.1 (MIT) empaquetado en
+  `vendor/anthropic-sdk.js` para que funcione sin servidor ni compilación.
+  Su licencia está en `vendor/LICENSE-anthropic-sdk.txt`.
+- Streaming, `max_tokens` 32.000, razonamiento adaptativo con resumen visible
+  (`thinking: {type: "adaptive", display: "summarized"}`), profundidad con
+  `output_config.effort` (Rápido = `low`, Normal = `medium`, A fondo = `high`).
+- Caché automática del historial (`cache_control` en el nivel superior): en
+  conversaciones largas los mensajes anteriores se cobran a precio de lectura
+  de caché.
+- Búsqueda web opcional: `web_search_20250305` con `max_uses: 5`. Si la API
+  pausa el turno (`pause_turn`), la app lo reanuda hasta 3 veces.
+- Sonnet 5.5 usa el respaldo del servidor ante rechazos de los clasificadores
+  (`fallbacks: "default"` con la cabecera `server-side-fallback-2026-07-01`).
+  Haiku 5.5 no tiene respaldo del servidor. Si Claude rechaza la solicitud, la
+  app lo avisa y devuelve el texto para reformularlo.
+- El historial solo se agrega, nunca se edita: el razonamiento firmado de cada
+  respuesta se reenvía tal cual. Por eso modelo, profundidad y búsqueda quedan
+  fijos en cada conversación.
+
 ## Formatos verificados (documentación oficial, consultada el 8-oct-2026)
 
 - **Skills** — `SKILL.md` con encabezado YAML `name` y `description`
@@ -92,6 +180,18 @@ heurísticos, no un modelo validado con datos de ventas.
   retracto en compras a distancia, modificado por la Ley 21.398) y Ley
   19.628. Se confirmaron solo con fuentes secundarias; el texto generado las
   marca `[VERIFICAR texto vigente en bcn.cl/leychile]`.
+- **Ejecución con Claude contra la API real:** se probó con el SDK real
+  contra una API simulada (servidor local en Node y respuestas interceptadas
+  en Chromium), no contra la API de Anthropic, porque en este entorno no hay
+  clave. La primera vez, haz una prueba corta con Haiku y compara el costo
+  estimado con el de la Consola (Usage).
+- **Búsqueda web en Haiku 5.5:** la documentación consultada no lista
+  explícitamente qué versión de la herramienta acepta Haiku 5.5. La app usa la
+  versión básica (`web_search_20250305`) y, al activarla, consulta
+  `capabilities.server_tools.web_search.supported` en la API de modelos.
+- **Precio de lectura de caché en Sonnet 5.5:** la página oficial de precios
+  indica USD 0,10 por millón de tokens y la guía de migración, USD 0,20. La
+  app usa la página de precios.
 - **Reglas de corte de anuncios** (apagar a 1,5 × el CPA máximo sin ventas,
   escalar 20 % cada 2–3 días): heurísticas de práctica habitual, marcadas así
   en el texto. Ajústalas con tus resultados.
@@ -100,12 +200,17 @@ heurísticos, no un modelo validado con datos de ventas.
 
 | Archivo | Descripción |
 |---|---|
-| `index.html` | Interfaz: perfil, ruta de plantillas, resultado y ayuda |
+| `index.html` | Interfaz: perfil, ruta de plantillas, resultado, conexión con Claude, conversación y ayuda |
 | `styles.css` | Estilos (modo claro y oscuro, celular) |
 | `app.js` | Formulario, filtros, diálogo de resultado, copiar y descargar |
 | `motor.js` | Armado de prompts (XML o Markdown), loops, skills y ZIP sin dependencias |
 | `plantillas.js` | Catálogo de las 26 plantillas y el kit completo |
-| `tests/motor.test.js` | Pruebas: `node tests/motor.test.js` |
+| `claude.js` | Modelos, precios, costo estimado, presupuesto, solicitud y ejecución en streaming |
+| `chat.js` | Ventana de conexión, conversación y «Mis conversaciones» |
+| `markdown.js` | Muestra las respuestas con formato sin interpretar HTML del modelo |
+| `vendor/` | SDK oficial de Anthropic empaquetado y su licencia |
+| `tests/motor.test.js` | Pruebas del motor y las plantillas: `node tests/motor.test.js` |
+| `tests/claude.test.js` | Pruebas de la conexión contra una API simulada: `node tests/claude.test.js` |
 
 Para agregar una plantilla, suma un objeto a `PLANTILLAS` en
 `plantillas.js` con `tipo` (`prompt`, `skill` o `loop`), `etapa` (1 a 5),
