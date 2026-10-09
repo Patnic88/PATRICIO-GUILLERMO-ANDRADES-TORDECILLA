@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asistente IA Dropshipping</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <span class="logo">🤖 Asistente IA Dropshipping</span>
+      <div class="header-acciones">
+        <a class="btn-header" href="../index.html" title="Volver al Radar Dropshipping">🎯 Radar</a>
+        <button class="btn-header" id="btnClaude" aria-haspopup="dialog">🔌 Claude</button>
+        <button class="btn-header" id="btnAyuda" aria-haspopup="dialog">❓ ¿Cómo funciona?</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="contenido" tabindex="-1">
+    <section class="bienvenida">
+      <h1>Crea prompts, skills y loops de IA para montar tu tienda online</h1>
+      <p>Cuéntanos de tu tienda, elige qué necesitas y copia el resultado en Claude, ChatGPT o Gemini.</p>
+    </section>
+
+    <!-- PASO 1: PERFIL ======================================================= -->
+    <section class="tarjeta" id="pasoTienda" aria-labelledby="tituloTienda">
+      <div class="encabezado-paso">
+        <span class="num" aria-hidden="true">1</span>
+        <h2 id="tituloTienda">Cuéntanos de tu tienda</h2>
+      </div>
+
+      <div class="resumen-perfil oculto" id="resumenPerfil">
+        <p id="resumenTexto"></p>
+        <button class="btn-link" id="btnEditarPerfil">✏️ Editar</button>
+      </div>
+
+      <form id="formPerfil" autocomplete="off" novalidate>
+        <p class="ayuda">Con esto personalizamos todo. Si no sabes algo, déjalo en blanco: la IA te lo preguntará.</p>
+
+        <div class="campos-grid">
+          <label class="campo">Nombre de la tienda
+            <input name="tienda" placeholder="Ej.: Casa Zen (o déjalo en blanco)" />
+          </label>
+          <label class="campo">¿Qué vendes?
+            <input name="nicho" placeholder="Ej.: orden para cocinas pequeñas" />
+          </label>
+          <label class="campo">Producto estrella <span class="opcional">(opcional)</span>
+            <input name="producto" placeholder="Ej.: especiero giratorio" />
+          </label>
+          <label class="campo">¿A quién le vendes?
+            <input name="publico" placeholder="Ej.: personas de 25 a 45 que viven en departamento" />
+          </label>
+          <label class="campo">País donde vendes
+            <input name="pais" list="listaPaises" placeholder="Ej.: Chile" />
+            <datalist id="listaPaises">
+              <option value="Chile"></option><option value="México"></option><option value="Colombia"></option>
+              <option value="Perú"></option><option value="Argentina"></option><option value="Uruguay"></option>
+              <option value="Ecuador"></option><option value="España"></option><option value="Estados Unidos"></option>
+            </datalist>
+          </label>
+          <label class="campo">Moneda
+            <input name="moneda" maxlength="5" placeholder="Ej.: CLP" />
+          </label>
+        </div>
+
+        <p class="pregunta">¿Qué IA usas?</p>
+        <div class="chips" data-grupo="ia" data-tipo="radio">
+          <button type="button" data-valor="Claude">Claude</button>
+          <button type="button" data-valor="ChatGPT">ChatGPT</button>
+          <button type="button" data-valor="Gemini">Gemini</button>
+          <button type="button" data-valor="Otra">Otra</button>
+        </div>
+
+        <p class="pregunta">¿Dónde está (o estará) tu tienda?</p>
+        <div class="chips" data-grupo="plataforma" data-tipo="radio">
+          <button type="button" data-valor="Shopify">Shopify</button>
+          <button type="button" data-valor="WooCommerce">WooCommerce</button>
+          <button type="button" data-valor="Tiendanube">Tiendanube</button>
+          <button type="button" data-valor="Jumpseller">Jumpseller</button>
+          <button type="button" data-valor="Otra">Otra / aún no sé</button>
+        </div>
+
+        <details class="mas-detalles" id="masDetalles">
+          <summary>➕ Más detalles <span class="opcional">(opcional, mejora los resultados)</span></summary>
+
+          <p class="pregunta">Proveedor</p>
+          <div class="chips" data-grupo="proveedor" data-tipo="radio">
+            <button type="button" data-valor="AliExpress">AliExpress</button>
+            <button type="button" data-valor="CJdropshipping">CJdropshipping</button>
+            <button type="button" data-valor="Dropi">Dropi</button>
+            <button type="button" data-valor="Proveedor local">Proveedor local</button>
+            <button type="button" data-valor="">Aún no sé</button>
+          </div>
+
+          <p class="pregunta">Tono de la marca</p>
+          <div class="chips" data-grupo="tono" data-tipo="radio">
+            <button type="button" data-valor="Cercano">😊 Cercano</button>
+            <button type="button" data-valor="Premium">✨ Premium</button>
+            <button type="button" data-valor="Divertido">🎉 Divertido</button>
+            <button type="button" data-valor="Experto">🧠 Experto</button>
+          </div>
+
+          <p class="pregunta">Tu experiencia</p>
+          <div class="chips" data-grupo="experiencia" data-tipo="radio">
+            <button type="button" data-valor="Principiante">Estoy empezando</button>
+            <button type="button" data-valor="Intermedio">Ya vendí algo</button>
+            <button type="button" data-valor="Avanzado">Tengo experiencia</button>
+          </div>
+
+          <p class="pregunta">¿En qué redes venderás? <span class="opcional">(puedes marcar varias)</span></p>
+          <div class="chips" data-grupo="canales" data-tipo="multi">
+            <button type="button" data-valor="TikTok">TikTok</button>
+            <button type="button" data-valor="Instagram">Instagram</button>
+            <button type="button" data-valor="Facebook">Facebook</button>
+            <button type="button" data-valor="YouTube">YouTube</button>
+            <button type="button" data-valor="Google">Google</button>
+          </div>
+
+          <p class="pregunta">Tus números <span class="opcional">(en tu moneda, sin puntos)</span></p>
+          <div class="campos-grid cuatro">
+            <label class="campo">Precio de venta<input name="precioVenta" inputmode="decimal" placeholder="Ej.: 14990" /></label>
+            <label class="campo">Costo del producto<input name="costoProducto" inputmode="decimal" placeholder="Ej.: 4200" /></label>
+            <label class="campo">Costo de envío<input name="costoEnvio" inputmode="decimal" placeholder="Ej.: 2500" /></label>
+            <label class="campo">Presupuesto de anuncios al mes<input name="presupuesto" inputmode="decimal" placeholder="Ej.: 150000" /></label>
+          </div>
+          <p class="ganancia oculto" id="ganancia" aria-live="polite"></p>
+
+          <div class="radar oculto" id="bloqueRadar">
+            <label class="campo">Traer un producto que analizaste en el Radar
+              <select id="selRadar"><option value="">Elegir producto…</option></select>
+            </label>
+          </div>
+        </details>
+
+        <div class="fila-botones">
+          <button type="submit" class="btn-prim">Listo, elegir qué crear ↓</button>
+          <button type="button" class="btn-sec" id="btnEjemplo">🎓 Usar un ejemplo</button>
+        </div>
+        <p class="nota">Tus datos se guardan solo en este navegador.</p>
+      </form>
+    </section>
+
+    <!-- PASO 2: QUÉ CREAR ===================================================== -->
+    <section class="tarjeta" id="pasoCrear" aria-labelledby="tituloCrear">
+      <div class="encabezado-paso">
+        <span class="num" aria-hidden="true">2</span>
+        <h2 id="tituloCrear">Elige qué crear</h2>
+      </div>
+      <p class="ayuda">Está ordenado como una ruta: de arriba hacia abajo es el camino para lanzar tu tienda. Toca una tarjeta para crearla.</p>
+
+      <div class="filtros" role="group" aria-label="Filtrar por tipo" id="filtros">
+        <button type="button" class="filtro activo" data-tipo="todo"><b>Todo</b><small>La ruta completa</small></button>
+        <button type="button" class="filtro" data-tipo="prompt"><b>💬 Prompts</b><small>Para una tarea puntual</small></button>
+        <button type="button" class="filtro" data-tipo="skill"><b>🧩 Skills</b><small>Asistentes que instalas</small></button>
+        <button type="button" class="filtro" data-tipo="loop"><b>🔁 Loops</b><small>Procesos que se repiten</small></button>
+      </div>
+
+      <div id="ruta"></div>
+
+      <div class="kit">
+        <div>
+          <h3>📦 Kit completo</h3>
+          <p>Todos los prompts, skills y loops personalizados en un solo ZIP, ordenados como ruta y con instrucciones.</p>
+        </div>
+        <button type="button" class="btn-prim" id="btnKit">⬇ Descargar kit</button>
+      </div>
+    </section>
+
+    <!-- PASO 3: EJECUTAR CON CLAUDE ============================================ -->
+    <section class="tarjeta" id="pasoClaude" aria-labelledby="tituloClaude">
+      <div class="encabezado-paso">
+        <span class="num" aria-hidden="true">3</span>
+        <h2 id="tituloClaude">Ejecútalo aquí con Claude <span class="opcional">(opcional)</span></h2>
+      </div>
+      <p class="ayuda">Con una clave de la Consola de Claude, los prompts, skills y loops corren dentro de esta página con Haiku o Sonnet, sin copiar y pegar. Se descuenta de tu saldo de la API.</p>
+      <div class="estado-claude" id="estadoClaude"></div>
+      <div class="fila-botones">
+        <button type="button" class="btn-sec" id="btnConfigClaude">🔌 Conectar y ajustes</button>
+      </div>
+      <h3>💬 Mis conversaciones</h3>
+      <ul class="lista-conv" id="listaConv"></ul>
+    </section>
+  </main>
+
+  <!-- RESULTADO ============================================================= -->
+  <dialog id="dlgResultado" aria-labelledby="resTitulo">
+    <div class="dlg-cuerpo">
+      <div class="dlg-cabecera">
+        <div>
+          <span class="insignia" id="resTipo"></span>
+          <h2 id="resTitulo"></h2>
+          <p class="nota" id="resResumen"></p>
+        </div>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="variantes oculto" id="resVariantes" role="tablist" aria-label="Versión"></div>
+
+      <div class="opciones-loop oculto" id="resOpciones">
+        <label>Máximo de ciclos <input type="number" id="optCiclos" min="1" max="60" inputmode="numeric" /></label>
+        <label id="lblIntervalo" class="oculto">Repetir cada
+          <select id="optIntervalo">
+            <option value="1h">1 hora</option><option value="6h">6 horas</option>
+            <option value="12h">12 horas</option><option value="1d">1 día</option>
+          </select>
+        </label>
+      </div>
+
+      <h3>Cómo usarlo</h3>
+      <ol class="pasos-uso" id="resPasos"></ol>
+
+      <label class="etiqueta-texto" for="resTexto">Tu texto <span class="opcional">(puedes editarlo antes de copiar)</span></label>
+      <textarea id="resTexto" spellcheck="false"></textarea>
+
+      <p class="aviso" id="resAviso"></p>
+
+      <div class="fila-botones">
+        <button class="btn-prim" id="btnCopiar">📋 Copiar</button>
+        <button class="btn-sec" id="btnDescargar">⬇ Descargar</button>
+        <button class="btn-sec ejecutar" id="btnEjecutar">▶ Ejecutar con Claude</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- CONEXIÓN CON CLAUDE ===================================================== -->
+  <dialog id="dlgClaude" aria-labelledby="claudeTitulo">
+    <div class="dlg-cuerpo">
+      <div class="dlg-cabecera">
+        <h2 id="claudeTitulo">🔌 Conectar con Claude</h2>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <ol class="pasos-uso">
+        <li>Entra a <b>platform.claude.com</b> con la cuenta que tiene el saldo.</li>
+        <li>En la sección de claves de API (<b>API Keys</b>) crea una clave nueva <b>solo para esta app</b>. Empieza con <code>sk-ant-</code>.</li>
+        <li>Pégala aquí y pulsa «Guardar y probar». La prueba no gasta saldo.</li>
+      </ol>
+      <form id="formClaude" autocomplete="off">
+        <label class="campo">Clave de API
+          <input id="inpClave" type="password" spellcheck="false" placeholder="sk-ant-…" />
+        </label>
+        <label class="check"><input type="checkbox" id="chkRecordar" /> Recordar la clave en este navegador</label>
+        <p class="nota">Si no la recuerdas, se borra al cerrar la página. Si la recuerdas, otros archivos HTML que abras en este mismo navegador desde tu computadora podrían leerla: usa una clave exclusiva para esta app y revócala en la Consola si dejas de usarla.</p>
+
+        <p class="pregunta">Modelo por defecto</p>
+        <div class="opciones-modelo" id="opcionesModelo"></div>
+
+        <div class="campos-grid">
+          <label class="campo">Presupuesto para esta app (USD)
+            <input id="inpPresupuesto" type="number" min="1" step="1" inputmode="decimal" />
+          </label>
+          <div class="campo">Gastado (estimado)
+            <div class="gastado"><span id="txtGastado">USD 0</span> <button type="button" class="btn-link" id="btnReiniciarGasto">Reiniciar contador</button></div>
+          </div>
+        </div>
+        <p class="aviso">El contador de esta app es una estimación en tu navegador. Para un tope real, configura también un límite en la Consola de Claude: <b>Settings → Billing → Spend limits</b>.</p>
+
+        <div class="fila-botones">
+          <button type="submit" class="btn-prim">Guardar y probar</button>
+          <button type="button" class="btn-sec" id="btnOlvidarClave">Olvidar clave</button>
+        </div>
+        <p class="msg-claude" id="msgClaude" role="status"></p>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- CONVERSACIÓN ============================================================ -->
+  <dialog id="dlgChat" class="dlg-chat" aria-labelledby="chatTitulo">
+    <div class="chat">
+      <div class="dlg-cabecera">
+        <div>
+          <span class="insignia" id="chatTipo"></span>
+          <h2 id="chatTitulo"></h2>
+        </div>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <div class="chat-config" id="chatConfig">
+        <label>Modelo <select id="chatModelo"></select></label>
+        <label>Profundidad <select id="chatEsfuerzo"></select></label>
+        <label class="check"><input type="checkbox" id="chatBusqueda" /> Búsqueda web <small>(USD 0,01 por búsqueda; máx. 5 por respuesta)</small></label>
+      </div>
+      <p class="nota" id="chatNota"></p>
+      <div class="chat-costos" id="chatCostos"></div>
+      <div class="chat-mensajes" id="chatMensajes" aria-live="polite"></div>
+      <div class="chat-entrada">
+        <label class="sr" for="chatTexto">Tu mensaje</label>
+        <textarea id="chatTexto" rows="3" placeholder="Escribe tu mensaje…"></textarea>
+        <div class="fila-botones">
+          <button type="button" class="btn-prim" id="chatEnviar">Enviar</button>
+          <button type="button" class="btn-sec oculto" id="chatContinuar">➡️ CONTINUAR</button>
+          <button type="button" class="btn-sec oculto" id="chatDetener">⏹ Detener</button>
+          <button type="button" class="btn-sec" id="chatDescargar">⬇ Guardar .md</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- AYUDA ================================================================= -->
+  <dialog id="dlgAyuda" aria-labelledby="ayudaTitulo">
+    <div class="dlg-cuerpo">
+      <div class="dlg-cabecera">
+        <h2 id="ayudaTitulo">¿Cómo funciona?</h2>
+        <button class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <ol class="como-funciona">
+        <li><span class="num">1</span><b>Cuéntanos de tu tienda.</b> Nombre, qué vendes, a quién y qué IA usas.</li>
+        <li><span class="num">2</span><b>Elige qué crear.</b> La lista sigue el orden para lanzar una tienda.</li>
+        <li><span class="num">3</span><b>Copia y pega</b> en tu IA, o descarga el archivo. Cada resultado trae sus pasos de uso.</li>
+      </ol>
+
+      <h3>💬 Prompt</h3>
+      <p>Una instrucción completa para una tarea puntual (por ejemplo, escribir la página de un producto). La pegas en un chat nuevo y la IA responde.</p>
+      <h3>🧩 Skill</h3>
+      <p>Un «asistente experto» que instalas una vez. En Claude se sube como archivo ZIP y Claude lo usa solo cuando lo necesita. En ChatGPT o Gemini se pega como instrucciones de un GPT, Proyecto o Gem.</p>
+      <h3>🔁 Loop</h3>
+      <p>Un proceso por ciclos: la IA hace un paso, mide, aprende y repite hasta cumplir una meta (por ejemplo, encontrar 3 productos buenos). Al final de cada ciclo escribes <b>CONTINUAR</b>. Algunos tienen versión para Claude Code, que se repite sola cada cierto tiempo.</p>
+
+      <h3>▶ Ejecutar con Claude (opcional)</h3>
+      <p>Si tienes saldo en la Consola de Claude, conecta una clave en el paso 3 y pulsa <b>▶ Ejecutar con Claude</b> en cualquier resultado. <b>Haiku</b> es muy barato y rápido; <b>Sonnet</b> da más calidad y cuesta unas 20 veces más. Cada respuesta muestra su costo estimado.</p>
+
+      <h3>Las marcas en el texto</h3>
+      <ul>
+        <li><b>[COMPLETAR: …]</b>: un dato que no llenaste. La IA te lo preguntará.</li>
+        <li><b>[VERIFICAR: …]</b>: la IA debe usar esta marca cuando no está segura de un dato. Revísalo antes de publicar o gastar dinero.</li>
+      </ul>
+      <p class="nota">Todo funciona en tu navegador. Solo si conectas Claude (paso 3), lo que ejecutes se envía a la API de Anthropic. Los textos legales que genere la IA son borradores y deben revisarse con un abogado.</p>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/anthropic-sdk.js"></script>
+  <script src="markdown.js"></script>
+  <script src="claude.js"></script>
+  <script src="motor.js"></script>
+  <script src="plantillas.js"></script>
+  <script src="app.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>

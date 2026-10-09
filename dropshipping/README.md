@@ -41,6 +41,8 @@ campo, ayudas "¿dónde encuentro esto?" y un resultado tipo semáforo.
    del video como línea de tiempo, subida a Shopify (archivo o Claude) y
    lista de revisión antes de publicar.
 6. **💡 Tendencias**: qué tienen en común tus productos 🟢 y 🟡.
+7. **🤖 Asistente IA** (tarjeta en el inicio): genera prompts, skills y loops
+   de IA para montar la tienda. Ver [`asistente-ia/README.md`](asistente-ia/README.md).
 
 En celular el menú queda abajo, como en una app, y los botones Atrás /
 Siguiente siempre están a la vista. Respeta el modo oscuro del teléfono.
@@ -115,6 +117,7 @@ usa el registro manual.
 | `generadores.js` | Ficha, guion (en pasos), CSV de Shopify y texto para Claude |
 | `meta-api.js` | Cliente de la Biblioteca de Anuncios de Meta |
 | `tests/scoring.test.js` | Pruebas: `node tests/scoring.test.js` |
+| `asistente-ia/` | Asistente IA: prompts, skills y loops (app aparte, con sus pruebas) |
 
 ## Pendiente de verificación
 
