@@ -211,6 +211,7 @@ con Haiku o unos 3.000 con Sonnet.
 | `vendor/` | SDK oficial de Anthropic empaquetado y su licencia |
 | `tests/motor.test.js` | Pruebas del motor y las plantillas: `node tests/motor.test.js` |
 | `tests/claude.test.js` | Pruebas de la conexión contra una API simulada: `node tests/claude.test.js` |
+| `tests/prueba-real.js` | Prueba **real** con Haiku 5.5 (gasta ≈ USD 0,002; no es parte de las pruebas automáticas). Requiere `ANTHROPIC_API_KEY`: `node tests/prueba-real.js` |
 
 Para agregar una plantilla, suma un objeto a `PLANTILLAS` en
 `plantillas.js` con `tipo` (`prompt`, `skill` o `loop`), `etapa` (1 a 5),
