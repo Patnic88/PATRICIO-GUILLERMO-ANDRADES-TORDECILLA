@@ -20,6 +20,15 @@ desde el inicio del Radar Dropshipping (tarjeta **🤖 Asistente IA**).
 3. **Copia o descarga** el resultado. Cada uno trae sus pasos de uso y el
    texto se puede editar antes de copiarlo.
 
+### En tu computadora
+
+No necesita servidor, instalación ni internet. Copia la carpeta
+`dropshipping/` **completa** (el Asistente vuelve al Radar con
+`../index.html` y lee los productos guardados por el Radar), descomprímela
+si viene en ZIP y abre `dropshipping/asistente-ia/index.html` con doble clic.
+Se probó en Chromium (motor de Chrome y Edge); en otros navegadores no está
+probado. Para dejarla a mano, guárdala en Favoritos (Ctrl + D).
+
 **🎓 Usar un ejemplo** llena el perfil con datos inventados («Casa Zen»).
 **📦 Descargar kit** baja todo en un ZIP con un `LEEME.md` que explica el orden.
 
