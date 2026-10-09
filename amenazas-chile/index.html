@@ -55,6 +55,16 @@
           <label class="boton" for="al-archivo">📂 Importar CSV/GeoJSON</label>
           <input type="file" id="al-archivo" accept=".csv,.json,.geojson,text/csv,application/json" hidden />
           <button type="button" id="al-descargar">⬇️ Descargar CSV</button>
+          <button type="button" id="al-ia-abrir" aria-expanded="false">🤖 Extraer de un texto</button>
+        </div>
+
+        <div id="al-ia-form" hidden>
+          <h3>Extraer aluviones de una noticia o informe</h3>
+          <p class="ayuda">Pega el texto. La IA propone los registros con la frase que los respalda; nada se guarda hasta que lo revises y pulses «Agregar».</p>
+          <label class="campo">Enlace de la fuente (opcional) <input type="url" id="al-ia-url" placeholder="https://" /></label>
+          <label class="campo">Texto <textarea id="al-ia-texto" rows="8"></textarea></label>
+          <div class="fila"><button type="button" class="principal" id="al-ia-extraer">🤖 Extraer con IA</button></div>
+          <div id="al-ia-resultado"></div>
         </div>
 
         <form id="al-form" hidden>
@@ -192,6 +202,21 @@
           </table>
           <p class="nota">Detalle de umbrales, citas y pendientes en el README de la carpeta <code>amenazas-chile</code>.</p>
         </div>
+        <h3>🤖 Asistente IA (Claude)</h3>
+        <p class="ayuda">Tres funciones usan la API de Claude con tu clave: extraer aluviones de una noticia (pestaña Aluviones), verificar la fuente de un evento (botón en cada evento) y redactar la explicación del índice (pestaña Factores).</p>
+        <label class="campo">Clave de la API de Claude
+          <input type="password" id="ia-clave" autocomplete="off" placeholder="sk-ant-…" />
+        </label>
+        <label class="nota"><input type="checkbox" id="ia-recordar" /> Recordarla en este navegador (si no, se borra al cerrar la pestaña)</label>
+        <label class="campo">Modelo <select id="ia-modelo"></select></label>
+        <p class="nota" id="ia-precio"></p>
+        <label class="campo">Presupuesto para esta app (US$)
+          <input type="number" id="ia-presupuesto" min="0" step="1" />
+        </label>
+        <p id="ia-gasto"></p>
+        <div class="fila"><button type="button" id="ia-reiniciar">Reiniciar contador</button></div>
+        <p class="nota">La clave da acceso a tus créditos: úsala solo en tu computador, crea una clave exclusiva para esta app y fija un límite de gasto en la consola de Anthropic. El contador es una estimación de lo que gasta esta app en este navegador; el saldo real está en la consola.</p>
+
         <h3>Probar las conexiones</h3>
         <p class="ayuda">Hace una consulta mínima a cada fuente desde este navegador y te dice cuál responde. Úsalo la primera vez o si una pestaña no carga datos.</p>
         <div class="fila"><button type="button" class="principal" id="fu-probar">🔌 Probar conexiones</button></div>
@@ -212,9 +237,11 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="vendor/anthropic-sdk-0.127.0.js"></script>
   <script src="nucleo.js"></script>
   <script src="fuentes.js"></script>
   <script src="datos/aluviones.js"></script>
+  <script src="ia.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

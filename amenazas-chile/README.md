@@ -42,6 +42,55 @@ Las fechas y horas de sismos e incendios están en **UTC** (así las entregan
 USGS y FIRMS); un evento de la noche en Chile puede quedar en el día
 siguiente.
 
+## 🤖 Funciones con IA (Claude)
+
+Tres funciones usan la API de Claude con **tu propia clave**. Se configuran en
+**ℹ️ Fuentes → Asistente IA**.
+
+| Función | Dónde | Qué hace | Salvaguardas |
+|---|---|---|---|
+| Extraer de un texto | 🌊 Aluviones → *🤖 Extraer de un texto* | Pegas una noticia o informe y propone registros (fecha, localidad, comuna, región, fallecidos, desencadenante) con la frase que los respalda | Solo usa el texto, deja vacío lo que no está. La app comprueba que la cita aparezca **literalmente** en el texto y avisa si no. Nada se guarda hasta que revisas y pulsas *Agregar*. El registro queda sin coordenadas: lo ubicas tú en el mapa |
+| Verificar fuente | Botón *🤖 Verificar fuente* en cada evento con enlace | Claude abre la página de la fuente (herramienta *web fetch* de Anthropic) y dice si confirma la fecha y el lugar, con una cita | Solo cuenta lo que dice la página. El evento queda **verificado solo cuando tú** abres la fuente, compruebas la cita y pulsas *Revisé la fuente* |
+| Explicar el índice | ⚠️ Factores → *🤖 Redactar explicación para un informe* | Un párrafo para un informe interno con el resultado | Solo usa los datos calculados por la app y termina siempre con la advertencia de que no reemplaza los avisos de la DMC, SENAPRED ni SERNAGEOMIN |
+
+**Cómo empezar**
+
+1. Crea una clave en la consola de Anthropic (platform.claude.com) y, de
+   preferencia, una exclusiva para esta app con **límite de gasto**.
+2. Pégala en *Fuentes → Asistente IA*. Por defecto queda solo mientras la
+   pestaña esté abierta; marca *Recordarla* si la usas en tu computador.
+3. Elige el modelo y el presupuesto (por defecto US$ 100).
+
+**Modelos y precios** (US$ por millón de tokens, tabla de Anthropic al
+06-10-2026 [VERIFICAR vigencia en la página de precios de Anthropic]):
+
+| Modelo | Entrada | Salida | Extraer* | Verificar* | Explicar* |
+|---|---|---|---|---|---|
+| Claude Opus 5.5 (por defecto) | 4 | 20 | ~US$ 0,06 | ~US$ 0,14 | ~US$ 0,03 |
+| Claude Sonnet 5.5 | 2 | 10 | ~US$ 0,03 | ~US$ 0,07 | ~US$ 0,01 |
+| Claude Haiku 5.5 | 0,10 | 0,50 | ~US$ 0,002 | ~US$ 0,004 | ~US$ 0,001 |
+
+\* Estimación con supuestos de tokens (extraer: 3.000 de entrada y 2.500 de
+salida; verificar: 20.000 y 3.000; explicar: 1.500 y 1.000; la salida incluye
+el razonamiento del modelo). El costo real de cada uso se muestra al terminar.
+Con Opus 5.5, los 100 dólares alcanzan para unas 700 verificaciones o 1.600
+extracciones según estos supuestos.
+
+**Control de gasto**: antes de cada llamada la app revisa el presupuesto y,
+al terminar, suma el costo que informa la API (avisa al 80 % y se detiene al
+100 %). Es una estimación de lo que gasta esta app **en este navegador**; el
+saldo real está en la consola de Anthropic.
+
+**Detalles técnicos**: SDK oficial `@anthropic-ai/sdk` 0.127.0 incluido en
+`vendor/` (no requiere instalación). Las llamadas van directo desde el
+navegador a `api.anthropic.com` con la opción `dangerouslyAllowBrowser`; la
+clave queda en el navegador, por eso conviene una clave exclusiva con límite.
+Salida estructurada con esquema JSON para la extracción y herramienta con
+`strict: true` para el veredicto. En Opus y Sonnet está activado el
+**respaldo automático** de la API (`fallbacks: "default"`): si el modelo
+rechaza una solicitud por una regla de seguridad, la API la reintenta en otro
+modelo, y el costo se calcula al precio del más caro.
+
 ## Cómo se calcula el indicador de factores
 
 El indicador es **heurístico y orientativo: no es una alerta oficial**. Las
@@ -140,9 +189,21 @@ Preventiva, Amarilla o Roja.
 | `nucleo.js` | Cálculos: lectura de CSV/GeoJSON, filtros, histogramas, focos de incendio, resumen de sismos e indicador de factores |
 | `fuentes.js` | Direcciones de las APIs y descarga de datos |
 | `datos/aluviones.js` | Catálogo histórico de aluviones con fuente por evento |
-| `tests/nucleo.test.js` | Pruebas: `node tests/nucleo.test.js` |
+| `ia.js` | Funciones con IA: extracción, verificación, explicación, costos y presupuesto |
+| `vendor/` | SDK oficial de Anthropic empaquetado (ver `vendor/LEEME.md`) |
+| `tests/nucleo.test.js` | Pruebas del núcleo: `node tests/nucleo.test.js` |
+| `tests/ia.test.js` | Pruebas de IA con respuestas simuladas: `node tests/ia.test.js` |
 
 ## Pendiente de verificación
+
+- **IA, primera llamada real**: las funciones de IA se probaron con el SDK
+  real y respuestas simuladas, pero sin la API de verdad (este entorno no
+  tiene tu clave). Haz la primera prueba con *Explicar el índice*, que es la
+  más barata. Si la verificación de fuentes falla con un error de permisos,
+  puede que la lectura web (*web fetch*) deba habilitarse en la configuración
+  de tu organización en la consola de Anthropic [VERIFICAR]. Si abres la app
+  con doble clic (`file://`) y la IA no conecta, ábrela con un servidor local
+  (ver *Cómo usarla*).
 
 - **Catálogo de aluviones**: abrir la `fuente_url` de cada evento y cambiar
   `verificado` a `true` solo si la página confirma fecha y lugar. Cinco

@@ -96,4 +96,6 @@ En la carpeta [`amenazas-chile/`](amenazas-chile/README.md) hay una app de mapa
 para ver por fecha dónde ocurrieron aluviones, evaluar si se reúnen los
 factores para que se produzca uno (lluvia, isoterma 0 °C, relieve, incendios
 recientes e historial) y ubicar y cuantificar por fecha incendios y sismos en
-Chile. Ver su README.
+Chile. Incluye funciones opcionales con la API de Claude (extraer aluviones de
+noticias, verificar fuentes y redactar explicaciones) con control de gasto.
+Ver su README.

@@ -10,6 +10,9 @@ const CLAVE_PROPIOS = "amenazas_aluviones_propios_v1";
 const CLAVE_IMPORTADOS = "amenazas_aluviones_importados_v1";
 const CLAVE_AJUSTES = "amenazas_ajustes_v1";
 const CLAVE_UBICACIONES = "amenazas_ubicaciones_v1";
+const CLAVE_VERIFICACIONES = "amenazas_verificaciones_v1";
+const CLAVE_IA = "amenazas_ia_v1";
+const CLAVE_IA_LLAVE = "amenazas_ia_clave";
 const FECHA_INICIO_TODO = "1900-01-01";
 const MAX_DIAS_FIRMS = 92;
 const MAX_MARCADORES = 20000;
@@ -30,6 +33,9 @@ const estado = {
   nuevoPunto: null,
   ubicando: null, // id del aluvión del catálogo que se está ubicando en el mapa
   ubicaciones: {},
+  verificaciones: {}, // id → { fecha, metodo, cita }: fuentes que revisaste
+  iaVerificaciones: {}, // resultados de la revisión con IA en esta sesión
+  ia: { modelo: window.IA.MODELO_POR_DEFECTO, presupuesto: 100, registro: null, recordar: false },
   punto: null,
 };
 
@@ -67,6 +73,12 @@ function el(tag, props = {}, ...hijos) {
     e.append(h instanceof Node ? h : String(h));
   }
   return e;
+}
+
+// Reemplaza el contenido de un contenedor omitiendo null, false y "" (para
+// poder escribir `condición && el(...)` sin que aparezca "null" en pantalla).
+function poner(contenedor, ...hijos) {
+  contenedor.replaceChildren(...hijos.flat().filter((h) => h !== null && h !== undefined && h !== false && h !== ""));
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -193,11 +205,19 @@ let marcaPunto = null;
 mapa.on("click", (e) => {
   const { lat, lng } = e.latlng;
   if (estado.ubicando) {
-    estado.ubicaciones[estado.ubicando] = { lat, lon: lng };
-    guardar(CLAVE_UBICACIONES, estado.ubicaciones);
+    const id = estado.ubicando;
+    const propio = estado.propios.find((a) => a.id === id);
+    const importado = estado.importados.find((a) => a.id === id);
+    if (propio || importado) {
+      Object.assign(propio || importado, { lat, lon: lng });
+      guardar(propio ? CLAVE_PROPIOS : CLAVE_IMPORTADOS, propio ? estado.propios : estado.importados);
+    } else {
+      estado.ubicaciones[id] = { lat, lon: lng };
+      guardar(CLAVE_UBICACIONES, estado.ubicaciones);
+      aplicarUbicaciones();
+    }
     estado.ubicando = null;
     document.body.classList.remove("modo-registro");
-    aplicarUbicaciones();
     renderAluviones();
     avisar("Ubicación guardada en este navegador.");
     return;
@@ -350,7 +370,7 @@ function grafico(contenedor, barras, { titulo, colorVar, unidad = "", decimales 
     if (b.atenuada) dato.setAttribute("fill-opacity", "0.4");
     hit.addEventListener("pointermove", (ev) => {
       const caja = contenedor.getBoundingClientRect();
-      tooltip.replaceChildren(el("b", { text: `${fmtNum(b.n, decimales)}${unidad}` }), " · ", fmtPeriodo(b.periodo));
+      poner(tooltip, el("b", { text: `${fmtNum(b.n, decimales)}${unidad}` }), " · ", fmtPeriodo(b.periodo));
       tooltip.hidden = false;
       const izq = Math.min(ev.clientX - caja.left + 10, caja.width - tooltip.offsetWidth - 4);
       tooltip.style.left = `${Math.max(0, izq)}px`;
@@ -382,7 +402,7 @@ function grafico(contenedor, barras, { titulo, colorVar, unidad = "", decimales 
 const NOMBRE_PASO = { dia: "día", mes: "mes", anio: "año" };
 
 function cifras(contenedor, items) {
-  contenedor.replaceChildren(
+  poner(contenedor, 
     ...items.map((c) =>
       el("div", { class: "cifra" }, el("div", { class: "etiqueta", text: c.etiqueta }), el("div", { class: "valor", text: c.valor }), c.detalle && el("div", { class: "detalle", text: c.detalle }))
     )
@@ -391,14 +411,16 @@ function cifras(contenedor, items) {
 
 // ---- Aluviones -------------------------------------------------------------
 
-const todosAluviones = () => [...estado.semilla, ...estado.propios, ...estado.importados];
+const conVerificacion = (a) => (estado.verificaciones[a.id] ? { ...a, verificado: true, verificacion: estado.verificaciones[a.id] } : a);
+const todosAluviones = () => [...estado.semilla, ...estado.propios, ...estado.importados].map(conVerificacion);
 
 const TEXTO_CONFIRMACION = { alta: "coincidencia alta", media: "coincidencia media", baja: "coincidencia baja" };
 
 function selloAluvion(a) {
+  if (a.verificacion) return `✔ Fuente revisada por ti (${fmtFecha(a.verificacion.fecha)})`;
+  if (a.verificado) return "✔ Fuente verificada";
   if (a.origen === "Propio") return "Registro propio";
   if (a.origen === "Catálogo") {
-    if (a.verificado) return "✔ Fuente verificada";
     return `Fuente ${a.tipo_fuente || ""} sin revisar · ${TEXTO_CONFIRMACION[a.confirmacion] || "sin grado"}`;
   }
   return `Importado (${a.origen})`;
@@ -475,6 +497,8 @@ function renderEstadisticasAluviones() {
   }
   for (const a of lista.slice(0, 200)) {
     const enlace = urlSegura(a.fuente_url);
+    const cajaIA = el("div", { class: "ia-caja" });
+    if (estado.iaVerificaciones[a.id]) renderVerificacion(cajaIA, a, estado.iaVerificaciones[a.id]);
     ul.append(
       el(
         "li",
@@ -493,8 +517,11 @@ function renderEstadisticasAluviones() {
             : el("button", { type: "button", text: "📍 Ubicar en el mapa", onclick: () => ubicar(a) }),
           N.tieneUbicacion(a) && el("button", { type: "button", text: "🔎 Condiciones de esa fecha", onclick: () => condicionesDeEvento(a) }),
           enlace && el("a", { class: "boton", href: enlace, target: "_blank", rel: "noopener", text: "Fuente" }),
+          enlace && !a.verificado && el("button", { type: "button", text: "🤖 Verificar fuente", onclick: (ev) => verificarConIA(a, cajaIA, ev.currentTarget) }),
+          a.verificacion && el("button", { type: "button", text: "Quitar revisión", onclick: () => quitarVerificacion(a.id) }),
           a.origen === "Propio" && el("button", { type: "button", text: "🗑️", "aria-label": "Borrar registro", onclick: () => borrarPropio(a.id) })
-        )
+        ),
+        cajaIA
       )
     );
   }
@@ -660,13 +687,13 @@ async function evaluarSeleccion() {
   const caja = $("fx-resultado");
   const boton = $("fx-evaluar");
   boton.disabled = true;
-  caja.replaceChildren(el("p", { class: "nota", text: "Consultando elevación y clima en Open-Meteo…" }));
+  poner(caja, el("p", { class: "nota", text: "Consultando elevación y clima en Open-Meteo…" }));
   try {
     const r = await evaluarEn(lat, lon, fecha);
     renderResultado(caja, r, { lat, lon, fecha });
     marcarEvaluacion(lat, lon, r.resultado, fecha ? fmtFecha(fecha) : "pronóstico");
   } catch (e) {
-    caja.replaceChildren(el("p", { class: "nota", text: `No se pudo evaluar: ${e.message}` }));
+    poner(caja, el("p", { class: "nota", text: `No se pudo evaluar: ${e.message}` }));
   } finally {
     boton.disabled = false;
   }
@@ -674,7 +701,7 @@ async function evaluarSeleccion() {
 
 const ICONO_ESTADO = { si: "⚠️ Presente", parcial: "🔸 Parcial", no: "⚪ Ausente", sinDatos: "❔ Sin datos" };
 
-function renderResultado(caja, { resultado: r, meteo, relieve: rel }, { fecha }) {
+function renderResultado(caja, { resultado: r, meteo, relieve: rel }, { fecha, lat, lon }) {
   const v = meteo.horas.slice(...meteo.ventana);
   const ventanaTxt = v.length
     ? `${fecha ? "Ventana" : "Pronóstico"}: ${fmtFecha(v[0].t.slice(0, 10))} a ${fmtFecha(v[v.length - 1].t.slice(0, 10))} (${v.length} h, hora de Chile).`
@@ -693,7 +720,7 @@ function renderResultado(caja, { resultado: r, meteo, relieve: rel }, { fecha })
   });
   const grafLluvia = el("div", { class: "grafico" });
 
-  caja.replaceChildren(
+  poner(caja, 
     el(
       "div",
       { class: `semaforo ${r.nivel ? r.nivel.id : ""}` },
@@ -714,7 +741,8 @@ function renderResultado(caja, { resultado: r, meteo, relieve: rel }, { fecha })
       el("p", { class: "nota", text: "Isoterma 0 °C estimada desde la temperatura a 2 m con el gradiente estándar (6,5 °C/km): con inversión térmica, frecuente en la costa norte, puede errar." }),
     fecha &&
       el("p", { class: "nota", text: "Fecha pasada: lluvia del reanálisis ERA5 (celdas de ~25 km). Suaviza los aguaceros locales, así que los milímetros suelen quedar bajo lo que midió un pluviómetro en el lugar." }),
-    rel && Number.isFinite(rel.elevacion) && rel.elevacion === 0 && el("p", { class: "nota", text: "El punto parece estar en el mar o a nivel del mar." })
+    rel && Number.isFinite(rel.elevacion) && rel.elevacion === 0 && el("p", { class: "nota", text: "El punto parece estar en el mar o a nivel del mar." }),
+    r.indice !== null && botonExplicacion(r, { ventanaTxt, fecha, lat, lon, estimada: meteo.estimada })
   );
   grafico(grafLluvia, [...porDia.values()], { titulo: "Lluvia diaria (mm) · color pleno = días evaluados", colorVar: "--aluviones", unidad: " mm", decimales: 1 });
 }
@@ -751,7 +779,7 @@ $("fx-lote").addEventListener("click", async () => {
   const filas = [];
   let errores = 0;
   for (let i = 0; i < lugares.length; i++) {
-    caja.replaceChildren(el("p", { class: "nota", text: `Revisando ${i + 1} de ${lugares.length}: ${lugares[i].nombre}…` }));
+    poner(caja, el("p", { class: "nota", text: `Revisando ${i + 1} de ${lugares.length}: ${lugares[i].nombre}…` }));
     try {
       const { resultado, meteo } = await evaluarEn(lugares[i].lat, lugares[i].lon, null);
       filas.push({ ...lugares[i], r: resultado, m: meteo.resumen });
@@ -762,7 +790,7 @@ $("fx-lote").addEventListener("click", async () => {
   }
   boton.disabled = false;
   filas.sort((a, b) => (b.r.indice ?? -1) - (a.r.indice ?? -1));
-  caja.replaceChildren(
+  poner(caja, 
     el("h3", { text: "Pronóstico en lugares con historial" }),
     el(
       "table",
@@ -792,7 +820,7 @@ function renderAjustes() {
   const caja = $("fx-ajustes");
   const num = (valor, alCambiar, paso = 1) =>
     el("input", { type: "number", value: valor, step: paso, min: 0, style: "width:72px", onchange: (e) => { alCambiar(Number(e.target.value)); guardarAjustesFactores(cfg); } });
-  caja.replaceChildren(
+  poner(caja, 
     el(
       "table",
       {},
@@ -863,7 +891,7 @@ $("fx-restaurar").addEventListener("click", () => {
 
 // ---- Incendios -------------------------------------------------------------
 
-$("in-fuente").replaceChildren(...F.FUENTES_FIRMS.map((f) => el("option", { value: f.id, text: f.texto })));
+poner($("in-fuente"), ...F.FUENTES_FIRMS.map((f) => el("option", { value: f.id, text: f.texto })));
 
 $("in-clave").addEventListener("change", (e) => {
   estado.ajustes.firmsClave = e.target.value.trim();
@@ -885,7 +913,7 @@ $("in-cargar").addEventListener("click", async () => {
   }
   const dias = N.diasEntre(estado.desde, estado.hasta) + 1;
   if (dias > MAX_DIAS_FIRMS) {
-    info.replaceChildren(
+    poner(info, 
       `El rango tiene ${fmtNum(dias)} días. Carga hasta ${MAX_DIAS_FIRMS} días por vez; para historia larga usa «Importar CSV de FIRMS». `,
       el("button", { type: "button", text: "Usar últimos 30 días", onclick: () => document.querySelector('[data-preset="30"]').click() })
     );
@@ -942,7 +970,7 @@ function renderEstadisticasIncendios() {
   const caja = $("in-cifras");
   if (!estado.incendios.length) {
     cifras(caja, []);
-    $("in-grafico").replaceChildren(el("p", { class: "nota", text: "Aún no hay detecciones cargadas." }));
+    poner($("in-grafico"), el("p", { class: "nota", text: "Aún no hay detecciones cargadas." }));
     $("in-focos").replaceChildren();
     return;
   }
@@ -959,7 +987,7 @@ function renderEstadisticasIncendios() {
     const h = N.histograma(lista, estado.desde, estado.hasta);
     grafico($("in-grafico"), h.barras, { titulo: `Detecciones por ${NOMBRE_PASO[h.paso]}`, colorVar: "--incendios" });
   }
-  $("in-focos").replaceChildren(
+  poner($("in-focos"), 
     focos.length
       ? el(
           "table",
@@ -1060,7 +1088,7 @@ function renderEstadisticasSismos() {
   if (!estado.sismos.length) {
     cifras($("si-cifras"), []);
     $("si-magnitudes").replaceChildren();
-    $("si-grafico").replaceChildren(el("p", { class: "nota", text: "Aún no hay sismos cargados." }));
+    poner($("si-grafico"), el("p", { class: "nota", text: "Aún no hay sismos cargados." }));
     $("si-lista").replaceChildren();
     return;
   }
@@ -1073,7 +1101,7 @@ function renderEstadisticasSismos() {
     { etiqueta: "Profundidad mediana", valor: `${fmtNum(r.profundidadMediana)} km` },
   ]);
   const maxN = Math.max(1, ...r.porMagnitud.map((x) => x.n));
-  $("si-magnitudes").replaceChildren(
+  poner($("si-magnitudes"), 
     el("h3", { text: "Por magnitud" }),
     el(
       "table",
@@ -1098,7 +1126,7 @@ function renderEstadisticasSismos() {
     grafico($("si-grafico"), h.barras, { titulo: `Sismos por ${NOMBRE_PASO[h.paso]}`, colorVar: "--sismos" });
   }
   const top = [...lista].filter((s) => Number.isFinite(s.mag)).sort((a, b) => b.mag - a.mag).slice(0, 20);
-  $("si-lista").replaceChildren(
+  poner($("si-lista"), 
     el(
       "table",
       {},
@@ -1121,6 +1149,292 @@ function renderEstadisticasSismos() {
   );
 }
 
+// ---- Asistente IA (Claude) ---------------------------------------------------
+
+const IAm = window.IA;
+const fmtUSD = (x) => `US$ ${fmtNum(x, x < 1 ? 3 : 2)}`;
+
+function claveIA() {
+  try {
+    return sessionStorage.getItem(CLAVE_IA_LLAVE) || localStorage.getItem(CLAVE_IA_LLAVE) || "";
+  } catch (e) {
+    return "";
+  }
+}
+
+function guardarClaveIA(clave, recordar) {
+  try {
+    sessionStorage.removeItem(CLAVE_IA_LLAVE);
+    localStorage.removeItem(CLAVE_IA_LLAVE);
+    if (clave) (recordar ? localStorage : sessionStorage).setItem(CLAVE_IA_LLAVE, clave);
+  } catch (e) {
+    avisar("No se pudo guardar la clave en este navegador.");
+  }
+}
+
+const guardarIA = () => guardar(CLAVE_IA, estado.ia);
+
+// Presupuesto: se revisa antes de cada llamada y se suma lo gastado después.
+const cuentaIA = {
+  puedeGastar: () => !IAm.estadoPresupuesto(estado.ia.registro, estado.ia.presupuesto).bloqueado,
+  gastar: (costo) => {
+    estado.ia.registro = IAm.sumarGasto(estado.ia.registro, costo);
+    guardarIA();
+    renderGastoIA();
+  },
+};
+
+function renderGastoIA() {
+  const e = IAm.estadoPresupuesto(estado.ia.registro, estado.ia.presupuesto);
+  poner($("ia-gasto"), 
+    "Gasto estimado: ",
+    el("b", { text: `${fmtUSD(e.gastado)} de ${fmtUSD(e.presupuesto)}` }),
+    ` en ${fmtNum(e.llamadas)} llamada(s).`,
+    e.bloqueado ? " ⛔ Presupuesto agotado: las funciones de IA quedan pausadas." : e.aviso ? " ⚠️ Queda menos del 20 %." : ""
+  );
+}
+
+function renderPrecioIA() {
+  const p = IAm.PRECIOS[estado.ia.modelo];
+  const t = IAm.costoTipico(estado.ia.modelo);
+  $("ia-precio").textContent =
+    `Precio: US$ ${fmtNum(p.entrada, 2)} por millón de tokens de entrada y US$ ${fmtNum(p.salida, 2)} de salida (tabla de Anthropic al 06-10-2026). ` +
+    `Costo aproximado por uso: extraer ${fmtUSD(t.extraer)}, verificar una fuente ${fmtUSD(t.verificar)}, explicar el índice ${fmtUSD(t.explicar)} ` +
+    "(estimación; el costo real se muestra al terminar cada uso).";
+}
+
+poner($("ia-modelo"), ...IAm.MODELOS.map((m) => el("option", { value: m.id, text: m.nombre })));
+$("ia-modelo").addEventListener("change", (e) => {
+  estado.ia.modelo = e.target.value;
+  guardarIA();
+  renderPrecioIA();
+});
+$("ia-clave").addEventListener("change", (e) => guardarClaveIA(e.target.value.trim(), estado.ia.recordar));
+$("ia-recordar").addEventListener("change", (e) => {
+  estado.ia.recordar = e.target.checked;
+  guardarIA();
+  guardarClaveIA($("ia-clave").value.trim(), estado.ia.recordar);
+});
+$("ia-presupuesto").addEventListener("change", (e) => {
+  const v = Number(e.target.value);
+  estado.ia.presupuesto = Number.isFinite(v) && v >= 0 ? v : 100;
+  guardarIA();
+  renderGastoIA();
+});
+$("ia-reiniciar").addEventListener("click", () => {
+  if (!confirm("¿Reiniciar el contador de gasto? Úsalo solo si recargaste créditos o cambiaste de clave.")) return;
+  estado.ia.registro = null;
+  guardarIA();
+  renderGastoIA();
+});
+
+const notaCosto = (res) => el("p", { class: "nota", text: `Costo estimado: ${fmtUSD(res.costo)} · ${res.modelo || estado.ia.modelo}.` });
+
+// Ejecuta una tarea de IA mostrando el avance y los errores en `caja`.
+async function usarIA(boton, caja, tarea) {
+  let cliente;
+  try {
+    cliente = IAm.crearCliente(claveIA());
+  } catch (e) {
+    poner(caja, el("p", { class: "nota", text: e.message }));
+    return;
+  }
+  boton.disabled = true;
+  poner(caja, el("p", { class: "nota", text: "Consultando a Claude…" }));
+  try {
+    await tarea(cliente);
+  } catch (e) {
+    poner(caja, el("p", { class: "nota", text: `No se pudo completar: ${IAm.mensajeError(e)}` }));
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+// 1. Extraer aluviones de un texto.
+$("al-ia-abrir").addEventListener("click", (e) => {
+  const form = $("al-ia-form");
+  form.hidden = !form.hidden;
+  e.currentTarget.setAttribute("aria-expanded", String(!form.hidden));
+  if (!form.hidden) $("al-ia-texto").focus();
+});
+
+$("al-ia-extraer").addEventListener("click", (e) => {
+  const texto = $("al-ia-texto").value;
+  const url = $("al-ia-url").value.trim();
+  const caja = $("al-ia-resultado");
+  usarIA(e.currentTarget, caja, async (cliente) => {
+    const res = await IAm.extraerAluviones(cliente, { texto, url, modelo: estado.ia.modelo }, cuentaIA);
+    renderExtraccion(caja, res, urlSegura(url) || "");
+  });
+});
+
+function renderExtraccion(caja, res, url) {
+  if (!res.eventos.length) {
+    poner(caja, el("p", { text: "La IA no encontró un aluvión en Chile descrito en el texto." }), notaCosto(res));
+    return;
+  }
+  const tarjetas = res.eventos.map((ev, i) => {
+    const fecha = el("input", { type: "text", value: ev.fecha || "", placeholder: "AAAA-MM-DD" });
+    const localidad = el("input", { type: "text", value: ev.localidad || "" });
+    const agregar = el("button", {
+      type: "button",
+      class: "principal",
+      text: "➕ Agregar al registro",
+      onclick: () => {
+        const f = fecha.value.trim();
+        if (!/^\d{4}(-\d{2}(-\d{2})?)?$/.test(f)) {
+          avisar("Escribe la fecha como AAAA-MM-DD (o AAAA-MM, o AAAA).");
+          fecha.focus();
+          return;
+        }
+        if (!localidad.value.trim()) {
+          avisar("Falta la localidad.");
+          localidad.focus();
+          return;
+        }
+        estado.propios.push({
+          id: `ia-${Date.now()}-${i}`,
+          fecha: f,
+          localidad: localidad.value.trim(),
+          comuna: ev.comuna,
+          region: ev.region,
+          fallecidos: Number.isFinite(ev.fallecidos) ? ev.fallecidos : null,
+          fallecidos_nota: ev.fallecidos_texto,
+          desencadenante: ev.desencadenante,
+          descripcion: ev.descripcion,
+          fuente_url: url,
+          fuente_titulo: url ? "Fuente del texto" : "",
+          lat: null,
+          lon: null,
+          origen: "Propio",
+          verificado: false,
+          nota_verificacion: `Extraído con IA. Cita: «${ev.cita_textual}». Ubícalo en el mapa y revisa la fuente.`,
+        });
+        guardar(CLAVE_PROPIOS, estado.propios);
+        renderAluviones();
+        agregar.disabled = true;
+        agregar.textContent = "✔ Agregado";
+        avisar("Agregado. En la lista, usa «📍 Ubicar en el mapa» para situarlo.");
+      },
+    });
+    return el(
+      "li",
+      { class: "evento" },
+      el("div", { class: "fila" }, el("label", { class: "campo" }, "Fecha", fecha), el("label", { class: "campo" }, "Localidad", localidad)),
+      (ev.comuna || ev.region) && el("p", { text: [ev.comuna, ev.region].filter(Boolean).join(", ") }),
+      el("p", { text: ev.descripcion }),
+      (Number.isFinite(ev.fallecidos) || ev.fallecidos_texto) &&
+        el("p", { text: `Fallecidos: ${Number.isFinite(ev.fallecidos) ? ev.fallecidos : "sin cifra"}${ev.fallecidos_texto ? ` (${ev.fallecidos_texto})` : ""}` }),
+      ev.desencadenante && el("p", { text: `Desencadenante: ${ev.desencadenante}` }),
+      el("blockquote", { class: "cita", text: `«${ev.cita_textual}»` }),
+      ev.citaOk && el("p", { class: "nota", text: "✔ La cita aparece literalmente en el texto." }),
+      ev.alertas.map((t) => el("p", { class: "nota", text: `⚠️ ${t}` })),
+      ev.observaciones && el("p", { class: "nota", text: `Observación de la IA: ${ev.observaciones}` }),
+      el("div", { class: "acciones" }, agregar)
+    );
+  });
+  poner(caja, 
+    el("p", { class: "nota", text: `${res.eventos.length} registro(s) propuestos. Revisa cada uno antes de agregarlo.` }),
+    el("ul", { class: "lista" }, tarjetas),
+    notaCosto(res)
+  );
+}
+
+// 2. Verificar la fuente de un evento.
+const TEXTO_CONFIRMA = { si: "✅ coincide", parcial: "🔸 coincide en parte", no: "❌ no coincide", no_menciona: "❔ la página no lo dice" };
+
+function verificarConIA(a, caja, boton) {
+  usarIA(boton, caja, async (cliente) => {
+    const res = await IAm.verificarFuente(cliente, { evento: a, modelo: estado.ia.modelo }, cuentaIA);
+    estado.iaVerificaciones[a.id] = res;
+    renderVerificacion(caja, a, res);
+  });
+}
+
+function renderVerificacion(caja, a, res) {
+  const v = res.resultado;
+  const errores = res.errores && res.errores.length ? el("p", { class: "nota", text: `Errores al leer la página: ${res.errores.join(", ")}.` }) : null;
+  if (!v) {
+    poner(caja, el("p", { class: "nota", text: `Sin veredicto: ${res.texto || "la IA no completó la revisión."}` }), errores, notaCosto(res));
+    return;
+  }
+  const coincide = v.pagina_leida && v.confirma_fecha === "si" && v.confirma_lugar === "si";
+  poner(caja, 
+    el("p", {}, el("b", { text: "Revisión con IA: " }), v.pagina_leida ? "leyó la página." : "no pudo leer la página."),
+    el("p", { text: `Fecha: ${TEXTO_CONFIRMA[v.confirma_fecha]}${v.fecha_en_fuente ? ` (en la fuente: ${v.fecha_en_fuente})` : ""}` }),
+    el("p", { text: `Lugar: ${TEXTO_CONFIRMA[v.confirma_lugar]}${v.lugar_en_fuente ? ` (en la fuente: ${v.lugar_en_fuente})` : ""}` }),
+    v.fallecidos_en_fuente && el("p", { text: `Fallecidos según la fuente: ${v.fallecidos_en_fuente}` }),
+    v.cita_textual && el("blockquote", { class: "cita", text: `«${v.cita_textual}»` }),
+    v.observaciones && el("p", { class: "nota", text: v.observaciones }),
+    errores,
+    coincide &&
+      !a.verificado &&
+      el(
+        "div",
+        { class: "acciones" },
+        el("span", { class: "nota", text: "Abre la fuente y comprueba que la cita está ahí antes de marcarlo." }),
+        el("button", {
+          type: "button",
+          text: "✔ Revisé la fuente: marcar verificado",
+          onclick: () => {
+            estado.verificaciones[a.id] = { fecha: hoy(), metodo: "IA + revisión del usuario", cita: v.cita_textual, modelo: res.modelo || estado.ia.modelo };
+            guardar(CLAVE_VERIFICACIONES, estado.verificaciones);
+            delete estado.iaVerificaciones[a.id];
+            renderAluviones();
+            avisar("Marcado como verificado en este navegador.");
+          },
+        })
+      ),
+    notaCosto(res)
+  );
+}
+
+function quitarVerificacion(id) {
+  delete estado.verificaciones[id];
+  guardar(CLAVE_VERIFICACIONES, estado.verificaciones);
+  renderAluviones();
+}
+
+// 3. Redactar la explicación del índice de factores.
+function botonExplicacion(r, { ventanaTxt, fecha, lat, lon, estimada }) {
+  const caja = el("div", { class: "ia-caja" });
+  const datos = {
+    punto: { lat: Number(lat.toFixed(4)), lon: Number(lon.toFixed(4)) },
+    modo: fecha ? `fecha pasada (${fecha}), lluvia del reanálisis ERA5` : "pronóstico de los próximos 3 días",
+    ventana: ventanaTxt,
+    indice: r.indice,
+    nivel: r.nivel && r.nivel.texto,
+    detonante_meteorologico: r.detonante,
+    susceptibilidad_del_terreno: r.susceptibilidad,
+    zona: r.zona.nombre,
+    factores: r.factores.map((f) => ({ nombre: f.nombre, estado: f.estado, puntaje: f.puntaje === null ? null : Math.round(f.puntaje * 100), detalle: f.texto })),
+    notas: [estimada ? "Isoterma 0 °C estimada desde la temperatura con el gradiente estándar." : "Isoterma 0 °C del modelo de pronóstico."],
+  };
+  const boton = el("button", {
+    type: "button",
+    text: "🤖 Redactar explicación para un informe",
+    onclick: () =>
+      usarIA(boton, caja, async (cliente) => {
+        const res = await IAm.redactarInforme(cliente, { datos, modelo: estado.ia.modelo }, cuentaIA);
+        poner(caja, 
+          el("p", { class: "informe-ia", text: res.texto }),
+          el(
+            "div",
+            { class: "acciones" },
+            el("button", {
+              type: "button",
+              text: "📋 Copiar",
+              onclick: () => navigator.clipboard.writeText(res.texto).then(() => avisar("Copiado."), () => avisar("No se pudo copiar.")),
+            })
+          ),
+          el("p", { class: "nota", text: "Texto generado por IA solo con los datos de arriba; revísalo antes de usarlo." }),
+          notaCosto(res)
+        );
+      }),
+  });
+  return el("div", { class: "ia-caja" }, el("div", { class: "fila" }, boton), caja);
+}
+
 // ---- Prueba de conexiones ----------------------------------------------------
 
 const TEXTO_PRUEBA = { ok: "✅ Funciona", rara: "⚠️ Respuesta extraña", error: "❌ Falla", omitida: "➖ Omitida" };
@@ -1141,11 +1455,11 @@ $("fu-probar").addEventListener("click", async () => {
   const boton = $("fu-probar");
   const caja = $("fu-pruebas");
   boton.disabled = true;
-  caja.replaceChildren(el("p", { class: "nota", text: "Probando…" }));
+  poner(caja, el("p", { class: "nota", text: "Probando…" }));
   const pruebas = F.pruebasConexion({ clave: estado.ajustes.firmsClave, fuente: estado.ajustes.firmsFuente, hoy: hoy() });
   const resultados = await Promise.all([probarTeselas(), ...pruebas.map(F.probarConexion)]);
   boton.disabled = false;
-  caja.replaceChildren(
+  poner(caja, 
     el(
       "table",
       {},
@@ -1164,7 +1478,7 @@ $("fu-probar").addEventListener("click", async () => {
 
 $("fu-respaldo").addEventListener("click", () => {
   const { firmsClave, ...ajustesSinClave } = estado.ajustes;
-  const datos = { app: "amenazas-chile", version: 1, fecha: hoy(), propios: estado.propios, importados: estado.importados, ubicaciones: estado.ubicaciones, ajustes: ajustesSinClave };
+  const datos = { app: "amenazas-chile", version: 1, fecha: hoy(), propios: estado.propios, importados: estado.importados, ubicaciones: estado.ubicaciones, verificaciones: estado.verificaciones, ajustes: ajustesSinClave };
   descargar(`respaldo_amenazas_${hoy()}.json`, JSON.stringify(datos, null, 2), "application/json");
 });
 
@@ -1176,6 +1490,8 @@ $("fu-restaurar").addEventListener("change", (e) =>
     estado.propios.push(...(datos.propios || []).filter((a) => !ids.has(a.id)));
     estado.importados.push(...(datos.importados || []));
     estado.ubicaciones = { ...estado.ubicaciones, ...(datos.ubicaciones || {}) };
+    estado.verificaciones = { ...estado.verificaciones, ...(datos.verificaciones || {}) };
+    guardar(CLAVE_VERIFICACIONES, estado.verificaciones);
     guardar(CLAVE_UBICACIONES, estado.ubicaciones);
     aplicarUbicaciones();
     estado.ajustes = { ...estado.ajustes, ...(datos.ajustes || {}), firmsClave: estado.ajustes.firmsClave };
@@ -1211,6 +1527,15 @@ function aplicarAjustesEnFormulario() {
 }
 
 estado.ubicaciones = leer(CLAVE_UBICACIONES, {});
+estado.verificaciones = leer(CLAVE_VERIFICACIONES, {});
+estado.ia = { ...estado.ia, ...leer(CLAVE_IA, {}) };
+if (!IAm.PRECIOS[estado.ia.modelo] || !IAm.MODELOS.some((m) => m.id === estado.ia.modelo)) estado.ia.modelo = IAm.MODELO_POR_DEFECTO;
+$("ia-modelo").value = estado.ia.modelo;
+$("ia-recordar").checked = !!estado.ia.recordar;
+$("ia-clave").value = claveIA();
+$("ia-presupuesto").value = String(estado.ia.presupuesto);
+renderPrecioIA();
+renderGastoIA();
 aplicarUbicaciones();
 estado.propios = leer(CLAVE_PROPIOS, []);
 estado.importados = leer(CLAVE_IMPORTADOS, []);
