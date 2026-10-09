@@ -87,3 +87,13 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+---
+
+## 🗺️ Amenazas Chile
+
+En la carpeta [`amenazas-chile/`](amenazas-chile/README.md) hay una app de mapa
+para ver por fecha dónde ocurrieron aluviones, evaluar si se reúnen los
+factores para que se produzca uno (lluvia, isoterma 0 °C, relieve, incendios
+recientes e historial) y ubicar y cuantificar por fecha incendios y sismos en
+Chile. Ver su README.

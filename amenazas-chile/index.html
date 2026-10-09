@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amenazas Chile</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="saltar" href="#panel">Saltar al panel</a>
+
+  <header class="barra">
+    <h1>🗺️ Amenazas Chile <small>aluviones · incendios · sismos</small></h1>
+    <form class="filtros" id="filtros" aria-label="Filtros de fecha y área">
+      <label>Desde <input type="date" id="desde" required /></label>
+      <label>Hasta <input type="date" id="hasta" required /></label>
+      <div class="presets" role="group" aria-label="Rangos rápidos">
+        <button type="button" data-preset="7">7 días</button>
+        <button type="button" data-preset="30">30 días</button>
+        <button type="button" data-preset="365">1 año</button>
+        <button type="button" data-preset="3650">10 años</button>
+        <button type="button" data-preset="todo">Todo</button>
+      </div>
+      <label>Área
+        <select id="area">
+          <option value="chile">Todo Chile</option>
+          <option value="visible">Solo lo visible en el mapa</option>
+        </select>
+      </label>
+    </form>
+  </header>
+
+  <main class="app">
+    <div id="mapa" class="mapa" role="application" aria-label="Mapa de Chile"></div>
+
+    <section class="panel" id="panel" tabindex="-1" aria-label="Panel de datos">
+      <nav class="pestanas" role="tablist">
+        <button role="tab" id="p-aluviones" aria-controls="t-aluviones" data-tab="aluviones" aria-selected="true">🌊 Aluviones</button>
+        <button role="tab" id="p-factores" aria-controls="t-factores" data-tab="factores" aria-selected="false">⚠️ Factores</button>
+        <button role="tab" id="p-incendios" aria-controls="t-incendios" data-tab="incendios" aria-selected="false">🔥 Incendios</button>
+        <button role="tab" id="p-sismos" aria-controls="t-sismos" data-tab="sismos" aria-selected="false">🌎 Sismos</button>
+        <button role="tab" id="p-fuentes" aria-controls="t-fuentes" data-tab="fuentes" aria-selected="false">ℹ️ Fuentes</button>
+      </nav>
+
+      <!-- ALUVIONES ======================================================= -->
+      <div class="tab" id="t-aluviones" role="tabpanel" aria-labelledby="p-aluviones">
+        <h2><span class="punto-capa" style="background:var(--aluviones)"></span>Registro de aluviones</h2>
+        <p class="ayuda">Eventos documentados con fecha y lugar. Los precargados traen su fuente; puedes agregar los tuyos o importar un catálogo.</p>
+        <div class="cifras" id="al-cifras"></div>
+        <div class="grafico" id="al-grafico"></div>
+        <div class="fila">
+          <button type="button" id="al-registrar">➕ Registrar aluvión</button>
+          <label class="boton" for="al-archivo">📂 Importar CSV/GeoJSON</label>
+          <input type="file" id="al-archivo" accept=".csv,.json,.geojson,text/csv,application/json" hidden />
+          <button type="button" id="al-descargar">⬇️ Descargar CSV</button>
+        </div>
+
+        <form id="al-form" hidden>
+          <h3>Nuevo registro</h3>
+          <p class="nota" id="al-form-punto">Toca el mapa para ubicarlo.</p>
+          <label class="campo">Fecha <input type="date" id="al-f-fecha" required /></label>
+          <label class="campo">Localidad o quebrada <input type="text" id="al-f-localidad" required /></label>
+          <label class="campo">Descripción <textarea id="al-f-desc"></textarea></label>
+          <label class="campo">Fallecidos (si una fuente lo informa) <input type="number" id="al-f-fallecidos" min="0" /></label>
+          <label class="campo">Fuente (enlace) <input type="url" id="al-f-fuente" placeholder="https://" /></label>
+          <div class="fila">
+            <button type="submit" class="principal">Guardar</button>
+            <button type="button" id="al-f-cancelar">Cancelar</button>
+          </div>
+        </form>
+
+        <h3>Eventos en el rango</h3>
+        <ul class="lista" id="al-lista"></ul>
+      </div>
+
+      <!-- FACTORES ======================================================== -->
+      <div class="tab" id="t-factores" role="tabpanel" aria-labelledby="p-factores" hidden>
+        <h2>¿Se reúnen los factores para un aluvión?</h2>
+        <p class="ayuda">Toca un punto del mapa. Se combinan la lluvia, la isoterma 0 °C, el relieve, los incendios recientes y el historial del lugar.</p>
+        <div class="alerta-oficial">
+          ⚠️ <b>Indicador orientativo, no es una alerta oficial.</b> Ante lluvias, sigue los avisos de la
+          <a href="https://www.meteochile.gob.cl" target="_blank" rel="noopener">Dirección Meteorológica de Chile</a> y las alertas de
+          <a href="https://senapred.cl" target="_blank" rel="noopener">SENAPRED</a>.
+        </div>
+        <fieldset class="fila" style="border:0;padding:0">
+          <legend class="nota">Qué evaluar</legend>
+          <label><input type="radio" name="fx-modo" value="pronostico" checked /> Próximos 3 días (pronóstico)</label>
+          <label><input type="radio" name="fx-modo" value="fecha" /> Una fecha pasada</label>
+          <input type="date" id="fx-fecha" aria-label="Fecha a evaluar" disabled />
+        </fieldset>
+        <p class="nota" id="fx-punto">Ningún punto seleccionado.</p>
+        <div class="fila">
+          <button type="button" class="principal" id="fx-evaluar" disabled>Evaluar este punto</button>
+          <button type="button" id="fx-lote">📋 Revisar lugares con historial</button>
+        </div>
+        <div id="fx-resultado"></div>
+        <div id="fx-lote-resultado"></div>
+
+        <details>
+          <summary>⚙️ Ajustar umbrales y pesos</summary>
+          <p class="nota">Valores heurísticos de partida, no un modelo validado. Ajústalos con la experiencia local; se guardan en este navegador.</p>
+          <div id="fx-ajustes"></div>
+          <div class="fila"><button type="button" id="fx-restaurar">Restaurar valores de partida</button></div>
+        </details>
+      </div>
+
+      <!-- INCENDIOS ======================================================= -->
+      <div class="tab" id="t-incendios" role="tabpanel" aria-labelledby="p-incendios" hidden>
+        <h2><span class="punto-capa" style="background:var(--incendios)"></span>Incendios: detecciones satelitales</h2>
+        <p class="ayuda">Puntos donde los satélites de la NASA (FIRMS) detectaron fuego activo. Se agrupan en focos y se cuentan por fecha.</p>
+        <label class="campo">Clave MAP_KEY de FIRMS (gratuita, se guarda solo en este navegador)
+          <input type="password" id="in-clave" autocomplete="off" placeholder="Pega tu MAP_KEY" />
+        </label>
+        <p class="nota">¿No tienes clave? Pídela en <a href="https://firms.modaps.eosdis.nasa.gov/api/map_key/" target="_blank" rel="noopener">firms.modaps.eosdis.nasa.gov/api/map_key</a>.</p>
+        <label class="campo">Satélite
+          <select id="in-fuente"></select>
+        </label>
+        <div class="fila">
+          <button type="button" class="principal" id="in-cargar">Cargar detecciones del rango</button>
+          <label class="boton" for="in-archivo">📂 Importar CSV de FIRMS</label>
+          <input type="file" id="in-archivo" accept=".csv,text/csv" hidden />
+        </div>
+        <p class="nota" id="in-estado"></p>
+        <div class="fila">
+          <label class="nota">Agrupar detecciones a menos de <input type="number" id="in-km" min="0.5" max="20" step="0.5" value="2" style="width:64px" /> km</label>
+          <label class="nota">y <input type="number" id="in-dias" min="0" max="10" value="2" style="width:56px" /> días</label>
+        </div>
+        <div class="cifras" id="in-cifras"></div>
+        <div class="grafico" id="in-grafico"></div>
+        <p class="nota">Una detección es un píxel con fuego activo al paso del satélite (375 m a 1 km). No equivale a superficie quemada: las hectáreas oficiales las informa <a href="https://www.conaf.cl" target="_blank" rel="noopener">CONAF</a>.</p>
+        <h3>Focos con más detecciones</h3>
+        <div id="in-focos"></div>
+      </div>
+
+      <!-- SISMOS ========================================================== -->
+      <div class="tab" id="t-sismos" role="tabpanel" aria-labelledby="p-sismos" hidden>
+        <h2><span class="punto-capa" style="background:var(--sismos)"></span>Sismos</h2>
+        <p class="ayuda">Catálogo del Servicio Geológico de EE. UU. (USGS). También puedes importar un CSV del Centro Sismológico Nacional u otro catálogo.</p>
+        <div class="fila">
+          <label class="campo" style="margin:0">Magnitud mínima
+            <select id="si-mag">
+              <option value="2.5">2,5</option>
+              <option value="3">3,0</option>
+              <option value="4">4,0</option>
+              <option value="5" selected>5,0</option>
+              <option value="6">6,0</option>
+              <option value="7">7,0</option>
+            </select>
+          </label>
+          <label class="nota"><input type="checkbox" id="si-solochile" checked /> Solo los que USGS describe en Chile</label>
+        </div>
+        <div class="fila">
+          <button type="button" class="principal" id="si-cargar">Cargar sismos del rango</button>
+          <label class="boton" for="si-archivo">📂 Importar CSV</label>
+          <input type="file" id="si-archivo" accept=".csv,text/csv" hidden />
+        </div>
+        <p class="nota" id="si-estado"></p>
+        <div class="cifras" id="si-cifras"></div>
+        <div id="si-magnitudes"></div>
+        <div class="grafico" id="si-grafico"></div>
+        <h3>Los de mayor magnitud</h3>
+        <div id="si-lista"></div>
+      </div>
+
+      <!-- FUENTES ========================================================= -->
+      <div class="tab" id="t-fuentes" role="tabpanel" aria-labelledby="p-fuentes" hidden>
+        <h2>Fuentes y límites</h2>
+        <div id="fu-contenido">
+          <h3>Alertas oficiales (consúltalas siempre)</h3>
+          <ul>
+            <li><b>Dirección Meteorológica de Chile</b>: avisos (A), alertas (AA) y alarmas (AAA), que indican lluvia «en corto periodo» e «isoterma cero alta».
+              <a href="https://archivos.meteochile.gob.cl/portaldmc/AAA/aaa_mapa.php" target="_blank" rel="noopener">Mapa de avisos</a>.</li>
+            <li><b>SENAPRED</b>: Alerta Temprana Preventiva, Amarilla y Roja.
+              <a href="https://senapred.cl/alertas/" target="_blank" rel="noopener">Alertas vigentes</a>.</li>
+            <li><b>SERNAGEOMIN</b>: minutas técnicas con la posibilidad de aluviones (alta, moderada o baja) por zona y visores de peligros geológicos.
+              <a href="https://www.sernageomin.cl/visores-peligros-geologicos/" target="_blank" rel="noopener">Visores</a>.</li>
+          </ul>
+          <p class="nota">Enlaces encontrados por búsqueda en octubre de 2026; si alguno cambió, entra por la portada del organismo.</p>
+
+          <h3>Datos que usa la app</h3>
+          <table>
+            <tbody>
+              <tr><td><b>Aluviones</b></td><td>Catálogo inicial de 28 eventos armado con búsqueda web: cada uno trae su fuente, que <b>todavía no se ha revisado abriéndola</b>; el sello indica cuánto coincidían las fuentes. Puedes importar el catastro nacional de remociones en masa de SERNAGEOMIN (plataforma Datos para Resiliencia, doi:10.71578/QRDY49) en CSV o GeoJSON.</td></tr>
+              <tr><td><b>Sismos</b></td><td>Servicio FDSN del USGS (EE. UU.). No se encontró una API pública documentada del Centro Sismológico Nacional: sus catálogos se pueden importar como CSV.</td></tr>
+              <tr><td><b>Incendios</b></td><td>NASA FIRMS: detecciones de fuego activo (VIIRS 375 m, MODIS 1 km). No son hectáreas quemadas: la superficie oficial la publica CONAF.</td></tr>
+              <tr><td><b>Lluvia e isoterma</b></td><td>Open-Meteo: pronóstico con isoterma 0 °C del modelo; para fechas pasadas, reanálisis ERA5 (celdas de ~25 km, desde 1940) con isoterma estimada. El reanálisis suaviza los aguaceros locales: los milímetros suelen quedar bajo lo medido en un pluviómetro.</td></tr>
+              <tr><td><b>Relieve</b></td><td>Copernicus DEM GLO-90 vía Open-Meteo.</td></tr>
+              <tr><td><b>Mapa</b></td><td>© OpenStreetMap y OpenTopoMap.</td></tr>
+            </tbody>
+          </table>
+          <p class="nota">Detalle de umbrales, citas y pendientes en el README de la carpeta <code>amenazas-chile</code>.</p>
+        </div>
+        <h3>Tus datos</h3>
+        <p class="ayuda">Los aluviones que registras y tus ajustes se guardan solo en este navegador.</p>
+        <div class="fila">
+          <button type="button" id="fu-respaldo">⬇️ Descargar respaldo</button>
+          <label class="boton" for="fu-restaurar">📂 Restaurar respaldo</label>
+          <input type="file" id="fu-restaurar" accept=".json,application/json" hidden />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="aviso" class="aviso" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="nucleo.js"></script>
+  <script src="fuentes.js"></script>
+  <script src="datos/aluviones.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
