@@ -57,7 +57,7 @@ heurísticos, no un modelo validado con datos de ventas.
 
 Con una clave de la Consola de Claude (platform.claude.com), los prompts,
 skills y loops se ejecutan **dentro de la página**, sin copiar y pegar, con
-cargo al saldo de la API (es aparte de la suscripción de claude.ai).
+cargo al saldo de la API de esa cuenta.
 
 1. **Paso 3 → 🔌 Conectar y ajustes** (o el botón **🔌 Claude** arriba): pega
    la clave, elige el modelo por defecto y el presupuesto (100 USD por
