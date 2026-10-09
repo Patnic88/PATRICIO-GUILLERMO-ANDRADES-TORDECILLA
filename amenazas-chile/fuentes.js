@@ -106,12 +106,18 @@
 
   // ---- Llamadas de red (solo navegador) ------------------------------------
 
-  async function pedir(url, tipo = "json") {
+  async function pedir(url, tipo = "json", { msMax = 60000 } = {}) {
     let r;
+    const corte = new AbortController();
+    const reloj = setTimeout(() => corte.abort(), msMax);
     try {
-      r = await fetch(url);
+      r = await fetch(url, { signal: corte.signal });
     } catch (e) {
-      throw new Error("No se pudo conectar con la fuente (sin internet, o el servicio no permite consultas desde el navegador).");
+      throw new Error(corte.signal.aborted
+        ? `La fuente no respondió en ${Math.round(msMax / 1000)} s.`
+        : "No se pudo conectar con la fuente (sin internet, o el servicio no permite consultas desde el navegador).");
+    } finally {
+      clearTimeout(reloj);
     }
     const cuerpo = await r.text();
     if (!r.ok) throw new Error(`La fuente respondió ${r.status}: ${cuerpo.slice(0, 200)}`);
@@ -177,9 +183,67 @@
     return { horas, ventana, resumen: N.resumirMeteo(horas, ventana), estimada: true };
   }
 
+  // ---- Prueba de conexiones (consultas mínimas a cada fuente) ---------------
+
+  // Lista de pruebas. Cada una pide lo mínimo posible y valida la forma de la
+  // respuesta, no solo que llegue algo.
+  function pruebasConexion({ clave, fuente = "VIIRS_SNPP_NRT", hoy }) {
+    const santiago = { lat: -33.45, lon: -70.66 };
+    const caja = { sur: -34, norte: -33, oeste: -71.5, este: -70 };
+    return [
+      {
+        id: "usgs", nombre: "Sismos (USGS)",
+        url: urlUSGS({ desde: N.sumarDias(hoy, -7), hasta: hoy, magMin: 4, limite: 1 }),
+        validar: (t) => Array.isArray(JSON.parse(t).features),
+      },
+      {
+        id: "pronostico", nombre: "Pronóstico e isoterma (Open-Meteo)",
+        url: urlPronostico(santiago.lat, santiago.lon),
+        validar: (t) => {
+          const h = JSON.parse(t).hourly || {};
+          return Array.isArray(h.precipitation) && Array.isArray(h.freezing_level_height);
+        },
+      },
+      {
+        id: "historico", nombre: "Clima pasado ERA5 (Open-Meteo)",
+        url: urlHistorico(santiago.lat, santiago.lon, "2024-01-01", "2024-01-01"),
+        validar: (t) => Array.isArray((JSON.parse(t).hourly || {}).precipitation),
+      },
+      {
+        id: "elevacion", nombre: "Elevación (Open-Meteo)",
+        url: urlElevacion([santiago]),
+        validar: (t) => Array.isArray(JSON.parse(t).elevation),
+      },
+      {
+        id: "firms", nombre: "Incendios (NASA FIRMS)",
+        url: clave ? urlFIRMS({ clave, fuente, caja, dias: 1, fecha: hoy }) : null,
+        omitir: clave ? null : "Falta la MAP_KEY (pestaña Incendios).",
+        validar: (t) => /latitude/i.test(t.slice(0, 200)) || t.trim() === "",
+      },
+    ];
+  }
+
+  async function probarConexion(prueba) {
+    if (prueba.omitir) return { ...prueba, estado: "omitida", detalle: prueba.omitir };
+    const t0 = Date.now();
+    try {
+      const texto = await pedir(prueba.url, "texto", { msMax: 15000 });
+      let valida = false;
+      try { valida = prueba.validar(texto); } catch (e) { valida = false; }
+      return {
+        ...prueba, ms: Date.now() - t0,
+        estado: valida ? "ok" : "rara",
+        detalle: valida ? "Responde con el formato esperado." : `Respondió, pero con un formato inesperado: ${texto.slice(0, 160)}`,
+      };
+    } catch (e) {
+      return { ...prueba, ms: Date.now() - t0, estado: "error", detalle: e.message };
+    }
+  }
+
   const api = {
     BASES, FUENTES_FIRMS, ZONA_HORARIA, DIAS_POR_TRAMO_FIRMS,
     urlUSGS, urlFIRMS, urlPronostico, urlHistorico, urlElevacion, horasOpenMeteo, horaActualChile,
+    pruebasConexion, probarConexion,
     pedir, cargarSismos, cargarIncendios, cargarRelieve, cargarMeteoPronostico, cargarMeteoHistorico,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

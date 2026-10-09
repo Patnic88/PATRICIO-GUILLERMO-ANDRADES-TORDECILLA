@@ -33,8 +33,10 @@ directamente, sírvela con cualquier servidor estático, por ejemplo
   (USGS), o importa un CSV de otro catálogo (por ejemplo, del Centro
   Sismológico Nacional) con columnas de fecha, latitud, longitud, magnitud y
   profundidad. Acepta separador `,` o `;` y decimales con coma.
-- **ℹ️ Fuentes**: de dónde sale cada dato, sus límites y el respaldo de tus
-  registros.
+- **ℹ️ Fuentes**: de dónde sale cada dato, sus límites, el respaldo de tus
+  registros y **🔌 Probar conexiones**, que hace una consulta mínima a cada
+  fuente (USGS, Open-Meteo, FIRMS y el mapa base) desde tu navegador y dice
+  cuál funciona, cuál falla y por qué. Úsalo la primera vez.
 
 Las fechas y horas de sismos e incendios están en **UTC** (así las entregan
 USGS y FIRMS); un evento de la noche en Chile puede quedar en el día
@@ -155,7 +157,8 @@ Preventiva, Amarilla o Roja.
   `earthquake.usgs.gov`, `firms.modaps.eosdis.nasa.gov` ni `api.open-meteo.com`.
   Las direcciones y parámetros siguen la documentación de cada servicio, y la
   interfaz se probó con respuestas simuladas, pero **la primera consulta real
-  debe hacerse en tu navegador**. Si una fuente no permite consultas desde el
+  debe hacerse en tu navegador**: pulsa *🔌 Probar conexiones* en la pestaña
+  Fuentes. Si una fuente no permite consultas desde el
   navegador (CORS), la app lo informa; en ese caso usa la importación de
   archivos (FIRMS y catálogos de sismos ofrecen descarga en CSV).
 - Nombres de satélites de FIRMS distintos de `VIIRS_SNPP_NRT`

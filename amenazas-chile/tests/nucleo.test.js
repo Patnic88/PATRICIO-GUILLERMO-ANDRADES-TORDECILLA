@@ -213,6 +213,18 @@ const hOM = F.horasOpenMeteo({ elevation: 1000, hourly: { time: ["2026-01-01T00:
 assert.strictEqual(Math.round(hOM[0].isoterma), 2000);
 assert.strictEqual(hOM[0].estimada, true);
 
+// Pruebas de conexión: consultas mínimas y validación del formato.
+const pruebas = F.pruebasConexion({ clave: "", hoy: "2026-10-09" });
+assert.deepStrictEqual(pruebas.map((p) => p.id), ["usgs", "pronostico", "historico", "elevacion", "firms"]);
+assert.strictEqual(new URL(pruebas[0].url).searchParams.get("limit"), "1");
+assert.ok(pruebas.find((p) => p.id === "firms").omitir, "sin clave, FIRMS se omite");
+assert.ok(pruebas[0].validar('{"features":[]}'));
+assert.ok(!pruebas[1].validar('{"hourly":{"precipitation":[]}}'), "sin isoterma no es válido");
+const conClave = F.pruebasConexion({ clave: "K", hoy: "2026-10-09" }).find((p) => p.id === "firms");
+assert.match(conClave.url, /\/K\/VIIRS_SNPP_NRT\/-71.5,-34,-70,-33\/1\/2026-10-09$/);
+assert.ok(conClave.validar("latitude,longitude,acq_date\n"));
+assert.ok(!conClave.validar("Invalid MAP_KEY."));
+
 // ---- Catálogo semilla ------------------------------------------------------
 assert.ok(Array.isArray(semilla) && semilla.length > 0, "el catálogo semilla no puede estar vacío");
 const ids = new Set();

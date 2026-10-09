@@ -1121,6 +1121,45 @@ function renderEstadisticasSismos() {
   );
 }
 
+// ---- Prueba de conexiones ----------------------------------------------------
+
+const TEXTO_PRUEBA = { ok: "✅ Funciona", rara: "⚠️ Respuesta extraña", error: "❌ Falla", omitida: "➖ Omitida" };
+
+function probarTeselas() {
+  return new Promise((resolver) => {
+    const img = new Image();
+    const t0 = Date.now();
+    const fin = (ok) => resolver({ nombre: "Mapa base (OpenStreetMap)", estado: ok ? "ok" : "error", ms: Date.now() - t0, detalle: ok ? "Cargan las imágenes del mapa." : "No cargan las imágenes del mapa." });
+    img.onload = () => fin(true);
+    img.onerror = () => fin(false);
+    setTimeout(() => fin(false), 15000);
+    img.src = "https://tile.openstreetmap.org/0/0/0.png";
+  });
+}
+
+$("fu-probar").addEventListener("click", async () => {
+  const boton = $("fu-probar");
+  const caja = $("fu-pruebas");
+  boton.disabled = true;
+  caja.replaceChildren(el("p", { class: "nota", text: "Probando…" }));
+  const pruebas = F.pruebasConexion({ clave: estado.ajustes.firmsClave, fuente: estado.ajustes.firmsFuente, hoy: hoy() });
+  const resultados = await Promise.all([probarTeselas(), ...pruebas.map(F.probarConexion)]);
+  boton.disabled = false;
+  caja.replaceChildren(
+    el(
+      "table",
+      {},
+      el("tbody", {}, resultados.map((r) =>
+        el("tr", {}, el("td", {}, el("b", { text: r.nombre }), el("br"), el("span", { class: "nota", text: r.detalle })),
+          el("td", { text: TEXTO_PRUEBA[r.estado] }),
+          el("td", { class: "num nota", text: Number.isFinite(r.ms) ? `${fmtNum(r.ms / 1000, 1)} s` : "" }))
+      ))
+    ),
+    resultados.some((r) => r.estado === "error") &&
+      el("p", { class: "nota", text: "Si una fuente no responde: revisa la conexión, prueba abriendo la app desde un servidor (ver README) o usa la importación de archivos de esa pestaña." })
+  );
+});
+
 // ---- Respaldo --------------------------------------------------------------
 
 $("fu-respaldo").addEventListener("click", () => {
