@@ -45,6 +45,10 @@ try:
             pdf = PdfReader(io.BytesIO(leer(url)))
             texto = "\n".join(p.extract_text() or "" for p in pdf.pages)
             print(f"\nMANUAL {url} ({len(pdf.pages)} páginas)")
+            lineas = texto.splitlines()
+            for i, l in enumerate(lineas):
+                if "Fecha de Emisi" in l or "FirmaDte" in l:
+                    print("   FECHA/FIRMA >", " ⏎ ".join(x.strip() for x in lineas[i:i + 4])[:300])
             n = 0
             for linea in texto.splitlines():
                 l = linea.strip()
