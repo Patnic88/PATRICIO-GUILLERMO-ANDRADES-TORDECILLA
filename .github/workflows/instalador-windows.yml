@@ -49,6 +49,10 @@ jobs:
           python -m pip install --quiet pypdf
           python empaquetado/diagnostico_sii.py
 
+      - name: Diagnóstico de consulta de estado de DTE (informativo)
+        continue-on-error: true
+        run: python empaquetado/diagnostico_estado_dte.py
+
       - name: Construir MiContabilidad.exe
         run: |
           pyinstaller --noconfirm --clean --console `
