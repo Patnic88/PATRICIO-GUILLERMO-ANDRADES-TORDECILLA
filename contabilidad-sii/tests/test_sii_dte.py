@@ -83,7 +83,7 @@ class TestEstadoDTE(unittest.TestCase):
         self.assertEqual((p["RutConsultante"], p["DvConsultante"], p["RutCompania"], p["DvCompania"]),
                          ("11111111", "1", "77444444", "0"))
         self.assertEqual((p["RutReceptor"], p["TipoDte"], p["FolioDte"], p["MontoDte"]), ("76111111", "33", "501", "5950000"))
-        self.assertEqual(p["FechaEmisionDte"], sii_dte._fecha("2026-10-05"))
+        self.assertEqual(p["FechaEmisionDte"], "05102026")  # DDMMAAAA, según el manual
 
     def test_token_rechazado(self):
         with self.assertRaises(sii_dte.ErrorConsulta) as e:

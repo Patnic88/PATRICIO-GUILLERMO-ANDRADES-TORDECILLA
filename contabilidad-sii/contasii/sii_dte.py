@@ -17,8 +17,8 @@ from . import rut as rutmod
 from . import sii_ws
 from .libro import Libro
 
-# Formato de FechaEmisionDte. [VERIFICAR] contra el manual: se confirma en CI
-# (empaquetado/diagnostico_estado_dte.py) y se ajusta aquí.
+# Formato de FechaEmisionDte según el manual de QueryEstDte (22/12/2010): «formato DDMMAAAA».
+# Ojo: QueryEstDteAv (consulta avanzada) exige DD-MM-AAAA; aquí no se usa.
 FORMATO_FECHA = "DDMMAAAA"
 
 # Documentos que se consultan con este servicio (las boletas tienen servicios propios).

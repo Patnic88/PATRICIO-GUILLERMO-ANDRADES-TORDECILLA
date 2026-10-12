@@ -161,12 +161,13 @@ Detalles de funcionamiento:
 Verificado en el ambiente de certificación real, el 12-10-2026:
 - el WSDL tiene la operación `getEstDte` con los 11 parámetros del manual;
 - con un token inválido, el SII responde con estado `001` «TOKEN NO EXISTE» (el manual
-  menciona `002` y `003`).
+  menciona `002` y `003`);
+- el «Manual de Desarrollador Externo Consulta de Estado DTE» (versión del 22/12/2010)
+  indica para `FechaEmisionDte` el «formato DDMMAAAA», que es el que usa el programa.
+  (La «Consulta Avanzada», `QueryEstDteAv`, usa otro formato, DD-MM-AAAA; el programa
+  no usa ese servicio.)
 
-**Pendiente:**
-- probar con un certificado real y facturas reales;
-- confirmar en el manual el formato de `FechaEmisionDte` (marcado [VERIFICAR] en el
-  código).
+**Pendiente:** probar con un certificado real y facturas reales.
 
 ## Qué automatiza
 
