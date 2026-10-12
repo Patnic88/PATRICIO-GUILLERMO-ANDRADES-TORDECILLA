@@ -125,6 +125,49 @@ solo se permite autenticarse con un certificado digital válido.
 
 **Falta la prueba con un certificado real.**
 
+## Consultar el estado de las facturas en el SII
+
+En **Libros e informes → Documentos**, el panel **«Consultar el estado de estas facturas en
+el SII»** revisa cada factura o nota electrónica del mes, de compras y de ventas.
+`contasii/sii_dte.py` consulta el servicio `QueryEstDte` (operación `getEstDte`) del SII
+para cada documento:
+
+1. Abre el certificado digital, en memoria.
+2. Obtiene el token de autenticación automática.
+3. Consulta cada documento con estos datos: RUT de quien consulta, RUT del emisor y del
+   receptor, tipo, folio, fecha de emisión y monto total.
+
+Cada documento queda marcado en la columna «Estado SII» según la tabla oficial del
+manual *Consulta de Estado DTE*:
+
+| Estado | Significado | Marca |
+|---|---|---|
+| DOK | Recibido por el SII; los datos coinciden | verde |
+| DNK | Recibido, pero los datos NO coinciden con lo registrado | amarillo |
+| TMD / TMC | Una nota de débito o de crédito modifica textos | amarillo |
+| MMD / MMC | Una nota de débito o de crédito modifica montos | amarillo |
+| FAU | No recibido por el SII | rojo |
+| FNA | No autorizado | rojo |
+| FAN | Anulado | rojo |
+| EMP | Empresa no autorizada a emitir documentos electrónicos | rojo |
+| AND / ANC | Una nota de débito o de crédito anula el documento | rojo |
+
+Detalles de funcionamiento:
+- Cada consulta se guarda con su fecha en la tabla `estado_sii`, como historial. **No
+  modifica la contabilidad ni nada en el SII.**
+- Solo se consultan los tipos 33, 34, 43, 46, 56, 61, 110, 111 y 112. Las boletas
+  tienen servicios propios y no se incluyen.
+
+Verificado en el ambiente de certificación real, el 12-10-2026:
+- el WSDL tiene la operación `getEstDte` con los 11 parámetros del manual;
+- con un token inválido, el SII responde con estado `001` «TOKEN NO EXISTE» (el manual
+  menciona `002` y `003`).
+
+**Pendiente:**
+- probar con un certificado real y facturas reales;
+- confirmar en el manual el formato de `FechaEmisionDte` (marcado [VERIFICAR] en el
+  código).
+
 ## Qué automatiza
 
 | Función | Detalle |
@@ -257,6 +300,7 @@ contasii/
   operaciones.py    operaciones en lenguaje simple ("Me pagó un cliente"...)
   controles.py      cuadraturas del período
   sii_ws.py         autenticación con los servicios web del SII (semilla, firma, token)
+  sii_dte.py        consulta del estado de facturas y notas en el SII (QueryEstDte)
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026
 ejemplos/           datos ficticios

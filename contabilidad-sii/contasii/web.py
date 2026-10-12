@@ -22,7 +22,7 @@ from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from . import controles, honorarios, impuestos, obligaciones, operaciones, rcv, reportes, sii_ws
+from . import controles, honorarios, impuestos, obligaciones, operaciones, rcv, reportes, sii_dte, sii_ws
 from . import rut as rutmod
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros, guardar_utm_local
@@ -344,7 +344,7 @@ class App:
     def documentos(self, lib, q, b):
         rows = lib.con.execute("SELECT * FROM documento WHERE periodo=? ORDER BY libro, fecha, folio",
                                (q.get("periodo", ""),)).fetchall()
-        return {"documentos": [{k: r[k] for k in ("libro", "tipo_dte", "rut_contraparte", "razon_social", "folio",
+        return {"documentos": [{k: r[k] for k in ("id", "libro", "tipo_dte", "rut_contraparte", "razon_social", "folio",
                                                     "fecha", "neto", "exento", "iva", "bruto", "retencion", "total")}
                                for r in rows], "tipos": rcv.TIPOS_DTE}
 
@@ -408,6 +408,20 @@ class App:
     def sii_token(self, q, b):
         return sii_ws.probar_certificado(self._pfx(b), b.get("clave") or "", self._ambiente(b))
 
+    def sii_estado(self, lib, q, b):
+        periodo = b.get("periodo", "")
+        if not PERIODO.match(periodo):
+            raise ErrorUsuario("Elija el mes.")
+        libro_doc = b.get("libro") if b.get("libro") in ("compra", "venta") else None
+        r = sii_dte.consultar_periodo(lib, periodo, self._pfx(b), b.get("clave") or "",
+                                      (b.get("rut_consultante") or "").strip(), self._ambiente(b), libro_doc)
+        if not r["resultados"]:
+            raise ErrorUsuario("No hay facturas ni notas electrónicas importadas en este mes para consultar.")
+        return r
+
+    def sii_estados(self, lib, q, b):
+        return {"estados": {str(k): v for k, v in sii_dte.ultimos_estados(lib, q.get("periodo", "")).items()}}
+
     def integridad(self, lib, q, b):
         return {"problemas": lib.verificar_integridad()}
 
@@ -420,7 +434,7 @@ POR_EMPRESA = {
     "f29": ("GET", "f29"), "f29-confirmar": ("POST", "f29_confirmar"), "revision": ("GET", "revision"),
     "cerrar": ("POST", "cerrar"), "diario": ("GET", "diario"), "mayor": ("GET", "mayor"),
     "balance": ("GET", "balance"), "resultados": ("GET", "resultados"), "documentos": ("GET", "documentos"),
-    "excel": ("GET", "excel"), "integridad": ("GET", "integridad"),
+    "excel": ("GET", "excel"), "integridad": ("GET", "integridad"), "sii-estados": ("GET", "sii_estados"),
 }
 
 
@@ -477,6 +491,13 @@ def crear_manejador(app: App, puerto_ref: list):
                 if len(partes) == 1 and partes[0] in SII and metodo == "POST":
                     # Las consultas al SII no tocan la contabilidad: no bloquean el resto del programa.
                     return self._json(200, getattr(app, SII[partes[0]])(q, b))
+                if len(partes) == 3 and partes[0] == "e" and partes[2] == "sii-estado" and metodo == "POST":
+                    # Consulta de estado de documentos: puede tardar; solo escribe su propio registro.
+                    lib = app.libro(partes[1])
+                    try:
+                        return self._json(200, app.sii_estado(lib, q, b))
+                    finally:
+                        lib.con.close()
                 with app.lock:
                     if len(partes) == 1 and partes[0] in GLOBAL and GLOBAL[partes[0]][0] == metodo:
                         res = getattr(app, GLOBAL[partes[0]][1])(q, b)

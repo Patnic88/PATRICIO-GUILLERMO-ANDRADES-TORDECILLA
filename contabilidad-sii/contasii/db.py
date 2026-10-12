@@ -88,6 +88,18 @@ CREATE TABLE IF NOT EXISTS remanente_iva (
     monto       INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS estado_sii (
+    id           INTEGER PRIMARY KEY,
+    documento    INTEGER NOT NULL REFERENCES documento(id),
+    consultado   TEXT NOT NULL DEFAULT (datetime('now')),
+    ambiente     TEXT NOT NULL,
+    estado       TEXT,                    -- DOK, DNK, FAU, FNA, FAN, EMP, TMD, TMC, MMD, MMC, AND, ANC
+    glosa        TEXT,
+    err_code     TEXT,
+    glosa_err    TEXT,
+    num_atencion TEXT
+);
+
 CREATE TABLE IF NOT EXISTS bitacora (
     id      INTEGER PRIMARY KEY,
     cuando  TEXT NOT NULL DEFAULT (datetime('now')),

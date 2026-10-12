@@ -149,6 +149,15 @@ def firmar_semilla(semilla: str, llave, cert) -> str:
 
 
 # ------------------------------------------------------------------ SOAP
+def _sobre_params(operacion: str, parametros) -> bytes:
+    """Sobre SOAP RPC con varios parámetros de texto, en el orden dado [(nombre, valor), ...]."""
+    cuerpo = "".join(f'<{n} xsi:type="xsd:string">{html.escape(str(v), quote=False)}</{n}>' for n, v in parametros)
+    return ('<?xml version="1.0" encoding="UTF-8"?>'
+            '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" '
+            'xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            f'<soapenv:Body><{operacion}>{cuerpo}</{operacion}></soapenv:Body></soapenv:Envelope>').encode("utf-8")
+
+
 def _sobre(operacion: str, parametro: str | None = None, valor: str = "") -> bytes:
     cuerpo = f"<{operacion}/>" if parametro is None else (
         f'<{operacion}><{parametro} xsi:type="xsd:string">{html.escape(valor, quote=False)}</{parametro}></{operacion}>')
