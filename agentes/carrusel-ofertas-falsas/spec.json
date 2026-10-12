@@ -1,0 +1,78 @@
+{
+  "tema": "ofertas-trabajo-falsas",
+  "categoria": "PREVENCIÓN DE ESTAFAS",
+  "paleta": "claro",
+  "slides": [
+    {
+      "tipo": "portada",
+      "titulo": "¿$80.000 al día por procesar pedidos desde tu celular?",
+      "gancho": "Así se ven las ofertas de trabajo falsas que usan marcas conocidas",
+      "swipe": "Desliza y aprende a detectarlas"
+    },
+    {
+      "tipo": "contenido",
+      "encabezado": "La situación",
+      "titulo": "Marca conocida y pago diario",
+      "texto": "Circula en redes un anuncio que usa el nombre de **Mercado Libre**: trabajo desde casa, turnos de 4 horas y un “ingreso diario” de $60.000 a $80.000. Reúne varias señales típicas de estafa.",
+      "dato": "Usar una marca no prueba que sea de la empresa"
+    },
+    {
+      "tipo": "contenido",
+      "paso": 1,
+      "encabezado": "Señal 1",
+      "titulo": "Mucha plata, poco esfuerzo, pago diario",
+      "texto": "Un aviso formal suele indicar sueldo mensual, tipo de contrato y requisitos. Un **monto diario alto** por una tarea simple, sin contrato ni experiencia, es el anzuelo."
+    },
+    {
+      "tipo": "contenido",
+      "paso": 2,
+      "encabezado": "Señal 2",
+      "titulo": "Una tarea que nadie explica",
+      "texto": "“Procesar pedidos”, “dar me gusta”, “calificar productos”. Si no queda claro qué harás, para quién ni cómo se calcula el pago, **desconfía**."
+    },
+    {
+      "tipo": "contenido",
+      "paso": 3,
+      "encabezado": "Señal 3",
+      "titulo": "Te sacan a WhatsApp o Telegram",
+      "texto": "Te piden seguir la conversación fuera de la red social, con enlaces raros o acortados, y te apuran con “últimos cupos”. **La prisa** busca que no alcances a verificar."
+    },
+    {
+      "tipo": "contenido",
+      "paso": 4,
+      "encabezado": "Señal 4 · la más grave",
+      "titulo": "Te piden plata para ganar plata",
+      "texto": "El esquema habitual: primero te pagan montos chicos para ganar tu confianza. Después te piden **depositar** para “desbloquear” ganancias mayores. Ese es el momento de cortar.",
+      "dato": "Si te cobran por trabajar, no es un trabajo"
+    },
+    {
+      "tipo": "cita",
+      "encabezado": "Qué dice la ley",
+      "texto": "Comete estafa quien defrauda a otro usando un nombre fingido, aparentando una empresa o negocio imaginario, o con cualquier otro engaño semejante.",
+      "fuente": "Art. 468 · Código Penal [VERIFICAR: cotejar texto vigente en LeyChile]"
+    },
+    {
+      "tipo": "contenido",
+      "encabezado": "Antes de postular",
+      "titulo": "Verifica en la fuente oficial",
+      "texto": "Busca la oferta en el **sitio oficial** de la empresa o en su LinkedIn. Si no aparece ahí, no postules. Nunca entregues claves, datos de tu tarjeta ni fotos de tu carnet."
+    },
+    {
+      "tipo": "contenido",
+      "encabezado": "Si ya depositaste",
+      "titulo": "No envíes más dinero",
+      "texto": "Aunque te prometan devolverlo, no deposites otra vez. Guarda capturas, chats y comprobantes. **Denuncia** y reporta el anuncio en la red social.",
+      "dato": "Denuncia en Carabineros, PDI o Fiscalía"
+    },
+    {
+      "tipo": "cierre",
+      "titulo": "¿Te llegó una oferta así?",
+      "cta": "Compártela con quien esté buscando trabajo. Si ya perdiste dinero, consulta tu caso.",
+      "fuentes": [
+        "Art. 468, Código Penal [VERIFICAR]",
+        "Art. 173, Código Procesal Penal [VERIFICAR]"
+      ],
+      "recordatorio": "Guarda este post y compártelo"
+    }
+  ]
+}

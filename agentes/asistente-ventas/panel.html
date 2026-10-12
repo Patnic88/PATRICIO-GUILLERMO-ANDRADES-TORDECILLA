@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asistente de Respuestas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="cabecera">
+    <h1>💬 Asistente de Respuestas</h1>
+    <p>La IA redacta; tú revisas y publicas. Ninguna respuesta sale sin tu aprobación, salvo que actives la publicación automática.</p>
+  </header>
+
+  <main>
+    <section class="tarjeta" id="cuenta">
+      <p id="estado-cuenta">Cargando…</p>
+      <div class="acciones">
+        <a class="boton primario" id="conectar" href="conectar" hidden>Conectar cuenta de vendedor</a>
+        <button type="button" class="primario" id="revisar" hidden>Buscar preguntas nuevas</button>
+      </div>
+      <p class="nota" id="nota-cuenta"></p>
+    </section>
+
+    <nav class="pestanas" aria-label="Filtrar borradores">
+      <button type="button" data-filtro="pendiente" class="activa">Por revisar <span id="n-pendiente"></span></button>
+      <button type="button" data-filtro="publicada">Publicadas</button>
+      <button type="button" data-filtro="todas">Todas</button>
+    </nav>
+
+    <section id="lista"></section>
+    <p id="vacio" class="nota" hidden>No hay preguntas en esta vista.</p>
+  </main>
+
+  <footer class="pie">
+    <p>Aplicación independiente. No pertenece a Mercado Libre ni está patrocinada por esa empresa.</p>
+  </footer>
+
+  <template id="plantilla">
+    <article class="tarjeta borrador">
+      <p class="publicacion"><a target="_blank" rel="noopener"></a></p>
+      <blockquote class="pregunta"></blockquote>
+      <div class="insignias"></div>
+      <p class="motivo nota"></p>
+      <ul class="alertas"></ul>
+      <label>Respuesta <span class="contador nota"></span></label>
+      <textarea rows="5" maxlength="2000"></textarea>
+      <details class="respaldo"><summary>Datos que usó la IA</summary><ul></ul></details>
+      <div class="acciones">
+        <button type="button" class="primario publicar">Publicar respuesta</button>
+        <button type="button" class="secundario descartar">Descartar</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="reglas-respuesta.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>

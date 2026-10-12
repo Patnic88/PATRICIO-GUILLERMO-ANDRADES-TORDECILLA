@@ -1,0 +1,14 @@
+{
+  "name": "asistente-respuestas-vendedores",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Asistente que redacta respuestas a preguntas de compradores con Claude, con aprobación del vendedor.",
+  "scripts": {
+    "start": "node servidor.mjs",
+    "test": "node tests/reglas-respuesta.test.js && node tests/api-ml.test.mjs && node tests/agente.test.mjs && node tests/servidor.test.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0"
+  }
+}

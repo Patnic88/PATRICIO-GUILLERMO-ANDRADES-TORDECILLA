@@ -87,3 +87,11 @@ completadas y las que agregaste a mano.
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
 para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
 a una tienda Shopify. Ver su README.
+
+---
+
+## 🛡️ Agentes contra ofertas de trabajo falsas
+
+En la carpeta [`agentes/`](agentes/README.md) hay un detector de ofertas de
+trabajo falsas, un asistente de respuestas para vendedores y un carrusel para
+@choapajusta. Ver su README.

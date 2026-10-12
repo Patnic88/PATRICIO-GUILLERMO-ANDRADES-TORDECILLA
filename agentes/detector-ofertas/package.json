@@ -1,0 +1,14 @@
+{
+  "name": "detector-ofertas-falsas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Detector de ofertas de trabajo falsas: reglas locales + análisis con Claude.",
+  "scripts": {
+    "start": "node servidor.mjs",
+    "test": "node tests/senales.test.js && node tests/servidor.test.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0"
+  }
+}

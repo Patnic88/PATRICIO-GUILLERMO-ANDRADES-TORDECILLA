@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detector de Ofertas Falsas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔎</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="cabecera">
+    <h1>🔎 Detector de Ofertas Falsas</h1>
+    <p>Pega el texto de un aviso de trabajo o sube una captura. Te decimos qué señales de estafa tiene y qué hacer.</p>
+  </header>
+
+  <main>
+    <form id="formulario" class="tarjeta">
+      <label for="texto">Texto del aviso</label>
+      <textarea id="texto" rows="8" placeholder="Ej.: «Trabajo desde casa. Ingreso diario de $60.000. Solo necesitas tu celular…»"></textarea>
+
+      <label for="imagen">Captura de pantalla <span class="suave">(opcional)</span></label>
+      <input id="imagen" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      <img id="vista-previa" alt="Vista previa de la captura" hidden>
+      <p id="aviso-imagen" class="nota" hidden>Para leer capturas se necesita el modo con IA. Mientras tanto, copia el texto del aviso arriba.</p>
+
+      <div id="bloque-clave" hidden>
+        <label for="clave">Clave de cliente</label>
+        <input id="clave" type="password" autocomplete="off" placeholder="La que te entregó el proveedor del servicio">
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="primario">Analizar aviso</button>
+        <button type="button" id="ejemplo" class="secundario">Ver un ejemplo</button>
+      </div>
+      <p id="modo" class="nota"></p>
+    </form>
+
+    <section id="resultado" hidden>
+      <div id="semaforo" class="tarjeta semaforo">
+        <p class="etiqueta" id="nivel"></p>
+        <p id="resumen"></p>
+        <p class="suave" id="origen"></p>
+      </div>
+
+      <div class="tarjeta" id="tarjeta-senales">
+        <h2>Señales encontradas</h2>
+        <ul id="senales" class="lista-senales"></ul>
+        <div id="a-favor-bloque" hidden>
+          <h3>A favor</h3>
+          <ul id="a-favor"></ul>
+        </div>
+      </div>
+
+      <div class="dos-columnas">
+        <div class="tarjeta">
+          <h2>✅ Qué hacer</h2>
+          <ul id="hacer"></ul>
+        </div>
+        <div class="tarjeta">
+          <h2>⛔ Qué no hacer</h2>
+          <ul id="no-hacer"></ul>
+        </div>
+      </div>
+
+      <details class="tarjeta" id="detalle-texto" hidden>
+        <summary>Texto leído en la captura</summary>
+        <p id="texto-detectado"></p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>Herramienta informativa. Evalúa señales de riesgo; no puede confirmar quién publicó un aviso. Ante dudas, verifica en el sitio oficial de la empresa.</p>
+  </footer>
+
+  <script src="senales.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
