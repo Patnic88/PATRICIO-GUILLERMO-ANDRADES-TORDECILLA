@@ -78,6 +78,7 @@ class WebSocket:
             cabecera += parte
         cabecera, resto = cabecera.split(b"\r\n\r\n", 1)
         self.resto = bytearray(resto)
+        self.partes = []
         lineas = cabecera.decode("latin-1").split("\r\n")
         if " 101 " not in lineas[0] + " ":
             raise ErrorNavegador(f"El navegador rechazó la conexión de control: {lineas[0]}")
@@ -86,16 +87,6 @@ class WebSocket:
         if aceptado != esperado:
             raise ErrorNavegador("Respuesta inválida del navegador al conectar.")
         self.envio = threading.Lock()
-
-    def _exacto(self, n: int) -> bytes:
-        while len(self.resto) < n:
-            parte = self.sock.recv(max(65536, n - len(self.resto)))
-            if not parte:
-                raise ErrorNavegador("Se cerró la ventana del navegador.")
-            self.resto += parte
-        dato = bytes(self.resto[:n])
-        del self.resto[:n]
-        return dato
 
     def _marco(self, opcode: int, datos: bytes):
         largo = len(datos)
@@ -114,19 +105,48 @@ class WebSocket:
     def enviar(self, texto: str):
         self._marco(0x1, texto.encode("utf-8"))
 
+    def _extraer(self):
+        """Saca del búfer un marco completo (fin, opcode, datos) o devuelve None si aún no llega entero.
+
+        No consume nada hasta tener el marco completo: si se agota el tiempo de espera a mitad
+        de un marco, la conexión sigue en un estado coherente.
+        """
+        b = self.resto
+        if len(b) < 2:
+            return None
+        largo, pos = b[1] & 0x7F, 2
+        if largo == 126:
+            if len(b) < 4:
+                return None
+            largo, pos = struct.unpack(">H", b[2:4])[0], 4
+        elif largo == 127:
+            if len(b) < 10:
+                return None
+            largo, pos = struct.unpack(">Q", b[2:10])[0], 10
+        mascara = None
+        if b[1] & 0x80:
+            if len(b) < pos + 4:
+                return None
+            mascara, pos = bytes(b[pos:pos + 4]), pos + 4
+        if len(b) < pos + largo:
+            return None
+        datos = bytes(b[pos:pos + largo])
+        fin, opcode = bool(b[0] & 0x80), b[0] & 0x0F
+        del b[:pos + largo]
+        if mascara:
+            datos = bytes(x ^ mascara[i % 4] for i, x in enumerate(datos))
+        return fin, opcode, datos
+
     def recibir(self) -> str:
-        partes = []
         while True:
-            b0, b1 = self._exacto(2)
-            opcode, largo = b0 & 0x0F, b1 & 0x7F
-            if largo == 126:
-                largo = struct.unpack(">H", self._exacto(2))[0]
-            elif largo == 127:
-                largo = struct.unpack(">Q", self._exacto(8))[0]
-            mascara = self._exacto(4) if b1 & 0x80 else None
-            datos = self._exacto(largo)
-            if mascara:
-                datos = bytes(b ^ mascara[i % 4] for i, b in enumerate(datos))
+            marco = self._extraer()
+            if marco is None:
+                parte = self.sock.recv(1 << 20)
+                if not parte:
+                    raise ErrorNavegador("Se cerró la ventana del navegador.")
+                self.resto += parte
+                continue
+            fin, opcode, datos = marco
             if opcode == 0x8:
                 raise ErrorNavegador("Se cerró la ventana del navegador.")
             if opcode == 0x9:
@@ -134,9 +154,11 @@ class WebSocket:
                 continue
             if opcode == 0xA:
                 continue
-            partes.append(datos)
-            if b0 & 0x80:
-                return b"".join(partes).decode("utf-8", "replace")
+            self.partes.append(datos)
+            if fin:
+                texto = b"".join(self.partes).decode("utf-8", "replace")
+                self.partes = []
+                return texto
 
     def cerrar(self):
         try:
@@ -230,30 +252,44 @@ class Navegador:
                                                     {"targetId": target_id, "flatten": True})["sessionId"]
         return self.sesiones[target_id]
 
+    def en_pestana(self, target_id: str, metodo: str, params: dict | None = None, timeout: float = 60):
+        """Comando dirigido a una pestaña. Si la conexión con la pestaña se perdió, se reconecta una vez."""
+        try:
+            return self.comando(metodo, params, sesion=self._sesion(target_id), timeout=timeout)
+        except ErrorNavegador as e:
+            if "session" not in str(e).lower():
+                raise
+            self.sesiones.pop(target_id, None)
+            return self.comando(metodo, params, sesion=self._sesion(target_id), timeout=timeout)
+
     def evaluar(self, target_id: str, expresion: str, timeout: float = 120):
         """Ejecuta JavaScript en la pestaña y devuelve el valor (espera las promesas)."""
-        r = self.comando("Runtime.evaluate", {"expression": expresion, "awaitPromise": True, "returnByValue": True},
-                         sesion=self._sesion(target_id), timeout=timeout)
+        r = self.en_pestana(target_id, "Runtime.evaluate",
+                            {"expression": expresion, "awaitPromise": True, "returnByValue": True}, timeout=timeout)
         if "exceptionDetails" in r:
             d = r["exceptionDetails"]
             raise ErrorNavegador("Error en la página: " + (d.get("exception", {}).get("description") or d.get("text", "")))
         return r.get("result", {}).get("value")
 
+    def ir(self, target_id: str, url: str):
+        """Abre la dirección en la pestaña sin esperar a que cargue."""
+        self.en_pestana(target_id, "Page.navigate", {"url": url})
+
     def navegar(self, target_id: str, url: str, espera: float = 30):
         """Abre la dirección en la pestaña y espera a que termine de cargar."""
-        sesion = self._sesion(target_id)
-        self.comando("Page.navigate", {"url": url}, sesion=sesion)
+        self.ir(target_id, url)
         limite = time.monotonic() + espera
         while time.monotonic() < limite:
             time.sleep(0.5)
             try:
-                listo = self.comando("Runtime.evaluate", {"expression": "document.readyState", "returnByValue": True},
-                                     sesion=sesion, timeout=10).get("result", {}).get("value")
+                if self.evaluar(target_id, "document.readyState", timeout=10) == "complete":
+                    return
             except ErrorNavegador:
                 continue
-            if listo == "complete":
-                return
-        raise ErrorNavegador("La página del SII tardó demasiado en cargar.")
+        raise ErrorNavegador("La página tardó demasiado en cargar.")
+
+    def nueva_pestana(self, url: str) -> str:
+        return self.comando("Target.createTarget", {"url": url})["targetId"]
 
     def cookies(self) -> list:
         return self.comando("Storage.getCookies").get("cookies", [])
