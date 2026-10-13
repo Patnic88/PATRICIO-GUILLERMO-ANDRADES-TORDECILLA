@@ -30,19 +30,24 @@ def main():
     p = sii_portal.PortalSII(headless=True)
     try:
         print("Abrir ventana:", p.conectar()["estado"])
-        tid = p.nav.pestanas()[0]["targetId"]
-        campos = None
+        tid, campos = None, None
         limite = time.monotonic() + 40
         while time.monotonic() < limite:
-            try:
-                campos = p.nav.evaluar(tid, "[document.readyState, location.href, "
-                                            "['#rutcntr','#clave','#bt_ingresar','#myHref']"
-                                            ".map(s => !!document.querySelector(s))]", timeout=10)
-                if campos and campos[0] == "complete":
-                    break
-            except Exception as e:  # noqa: BLE001
-                campos = repr(e)
+            # La pestaña nueva parte en about:blank: se espera a que esté en la página de ingreso.
+            tid = next((x["targetId"] for x in p._pestanas() if "/AUT2000/" in x.get("url", "")), None)
+            if tid:
+                try:
+                    campos = p.nav.evaluar(tid, "[document.readyState, location.href, "
+                                                "['#rutcntr','#clave','#bt_ingresar','#myHref']"
+                                                ".map(s => !!document.querySelector(s))]", timeout=10)
+                    if campos and campos[0] == "complete":
+                        break
+                except Exception as e:  # noqa: BLE001
+                    campos = repr(e)
             time.sleep(1)
+        if not tid:
+            print("No apareció la página de ingreso del SII:", [x.get("url") for x in p.nav.pestanas()])
+            return 1
         print("Página de ingreso (estado, dirección, [RUT, clave, botón Ingresar, botón Clave Única]):", campos)
         ok &= bool(campos) and isinstance(campos, list) and all(campos[2])
         estado = p.estado()
@@ -50,7 +55,7 @@ def main():
         ok &= estado["estado"] == "esperando"
         p.nav.navegar(tid, sii_portal.URL_RCV)
         time.sleep(2)
-        url = p.nav.pestanas()[0]["url"]
+        url = next((x["url"] for x in p.nav.pestanas() if x["targetId"] == tid), "")
         print("RCV sin sesión redirige a:", url)
         ok &= "/AUT2000/" in url
     finally:
