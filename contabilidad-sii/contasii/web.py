@@ -5,9 +5,12 @@ Uso:  python -m contasii.web            (o doble clic en "Abrir contabilidad")
 - Escucha solo en 127.0.0.1: nadie fuera del computador puede conectarse.
 - Las empresas se guardan en la carpeta `mis_empresas/` (un archivo .db por RUT),
   junto a la UTM que el usuario ingresa (parametros_locales.json).
-- No usa internet ni librerías externas (openpyxl solo para exportar a Excel).
+- No usa librerías externas (openpyxl solo para exportar a Excel). Solo se conecta a
+  internet para las consultas al SII que la persona pide (conexión, certificado, estado de
+  documentos y el ingreso al portal para traer el Registro de Compras y Ventas).
 """
 
+import atexit
 import base64
 import collections
 import json
@@ -22,7 +25,8 @@ from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from . import controles, honorarios, impuestos, obligaciones, operaciones, rcv, reportes, sii_dte, sii_ws
+from . import (controles, honorarios, impuestos, navegador, obligaciones, operaciones, rcv, reportes, sii_dte,
+               sii_portal, sii_ws)
 from . import rut as rutmod
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros, guardar_utm_local
@@ -88,11 +92,21 @@ def decodificar(b64: str) -> str:
 
 # ------------------------------------------------------------------ aplicación
 class App:
-    def __init__(self, carpeta: str):
+    def __init__(self, carpeta: str, portal=None):
         self.carpeta = os.path.abspath(carpeta)
         os.makedirs(self.carpeta, exist_ok=True)
         self.local = os.path.join(self.carpeta, "parametros_locales.json")
         self.lock = threading.Lock()
+        self._portal = portal
+        self._lock_portal = threading.Lock()
+
+    @property
+    def portal(self):
+        """Conexión con el portal del SII (una ventana del navegador), creada al usarla por primera vez."""
+        with self._lock_portal:
+            if self._portal is None:
+                self._portal = sii_portal.PortalSII()
+            return self._portal
 
     def params(self, periodo):
         return Parametros(int(periodo[:4]), local=self.local)
@@ -425,8 +439,50 @@ class App:
     def integridad(self, lib, q, b):
         return {"problemas": lib.verificar_integridad()}
 
+    # ---- ingreso al portal del SII para traer el Registro de Compras y Ventas
+    def portal_conectar(self, q, b):
+        return self.portal.conectar()
+
+    def portal_estado(self, q, b):
+        return self.portal.estado()
+
+    def portal_desconectar(self, q, b):
+        return self.portal.desconectar()
+
+    def cerrar_portal(self):
+        if self._portal is not None:
+            self._portal.desconectar()
+
+    def portal_traer(self, lib, q, b):
+        """Trae del SII el detalle de compras y ventas del mes. No registra nada: la persona confirma después."""
+        periodo = b.get("periodo", "")
+        if not PERIODO.match(periodo):
+            raise ErrorUsuario("Elija el mes.")
+        libros = [x for x in (b.get("libros") or ["compra", "venta"]) if x in sii_portal.EXPORTACION]
+        if not libros:
+            raise ErrorUsuario("Indique si quiere traer compras, ventas o ambas.")
+        rut = lib.contribuyente()["rut"]
+        out = []
+        for libro in libros:
+            try:
+                texto = self.portal.descargar(rut, periodo, libro)
+                if texto is None:
+                    out.append({"libro": libro, "vacio": True})
+                    continue
+                info = detectar_archivo(texto)
+                if info["tipo"] != libro:
+                    raise ErrorUsuario("El SII entregó un archivo distinto del pedido.")
+            except (sii_portal.ErrorPortal, ErrorUsuario, ErrorContable) as e:
+                out.append({"libro": libro, "error": str(e)})
+                continue
+            out.append({"libro": libro, "nombre": f"RCV_{libro}s_{periodo}_SII.csv", "analisis": info,
+                        "contenido": base64.b64encode(texto.encode("utf-8")).decode()})
+        return {"resultados": out}
+
 
 SII = {"sii-semilla": "sii_semilla", "sii-certificado": "sii_certificado", "sii-token": "sii_token"}
+# Todas por POST: exigen la cabecera X-Contasii, así ningún sitio externo puede abrir la ventana ni leer descargas.
+PORTAL = {"conectar": "portal_conectar", "estado": "portal_estado", "desconectar": "portal_desconectar"}
 GLOBAL = {"ping": ("GET", "ping"), "carpeta": ("GET", "info_carpeta"), "empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm")}
 POR_EMPRESA = {
     "resumen": ("GET", "resumen"), "analizar": ("POST", "analizar"), "importar": ("POST", "importar"),
@@ -491,6 +547,15 @@ def crear_manejador(app: App, puerto_ref: list):
                 if len(partes) == 1 and partes[0] in SII and metodo == "POST":
                     # Las consultas al SII no tocan la contabilidad: no bloquean el resto del programa.
                     return self._json(200, getattr(app, SII[partes[0]])(q, b))
+                if len(partes) == 2 and partes[0] == "sii-portal" and partes[1] in PORTAL and metodo == "POST":
+                    return self._json(200, getattr(app, PORTAL[partes[1]])(q, b))
+                if len(partes) == 3 and partes[0] == "e" and partes[2] == "sii-traer" and metodo == "POST":
+                    # Trae los archivos del SII sin registrarlos: solo lee los datos de la empresa.
+                    lib = app.libro(partes[1])
+                    try:
+                        return self._json(200, app.portal_traer(lib, q, b))
+                    finally:
+                        lib.con.close()
                 if len(partes) == 3 and partes[0] == "e" and partes[2] == "sii-estado" and metodo == "POST":
                     # Consulta de estado de documentos: puede tardar; solo escribe su propio registro.
                     lib = app.libro(partes[1])
@@ -515,7 +580,8 @@ def crear_manejador(app: App, puerto_ref: list):
                     return self._enviar(200, res, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                         {"Content-Disposition": f'attachment; filename="{nombre}"'})
                 return self._json(200, res)
-            except (ErrorUsuario, ErrorContable, ParametroFaltante, rutmod.RutInvalido, sii_ws.ErrorSII) as e:
+            except (ErrorUsuario, ErrorContable, ParametroFaltante, rutmod.RutInvalido, sii_ws.ErrorSII,
+                    sii_portal.ErrorPortal, navegador.ErrorNavegador) as e:
                 return self._json(400, {"error": str(e)})
             except Exception as e:  # error inesperado: se informa sin detener el programa
                 traceback.print_exc()
@@ -530,13 +596,14 @@ def crear_manejador(app: App, puerto_ref: list):
     return Manejador
 
 
-def servidor(carpeta: str, puerto: int = 8765):
-    app = App(carpeta)
+def servidor(carpeta: str, puerto: int = 8765, portal=None):
+    app = App(carpeta, portal)
     ref = [puerto]
     for p in range(puerto, puerto + 20):
         try:
             srv = ThreadingHTTPServer(("127.0.0.1", p), crear_manejador(app, ref))
             ref[0] = p
+            srv.app = app
             return srv, p
         except OSError:
             continue
@@ -584,6 +651,7 @@ def main(argv=None):
         print("La contabilidad ya estaba abierta; se mostró en su navegador.")
         return 0
     srv, p = servidor(a.carpeta, a.puerto)
+    atexit.register(srv.app.cerrar_portal)  # al salir se cierra la ventana del SII, si quedó abierta
     url = f"http://127.0.0.1:{p}/"
     print("=" * 60)
     print(" MI CONTABILIDAD - abierta en su navegador")

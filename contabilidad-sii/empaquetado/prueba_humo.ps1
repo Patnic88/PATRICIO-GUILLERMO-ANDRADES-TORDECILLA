@@ -49,6 +49,11 @@ try {
         if ($cert.titular -ne "PERSONA DE PRUEBA") { throw "No se pudo leer el certificado de prueba" }
         Write-Host "Certificado de prueba leido: $($cert.titular), vigente hasta $($cert.valido_hasta)"
     } else { Write-Host "Sin .pfx de prueba: se omite la revision del certificado" }
+    $portal = Post "sii-portal/estado" @{}
+    if ($portal.estado -ne "desconectado") { throw "Estado inicial del ingreso al SII inesperado: $($portal.estado)" }
+    $traer = Post "$e/sii-traer" @{ periodo = "2026-10" }
+    if (-not ($traer.resultados[0].error -like "*Ingresar al SII*")) { throw "Traer sin conexión debió pedir ingresar al SII" }
+    Write-Host "Ingreso al SII: modulo incluido; sin conexion pide ingresar"
     $c = (Invoke-RestMethod "$base/api/carpeta").carpeta
     Write-Host "Carpeta de datos: $c"
     if ($EsperarDocumentos -and ($c -notlike "*Documents*Mi Contabilidad*")) { throw "Carpeta de datos inesperada: $c" }

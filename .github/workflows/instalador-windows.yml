@@ -16,8 +16,8 @@ permissions:
   contents: write
 
 env:
-  VERSION: "0.1.0"
-  ETIQUETA: "mi-contabilidad-v0.1.0"
+  VERSION: "0.2.0"
+  ETIQUETA: "mi-contabilidad-v0.2.0"
 
 jobs:
   windows:
@@ -52,6 +52,10 @@ jobs:
       - name: Diagnóstico de consulta de estado de DTE (informativo)
         continue-on-error: true
         run: python empaquetado/diagnostico_estado_dte.py
+
+      - name: Diagnóstico del ingreso al portal del SII con Edge (informativo)
+        continue-on-error: true
+        run: python empaquetado/diagnostico_portal_sii.py
 
       - name: Construir MiContabilidad.exe
         run: |

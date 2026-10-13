@@ -20,7 +20,7 @@ comandos para contadores.
 ### Windows: instalador, sin Python
 
 1. Descargue **`Instalar-MiContabilidad.exe`** desde la sección **Releases** del
-   repositorio, versión «Mi Contabilidad 0.1.0 (preliminar)».
+   repositorio, versión «Mi Contabilidad 0.2.0 (preliminar)».
 2. Haga doble clic en el archivo. El programa no está firmado digitalmente, así que
    Windows puede mostrar **«Windows protegió su PC»**: presione **«Más información»** y
    luego **«Ejecutar de todos modos»**.
@@ -60,7 +60,7 @@ Cada mes se trabaja en **4 pasos**, en lenguaje simple:
 
 | Paso | Qué hace la persona |
 |---|---|
-| 1. Subir los archivos del SII | Arrastra los CSV de compras, ventas y boletas. El programa reconoce cuál es cuál, muestra cuántos documentos y qué total trae cada uno, y pide confirmar antes de registrarlos. |
+| 1. Subir los archivos del SII | Trae las compras y ventas del mes desde el SII, ingresando con su clave tributaria o Clave Única (ver más abajo), o arrastra los CSV de compras, ventas y boletas. El programa reconoce cuál es cuál, muestra cuántos documentos y qué total trae cada uno, y pide confirmar antes de registrarlos. |
 | 2. Registrar pagos y cobros | Elige lo que pasó ("Me pagó un cliente", "Pagué a un proveedor", "Pagué el impuesto mensual"…), escribe monto y fecha, e indica banco o efectivo. El programa arma el asiento contable. |
 | 3. Calcular el impuesto (F29) | Ve el total a pagar, la fecha límite y el detalle explicado en palabras simples, y confirma para registrarlo. |
 | 4. Revisar y cerrar el mes | Ve las comprobaciones de cuadratura en verde o rojo y cierra el mes. |
@@ -79,9 +79,69 @@ y la descarga a Excel.
 
 Todo se guarda en **Documentos\Mi Contabilidad** si usa el instalador, o en la carpeta
 **`mis_empresas/`**, junto al programa, si lo usa con Python. Hay un archivo por RUT. La
-pantalla de Ayuda muestra la ubicación exacta. Nada se envía a internet: el programa solo acepta conexiones desde el mismo
-computador. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
+pantalla de Ayuda muestra la ubicación exacta. El programa solo acepta conexiones desde el
+mismo computador y solo se conecta al SII cuando usted lo pide. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
 pendrive.
+
+## Traer compras y ventas desde el SII (clave tributaria o Clave Única)
+
+En el paso 1 del mes, el botón **«Ingresar al SII»** hace lo siguiente:
+
+1. Abre una ventana de Microsoft Edge o Google Chrome en la **página oficial de ingreso
+   del SII** (`zeusr.sii.cl`). Usted ingresa ahí con su RUT y clave tributaria, o con el
+   botón de Clave Única. La dirección se ve en la barra del navegador.
+2. Al ingresar, la ventana pasa al Registro de Compras y Ventas y el programa muestra
+   «Conectado al SII con el RUT …».
+3. **«Traer compras y ventas de [mes]»** pide al SII el detalle del mes de la empresa
+   abierta. Lo muestra en la lista con el número de documentos y el total, y usted
+   confirma con «Importar». Nada se registra sin su confirmación.
+4. Si la descarga automática falla, el programa lo dice. En la ventana del SII, elija el
+   mes, abra Compras o Ventas y presione «Descargar Detalles». El programa recibe el
+   archivo solo y lo muestra en la lista.
+5. «Desconectar» cierra la ventana.
+
+**Su clave.** El programa no pide, no ve y no guarda la clave tributaria ni la Clave
+Única: se escriben en la página del SII. La ventana usa un perfil temporal, separado de
+su navegador habitual. Ese perfil se borra al cerrarla, junto con la sesión del SII.
+Mientras está abierta, el programa la controla por un puerto local (solo `127.0.0.1`).
+
+**Contador con varias empresas.** El programa pide el detalle del RUT de la empresa
+abierta. Si quien ingresó no tiene acceso a esa empresa en el SII, el programa muestra
+el error que entrega el SII.
+
+### Qué está verificado y qué falta
+
+Verificado contra el SII real el 13-10-2026, sin credenciales, desde GitHub Actions en
+Windows con Edge:
+
+- La página de ingreso recibe después de «?» la dirección a la que vuelve. Tiene el
+  formulario de RUT y clave y el botón de Clave Única
+  (`/cgi_AUT2000/InitClaveUnicaP.cgi`), que lleva a `accounts.claveunica.gob.cl`.
+- El código de esa página (`AutAll.js`, función `autenticado`) considera ingresada a la
+  persona cuando existe la cookie `RUT_NS`, y `DV_NS` guarda el dígito verificador. El
+  programa usa esas cookies para detectar el ingreso y mostrar el RUT.
+- Sin sesión, la dirección del Registro de Compras y Ventas
+  (`www4.sii.cl/consdcvinternetui/`) redirige a la página de ingreso.
+- El programa abre Edge, lo controla, recibe descargas y lo cierra borrando el perfil.
+
+**[VERIFICAR] con una sesión real:**
+
+- El servicio que pide el detalle (`getDetalleCompraExport` / `getDetalleVentaExport`),
+  el formato de la solicitud y el uso de la cookie `TOKEN` provienen de fuentes
+  secundarias. El SII no publica documentación de ese servicio. Las fuentes son el SDK de
+  código abierto [emisso-ai/emisso-sii](https://github.com/emisso-ai/emisso-sii)
+  (`packages/engine/src/rcv/index.ts`, versión de mayo de 2026) y publicaciones de
+  desarrolladores de 2017 a 2024. Si no funciona, queda la descarga desde la ventana
+  (punto 4).
+- El ingreso con Clave Única no se pudo probar: desde los servidores de GitHub,
+  `accounts.claveunica.gob.cl` respondió «403 Forbidden».
+
+**Boletas de honorarios:** no se traen automáticamente. Si en la ventana del SII
+descarga un informe de boletas en CSV con columnas reconocibles, el programa lo recibe
+igual; si no, súbalo a mano.
+
+Las pruebas automáticas (`tests/test_sii_portal.py`) recorren todo el flujo con Edge o
+Chrome reales contra un SII simulado en el mismo computador.
 
 ## Probar la conexión con el SII y el certificado digital
 
@@ -271,7 +331,9 @@ Para un año nuevo, copie `2026.json` a `AAAA.json` y actualice cada valor con s
 
 ## Qué NO hace (todavía)
 
-- No se conecta a sii.cl: los archivos se descargan a mano. Para eso existe el skill `descargar-sii-rcv`.
+- No trae las boletas de honorarios desde el SII: ese archivo se sube a mano. La descarga
+  automática de compras y ventas está pendiente de verificar con una sesión real (ver
+  «Traer compras y ventas desde el SII»).
 - No envía libros contables electrónicos al SII ni genera sus formatos oficiales.
 - No calcula la corrección monetaria, la depreciación tributaria, la RLI, el F22, los registros
   empresariales (RAI, SAC, etc.) ni las declaraciones juradas.
@@ -302,6 +364,8 @@ contasii/
   controles.py      cuadraturas del período
   sii_ws.py         autenticación con los servicios web del SII (semilla, firma, token)
   sii_dte.py        consulta del estado de facturas y notas en el SII (QueryEstDte)
+  sii_portal.py     ingreso al portal del SII y descarga del Registro de Compras y Ventas
+  navegador.py      ventana de Edge o Chrome controlada por el programa (perfil temporal)
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026
 ejemplos/           datos ficticios
