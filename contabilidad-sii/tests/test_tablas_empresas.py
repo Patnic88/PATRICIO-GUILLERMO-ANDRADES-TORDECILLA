@@ -111,6 +111,38 @@ PANTALLA_EMI = """<table><tr><td colspan=5>Boleta</td><td colspan=3>Emisión</td
 <tr><td colspan=10>Totales* :</td><td>1.200.000</td><td>30.500</td><td>152.500</td><td>1.017.000</td></tr></table>"""
 
 
+class TestFolios(unittest.TestCase):
+    def test_folio_limpio(self):
+        from contasii import honorarios
+        casos = {"45": "45", "0045": "45", "1.002": "1002", "45.0": "45", " 1 002 ": "1002", "1000.00": "1000",
+                 "0": "", "": "", "A1": "", "1.5": "", "Totales* :": "", "12.34": ""}
+        for entrada, esperado in casos.items():
+            with self.subTest(entrada=entrada):
+                self.assertEqual(honorarios.folio_limpio(entrada), esperado)
+
+    def test_folio_gana_al_correlativo(self):
+        t = ("N°;Folio;Fecha;Estado;Rut;Nombre;Bruto;Retenido;Pagado\n"
+             "1;345;10/10/2026;VIGENTE;12345678-5;PROF;100000;15250;84750\n"
+             "2;346;11/10/2026;VIGENTE;12345678-5;PROF;100000;15250;84750\n")
+        from contasii import honorarios
+        mapa, _ = honorarios.leer(t)
+        self.assertEqual(mapa["folio"], "Folio")
+
+    def test_tabla_pegada_con_comillas_en_el_nombre(self):
+        pegado = ("N° Boleta\tFecha\tEstado\tRut Emisor\tNombre o Razón Social\tBrutos\tRetenido\tPagado\n"
+                  '45\t08/10/2026\tVIGENTE\t12345678-5\t"EL SOL CONSULTORES\t$500.000\t$76.250\t$423.750\n'
+                  '46\t09/10/2026\tVIGENTE\t15555555-6\tLUNA" LTDA\t$300.000\t$45.750\t$254.250\n')
+        info = web.detectar_archivo(tablas.a_csv("Tabla pegada", pegado.encode("utf-8")))
+        self.assertEqual((info["documentos"], info["total"]), (2, 800000))
+
+    def test_csv_con_dos_columnas_fecha(self):
+        t = ("N° Boleta;Estado;Fecha;Fecha;Rut;Nombre o Razón Social;Brutos;Retenido;Pagado\n"
+             "45;VIGENTE;30/09/2026;01/10/2026;12345678-5;PROF;100000;15250;84750\n")
+        csv_ = tablas.a_csv("x.csv", t.encode("utf-8"))
+        self.assertTrue(csv_.startswith("N° Boleta;Estado;Fecha;Fecha 2;"))
+        self.assertEqual(web.detectar_archivo(csv_)["mes_sugerido"], "2026-09")
+
+
 class TestInformesSII(unittest.TestCase):
     def test_planilla_de_recibidas(self):
         csv = tablas.a_csv("informeMensualREC.xls", PLANILLA_REC.encode("latin-1"))
@@ -225,10 +257,18 @@ class TestWebNuevo(unittest.TestCase):
         st, d = self.req(e + "/documentos?periodo=2026-10")
         doc = d["documentos"][0]
         self.assertEqual((doc["folio"], doc["bruto"], doc["retencion"], doc["total"], doc["razon_social"]),
-                         ("77", 500000, 76250, 423750, "PROFESIONAL, UNO"))
+                         ("77", 500000, 76250, 423750, "PROFESIONAL; UNO"))
+        # El mismo folio escrito con ceros a la izquierda es la misma boleta
+        st, r = self.req(e + "/boleta", {**base, "folio": "0077"})
+        self.assertEqual((st, r["importados"], r["duplicados"]), (200, 0, 1))
+        # Un nombre con comillas se guarda tal cual (antes alteraba la lectura de la fila)
+        st, r = self.req(e + "/boleta", {**base, "folio": "79", "nombre": '"EL SOL CONSULTORES'})
+        self.assertEqual((st, r["importados"]), (200, 1), r)
+        st, d = self.req(e + "/documentos?periodo=2026-10")
+        self.assertIn('"EL SOL CONSULTORES', [x["razon_social"] for x in d["documentos"]])
         st, res = self.req(e + "/resumen?periodo=2026-10")
-        self.assertEqual(res["documentos"]["honorario_recibido"]["n"], 1)
-        malos = [({"folio": "A1"}, "número"), ({"rut": "12345678-9"}, "RUT"), ({"fecha": "2026-02-30"}, "fecha"),
+        self.assertEqual(res["documentos"]["honorario_recibido"]["n"], 2)
+        malos = [({"folio": "A1"}, "número"), ({"folio": "0"}, "número"), ({"rut": "12345678-9"}, "RUT"), ({"fecha": "2026-02-30"}, "fecha"),
                  ({"bruto": 0}, "mayor que cero"), ({"retenido": 600000}, "retención"), ({"sentido": "x"}, "recibió"),
                  ({"nombre": "  "}, "nombre")]
         for cambio, texto in malos:
@@ -236,6 +276,45 @@ class TestWebNuevo(unittest.TestCase):
                 st, r = self.req(e + "/boleta", {**base, "folio": "78", **cambio})
                 self.assertEqual(st, 400)
                 self.assertIn(texto, r["error"])
+
+    def test_boleta_vca_que_despues_sale_anulada(self):
+        e = "e/" + self.empresa()
+        enc = "N° Boleta;Fecha;Estado;Rut;Nombre o Razón Social;Brutos;Retenido;Pagado\n"
+        vca = enc + "47;10/10/2026;VIGENTE CON SOLICITUD DE ANULACION PENDIENTE;12345678-5;PROF;100000;15250;84750\n"
+        anul = enc + "47;10/10/2026;ANULADA;12345678-5;PROF;100000;15250;84750\n"
+        c = lambda t: base64.b64encode(t.encode()).decode()
+        st, r = self.req(e + "/importar", {"contenido": c(vca), "nombre": "a.csv", "periodo": "2026-10"})
+        self.assertEqual((st, r["importados"]), (200, 1), r)
+        st, r = self.req(e + "/importar", {"contenido": c(anul), "nombre": "b.csv", "periodo": "2026-10"})
+        self.assertEqual((st, r["importados"], r["anuladas"]), (200, 0, 1), r)
+        self.assertTrue(any("ya estaba registrada" in a and "ANULADA" in a and "asiento N° 1" in a
+                            for a in r["alertas"]), r["alertas"])
+
+    def test_folio_ilegible_avisa_y_totales_no(self):
+        e = "e/" + self.empresa()
+        t = ("N° Boleta;Fecha;Estado;Rut;Nombre o Razón Social;Brutos;Retenido;Pagado\n"
+             "1.002;10/10/2026;VIGENTE;12345678-5;PROF UNO;300.000;45.750;254.250\n"
+             "45.0;11/10/2026;VIGENTE;12345678-5;PROF UNO;100.000;15.250;84.750\n"
+             "B-7;12/10/2026;VIGENTE;15555555-6;PROF DOS;200.000;30.500;169.500\n"
+             "Totales* :;;;;;600.000;91.500;508.500\n")
+        c = base64.b64encode(t.encode()).decode()
+        st, a = self.req(e + "/analizar", {"contenido": c, "nombre": "x.csv"})
+        self.assertEqual((a["documentos"], a["total"], a.get("omitidas")), (2, 400000, 1))
+        st, r = self.req(e + "/importar", {"contenido": c, "nombre": "x.csv", "periodo": "2026-10"})
+        self.assertEqual((st, r["importados"], r["omitidas"]), (200, 2, 1), r)
+        self.assertEqual(sum("Fila omitida" in x for x in r["alertas"]), 1)
+        self.assertTrue(any("'B-7'" in x for x in r["alertas"]))
+        st, d = self.req(e + "/documentos?periodo=2026-10")
+        self.assertEqual(sorted(x["folio"] for x in d["documentos"]), ["1002", "45"])
+
+    def test_papelera_con_nombre_raro_no_oculta_las_demas(self):
+        a = self.empresa("76.111.111-6")
+        self.req("empresa-eliminar", {"archivo": a, "confirmar": a})
+        with open(os.path.join(self.tmp.name, "Papelera", "12345678-0__20261013-101010.db"), "wb") as f:
+            f.write(b"no es una base")
+        st, p = self.req("papelera")
+        self.assertEqual(st, 200, p)
+        self.assertEqual(sorted(x["rut"] for x in p["papelera"]), ["12345678-0", "76.111.111-6"])
 
     def test_eliminar_restaurar_y_borrar(self):
         a = self.empresa("76.111.111-6")

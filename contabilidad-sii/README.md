@@ -105,13 +105,21 @@ En el paso 1 del mes, el botón **«Ingresar al SII»** hace lo siguiente:
    abierta. Lo muestra en la lista con el número de documentos y el total, y usted
    confirma con «Importar». Nada se registra sin su confirmación.
    Con la casilla **«Traer compras y ventas apenas me conecte»** (marcada al instalar), lo
-   hace solo al detectar el ingreso, sin otro clic.
+   hace solo al detectar el ingreso, sin otro clic. Lo traído queda amarrado a la empresa y
+   al mes desde donde se pidió: si usted se cambia de empresa mientras el SII responde, el
+   archivo no aparece en la otra; lo verá al volver a «Subir los archivos» de la empresa
+   original.
 4. Si la descarga automática falla, el programa lo dice. En la ventana del SII, elija el
    mes, abra Compras o Ventas y presione «Descargar Detalles». El programa recibe el
    archivo solo y lo muestra en la lista. Lo mismo vale para el informe de boletas de
-   honorarios descargado en esa ventana.
+   honorarios descargado en esa ventana. Si el archivo se descargó con la sesión de un RUT
+   distinto del de la empresa abierta, el programa lo advierte: un informe de boletas no se
+   puede importar ahí (se ofrece dejarlo en la contabilidad de ese RUT, si existe) y un
+   detalle de compras o ventas pide confirmar que es de esa empresa.
 5. «Desconectar» **cierra la sesión en el SII** (el mismo «Cerrar Sesión» de su sitio) y
-   luego la ventana. Conviene usarlo en vez de cerrar la ventana: el SII limita las sesiones
+   luego la ventana. Si el SII no responde en 6 segundos, cierra la ventana igual (la
+   sesión del SII expira sola). Lo que alcanzó a descargar en la ventana se entrega antes de
+   cerrarla. Conviene usarlo en vez de cerrar la ventana: el SII limita las sesiones
    abiertas al mismo tiempo por RUT.
 
 **Su clave.** El programa no pide, no ve y no guarda la clave tributaria ni la Clave
@@ -140,8 +148,9 @@ propio contribuyente (fuentes de terceros, sin confirmación oficial vigente).
   2026; fuente secundaria), el detalle del RCV exige reCAPTCHA v3. Por eso la solicitud se
   hace dentro de la página real del RCV y, si esa página tiene reCAPTCHA cargado, el
   programa pide ahí el código, como lo haría la propia página.
-- **La aplicación del RCV tarda en iniciar.** Al abrir el RCV en una pestaña nueva, el
-  programa espera a que cargue (hasta 40 s) y 3 s más para que inicie su sesión.
+- **La aplicación del RCV tarda en iniciar.** El programa espera a que la página del RCV
+  termine de cargar (hasta 40 s) y 3 s más para que inicie su sesión. Si la página tiene
+  reCAPTCHA, espera hasta 15 s a que termine de cargar y hasta 20 s por el código.
 - **Las compras recientes pueden estar en «Pendientes».** Según preguntas frecuentes del
   SII (leídas en fragmentos de búsqueda, [VERIFICAR] en
   [sii.cl](https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6976.htm)),
@@ -193,12 +202,20 @@ Se pueden registrar de tres maneras, en el paso 1 del mes:
    electrónica»**. Se sube ese archivo tal cual, aunque termine en `.xls`.
 2. **Pegar la tabla** copiada desde esa página, con los títulos de las columnas.
 3. **Agregar una boleta a mano**: recibida o emitida, número, fecha, RUT, nombre, monto
-   bruto y retención. La retención se sugiere con la tasa del año de los parámetros
+   bruto y retención. Los montos van en pesos enteros («500000» o «500.000»); con decimales
+   distintos de cero el formulario pide corregirlos. Si la fecha es de otro mes, pide
+   presionar otra vez para confirmar. La retención se sugiere con la tasa del año de los parámetros
    (15,25 % en 2026, `retencion_honorarios` en `parametros/2026.json`) y se puede corregir.
 
 Al importar un archivo de boletas se puede indicar si son **recibidas** (usted pagó) o
 **emitidas** (usted cobró); el programa lo propone según las columnas. Se omiten las
-anuladas, la fila de totales y las notas al pie. Una boleta «vigente con solicitud de
+anuladas, la fila de totales y las notas al pie. Si una fila trae un RUT o un monto pero su
+número de boleta no se puede leer, se omite **con una alerta** para registrarla a mano. El
+número se lee sin separadores de miles ni ceros a la izquierda («1.002» = 1002,
+«0045» = 45), así la misma boleta no se registra dos veces si llega por dos vías. Si la
+tabla trae «Folio» y «N°», se usa «Folio». Si una boleta ya registrada aparece después
+como ANULADA, el programa no la quita: avisa el asiento que hay que anular y que su monto
+sigue contando en la propuesta del F29 de ese mes. Una boleta «vigente con solicitud de
 anulación pendiente» se registra con una alerta. Una boleta emitida sin receptor se
 registra sin cliente, con alerta. Si el informe de emitidas trae retención a cargo del
 emisor («Ret. Emisor»), no se registra y queda como alerta para revisarla.

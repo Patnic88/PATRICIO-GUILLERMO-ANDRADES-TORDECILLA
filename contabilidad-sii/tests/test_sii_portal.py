@@ -10,6 +10,7 @@ tiene Edge ni Chrome, esas pruebas se omiten.
 import base64
 import json
 import os
+import tempfile
 import threading
 import time
 import unittest
@@ -30,6 +31,8 @@ def leer(nombre):
 class SIISimulado(BaseHTTPRequestHandler):
     pedidos = []
     cierres = 0
+    cierre_lento = False  # el SII no responde al cierre de sesión hasta que se libere
+    liberar = threading.Event()
 
     def log_message(self, *a):
         pass
@@ -61,6 +64,9 @@ class SIISimulado(BaseHTTPRequestHandler):
               <script>document.getElementById('referencia').value = location.search.slice(1);</script></body></html>"""
             return self._enviar(200, html.encode())
         if u.path == "/cgi_AUT2000/autTermino.cgi":  # «Cerrar Sesión» del SII: borra la sesión
+            if type(self).cierre_lento:
+                type(self).liberar.wait(30)
+                return  # el navegador ya se cerró: no hay a quién responder
             type(self).cierres += 1
             return self._enviar(200, b"<html><body>Sesion cerrada</body></html>", extra=[
                 ("Set-Cookie", "RUT_NS=; Path=/; Max-Age=0"), ("Set-Cookie", "DV_NS=; Path=/; Max-Age=0"),
@@ -268,8 +274,12 @@ class TestPortalConNavegador(unittest.TestCase):
         self.assertIsNotNone(p.descargar("76111111-6", "2026-10", "compra"))
         self.assertEqual(len(p._pestanas()), 2)
 
+        # Lo descargado justo antes de desconectar no se pierde: lo entrega «Desconectar».
+        with open(os.path.join(p.carpeta, "informeMensualREC.xls"), "wb") as f:
+            f.write(b"<table></table>")
         cierres = SIISimulado.cierres
-        p.desconectar()
+        r = p.desconectar()
+        self.assertEqual([a["nombre"] for a in r["archivos"]], ["informeMensualREC.xls"])
         self.assertEqual(SIISimulado.cierres, cierres + 1)  # se cerró la sesión en el SII antes de cerrar la ventana
         self.assertEqual(p.estado()["estado"], "desconectado")
         self.assertFalse(os.path.exists(perfil))
@@ -281,6 +291,25 @@ class TestPortalConNavegador(unittest.TestCase):
         self.ingresar(p, "buena")
         self.assertEqual(self.esperar(p, "conectado", 40)["estado"], "conectado")
 
+    def test_cierre_de_sesion_sin_respuesta_no_bloquea(self):
+        # Si el SII no responde al cierre de sesión, «Desconectar» igual cierra la ventana en pocos segundos.
+        p = self.portal(f"{self.base}/consdcvinternetui/")
+        p.conectar()
+        self.ingresar(p, "buena")
+        self.esperar(p, "conectado")
+        perfil = p.nav.perfil
+        SIISimulado.liberar.clear()
+        SIISimulado.cierre_lento = True
+        try:
+            t0 = time.monotonic()
+            self.assertEqual(p.desconectar()["estado"], "desconectado")
+            self.assertLess(time.monotonic() - t0, 15)
+        finally:
+            SIISimulado.cierre_lento = False
+            SIISimulado.liberar.set()
+        self.assertIsNone(p.nav)
+        self.assertFalse(os.path.exists(perfil))
+
     def test_ventana_cerrada_por_la_persona(self):
         p = self.portal(f"{self.base}/consdcvinternetui/")
         p.conectar()
@@ -291,6 +320,38 @@ class TestPortalConNavegador(unittest.TestCase):
         p.nav.cerrar()
         e = self.esperar(p, "desconectado")
         self.assertIn("Se cerró la ventana", e["mensaje"])
+
+
+class NavRoto:
+    """Navegador cuya conexión de control se cortó (p. ej. la ventana se cerró en ese instante)."""
+    perfil = None
+
+    def __init__(self):
+        self.cerrado = False
+
+    def vivo(self):
+        return True
+
+    def cookies(self):
+        raise ConnectionResetError(104, "Connection reset by peer")
+
+    def pestanas(self):
+        raise ConnectionResetError(104, "Connection reset by peer")
+
+    def cerrar(self):
+        self.cerrado = True
+
+
+class TestDesconectar(unittest.TestCase):
+    def test_desconectar_siempre_limpia(self):
+        p = sii_portal.PortalSII()
+        nav = p.nav = NavRoto()
+        p.carpeta = tempfile.mkdtemp()
+        r = p.desconectar()
+        self.assertEqual(r["estado"], "desconectado")
+        self.assertTrue(nav.cerrado)
+        self.assertIsNone(p.nav)
+        self.assertIsNone(p.carpeta)
 
 
 class PortalFalso:

@@ -154,7 +154,11 @@ def _desde_texto(texto: str):
         sep = csv.Sniffer().sniff(muestra, delimiters=";\t,").delimiter
     except csv.Error:
         sep = max(";\t,", key=lambda c: muestra.count(c))
-    return [[" ".join(c.split()) for c in fila] for fila in csv.reader(io.StringIO("\n".join(lineas)), delimiter=sep)]
+    # En una tabla copiada desde una página (tabuladores), las comillas son parte del texto: un nombre
+    # que empieza con «"» no debe juntar filas.
+    comillas = csv.QUOTE_NONE if sep == "\t" else csv.QUOTE_MINIMAL
+    lector = csv.reader(io.StringIO("\n".join(lineas)), delimiter=sep, quoting=comillas)
+    return [[" ".join(c.split()) for c in fila] for fila in lector]
 
 
 def _es_total(fila) -> bool:
@@ -176,7 +180,8 @@ def a_csv(nombre: str, datos: bytes) -> str:
             filas = _desde_html(texto)
         else:
             primera = texto.lstrip("﻿").splitlines()[0] if texto.strip() else ""
-            if ";" in primera and _encabezado([primera.split(";")]) == 0:
+            columnas = [c.strip() for c in primera.split(";")]
+            if ";" in primera and _encabezado([columnas]) == 0 and len(set(columnas)) == len(columnas):
                 return texto.lstrip("﻿")  # CSV del SII tal cual: no se toca
             filas = _desde_texto(texto)
     i = _encabezado(filas)

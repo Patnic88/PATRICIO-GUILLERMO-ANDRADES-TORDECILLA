@@ -13,9 +13,12 @@ Uso:  python -m contasii.web            (o doble clic en "Abrir contabilidad")
 import atexit
 import base64
 import collections
+import csv
+import io
 import json
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 import threading
@@ -77,13 +80,18 @@ def detectar_archivo(texto: str):
                     for f in filas)
     else:
         mapa, filas = honorarios.leer(texto)
-        filas = [f for f in filas if honorarios.FOLIO_NUMERICO.match((f.get(mapa["folio"]) or "").strip())
-                 and not honorarios.anulada(f.get(mapa.get("estado", ""), "") or "")]
+        g = lambda f, c: (f.get(mapa[c]) or "").strip() if c in mapa else ""
+        sin_folio = [f for f in filas if not honorarios.folio_limpio(g(f, "folio"))]
+        omitidas = sum(1 for f in sin_folio if honorarios.parece_boleta(g(f, "rut"), g(f, "bruto"), g(f, "folio")))
+        filas = [f for f in filas if honorarios.folio_limpio(g(f, "folio")) and not honorarios.anulada(g(f, "estado"))]
         fechas = [rcv._fecha_iso(f.get(mapa["fecha"], "")) for f in filas if f.get(mapa["fecha"])]
         total = sum(rcv._entero(f.get(mapa["bruto"])) for f in filas)
     meses = collections.Counter(f[:7] for f in fechas)
-    return {"tipo": tipo, "documentos": len(filas), "total": total,
-            "mes_sugerido": meses.most_common(1)[0][0] if meses else None}
+    out = {"tipo": tipo, "documentos": len(filas), "total": total,
+           "mes_sugerido": meses.most_common(1)[0][0] if meses else None}
+    if tipo not in ("compra", "venta") and omitidas:
+        out["omitidas"] = omitidas
+    return out
 
 
 def leer_contenido(b) -> str:
@@ -225,14 +233,22 @@ class App:
                     continue
                 nombre_emp = ""
                 try:
-                    lib = Libro(os.path.join(carpeta, nombre))
-                    c = lib.contribuyente()
-                    nombre_emp = c["razon_social"] if c else ""
-                    lib.con.close()
+                    # Solo lectura y siempre cerrada: abrirla con Libro le agregaría tablas y, si el archivo
+                    # está dañado, dejaría la conexión abierta (en Windows, el archivo quedaría bloqueado).
+                    con = sqlite3.connect(os.path.join(carpeta, nombre))
+                    try:
+                        c = con.execute("SELECT razon_social FROM contribuyente WHERE id=1").fetchone()
+                    finally:
+                        con.close()
+                    nombre_emp = c[0] if c else ""
                 except Exception:  # noqa: BLE001 - un archivo dañado igual se muestra para poder borrarlo
                     nombre_emp = "(no se pudo leer)"
                 d = m.group(2)
-                out.append({"archivo": nombre, "rut": rutmod.formatear(m.group(1)), "nombre": nombre_emp,
+                try:
+                    rut_txt = rutmod.formatear(m.group(1))
+                except Exception:  # noqa: BLE001 - un nombre con dígito verificador raro no debe ocultar los demás
+                    rut_txt = m.group(1)
+                out.append({"archivo": nombre, "rut": rut_txt, "nombre": nombre_emp,
                             "eliminada": f"{d[6:8]}-{d[4:6]}-{d[:4]} {d[9:11]}:{d[11:13]}",
                             "activa": os.path.exists(os.path.join(self.carpeta, m.group(1) + ".db"))})
         return {"papelera": out, "carpeta": carpeta}
@@ -322,9 +338,9 @@ class App:
         sentido = b.get("sentido")
         if sentido not in ("recibido", "emitido"):
             raise ErrorUsuario("Indique si la boleta la recibió (usted pagó) o la emitió (usted cobró).")
-        folio = str(b.get("folio") or "").strip()
-        if not re.fullmatch(r"\d{1,12}", folio):
-            raise ErrorUsuario("Escriba el número de la boleta, solo con dígitos.")
+        folio = honorarios.folio_limpio(str(b.get("folio") or ""))
+        if not folio:
+            raise ErrorUsuario("Escriba el número de la boleta, solo con dígitos (y distinto de cero).")
         fecha = b.get("fecha") or ""
         if not FECHA.match(fecha):
             raise ErrorUsuario("Indique la fecha de la boleta.")
@@ -335,7 +351,7 @@ class App:
         rut = (b.get("rut") or "").strip()
         if not rutmod.es_valido(rut):
             raise ErrorUsuario("El RUT no es válido. Revise el número y el dígito verificador.")
-        nombre = " ".join(str(b.get("nombre") or "").replace(";", ",").split())
+        nombre = " ".join(str(b.get("nombre") or "").split())
         if not nombre:
             raise ErrorUsuario("Escriba el nombre o razón social.")
         def monto(v, defecto):
@@ -349,8 +365,11 @@ class App:
         if not 0 <= ret <= bruto:
             raise ErrorUsuario("La retención no puede ser negativa ni mayor que el monto bruto.")
         d = date.fromisoformat(fecha)
-        texto = (f"{ENCABEZADO_BOLETA}\n{folio};{d.strftime('%d/%m/%Y')};VIGENTE;{rutmod.normalizar(rut)};{nombre};"
-                 f"{bruto};{ret};{bruto - ret}\n")
+        salida = io.StringIO()
+        w = csv.writer(salida, delimiter=";", lineterminator="\n")
+        w.writerow(ENCABEZADO_BOLETA.split(";"))
+        w.writerow([folio, d.strftime("%d/%m/%Y"), "VIGENTE", rutmod.normalizar(rut), nombre, bruto, ret, bruto - ret])
+        texto = salida.getvalue()
         return self._importar_texto(lib, texto, f"honorario_{sentido}", periodo, "ingreso manual")
 
     def _importar_texto(self, lib, texto, tipo, periodo, nombre, modo="documento"):
@@ -364,7 +383,7 @@ class App:
             elif tipo in ("honorario_recibido", "honorario_emitido"):
                 r = honorarios.importar(lib, tmp, tipo.split("_")[1], periodo, self.params(periodo))
                 res = {"importados": r["importados"], "duplicados": r["duplicados"], "alertas": r["alertas"],
-                       "anuladas": r["anuladas"]}
+                       "anuladas": r["anuladas"], "omitidas": r["omitidas"]}
             else:
                 raise ErrorUsuario("Tipo de archivo no reconocido.")
         finally:
@@ -628,9 +647,9 @@ class App:
             except (sii_portal.ErrorPortal, ErrorUsuario, ErrorContable) as e:
                 out.append({"libro": libro, "error": str(e)})
                 continue
-            out.append({"libro": libro, "nombre": f"RCV_{libro}s_{periodo}_SII.csv", "analisis": info,
-                        "contenido": base64.b64encode(texto.encode("utf-8")).decode()})
-        return {"resultados": out}
+            out.append({"libro": libro, "nombre": f"RCV_{libro}s_{rutmod.normalizar(rut)}_{periodo}_SII.csv",
+                        "analisis": info, "contenido": base64.b64encode(texto.encode("utf-8")).decode()})
+        return {"resultados": out, "rut": rutmod.formatear(rut), "periodo": periodo}
 
 
 SII = {"sii-semilla": "sii_semilla", "sii-certificado": "sii_certificado", "sii-token": "sii_token"}

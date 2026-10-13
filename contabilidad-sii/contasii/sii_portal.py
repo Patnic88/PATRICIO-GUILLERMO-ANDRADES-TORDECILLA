@@ -66,16 +66,26 @@ MAX_ARCHIVO = 30 * 1024 * 1024
 # biblioteca devlas-cl/dte-sii (SiiPortalAuth.js, octubre de 2026) el detalle exige reCAPTCHA v3.
 JS_PEDIR = r"""async (url, cuerpo) => {
   let recaptcha = "no";
+  const limite = (p, ms, msg) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(msg)), ms))]);
+  const lib = () => window.grecaptcha && (window.grecaptcha.enterprise || window.grecaptcha);
   try {
-    const g = window.grecaptcha && (window.grecaptcha.enterprise || window.grecaptcha);
     const src = [...document.scripts].map(x => x.src || "").find(u => /recaptcha\/(api|enterprise)\.js/.test(u) && /[?&]render=/.test(u));
     const clave = src ? new URL(src).searchParams.get("render") : null;
-    if (g && g.execute && clave && clave !== "explicit") {
-      if (g.ready) await new Promise(ok => g.ready(ok));
-      cuerpo.data.tokenRecaptcha = await g.execute(clave, {action: cuerpo.data.accionRecaptcha});
-      recaptcha = "si";
+    if (clave && clave !== "explicit") {
+      // La biblioteca define «ready» enseguida y «execute» recién cuando termina de cargar: se espera
+      // «ready» (con límite) antes de pedir el código, para no enviar el valor fijo por apuro.
+      recaptcha = "error: reCAPTCHA no terminó de cargar";
+      for (let i = 0; i < 60 && !(lib() && lib().ready); i++) await new Promise(ok => setTimeout(ok, 250));
+      const g0 = lib();
+      if (g0 && g0.ready) await limite(new Promise(ok => g0.ready(ok)), 15000, "reCAPTCHA no terminó de cargar");
+      const g = lib();
+      if (g && g.execute) {
+        cuerpo.data.tokenRecaptcha = await limite(Promise.resolve(g.execute(clave, {action: cuerpo.data.accionRecaptcha})),
+                                                  20000, "reCAPTCHA no respondió");
+        recaptcha = "si";
+      }
     }
-  } catch (e) { recaptcha = "error: " + e; }
+  } catch (e) { recaptcha = "error: " + (e && e.message || e); }
   const r = await fetch(url, {method: "POST", credentials: "include",
     headers: {"Content-Type": "application/json;charset=UTF-8", "Accept": "application/json, text/plain, */*"},
     body: JSON.stringify(cuerpo)});
@@ -180,6 +190,7 @@ class PortalSII:
         self.mensaje = ""
         self._abriendo_rcv = 0.0
         self._listo = False  # ya llegó al RCV una vez en esta conexión
+        self._completo = {}  # pestaña del RCV -> cuándo se la vio terminar de cargar
 
     # ---- ventana
     def conectar(self) -> dict:
@@ -214,10 +225,18 @@ class PortalSII:
         sesión abierta del lado del SII hasta que expire.
         """
         with self.lock:
-            self._cerrar_sesion_sii()
-            self._cerrar()
+            archivos = []
+            try:
+                # Lo que la persona alcanzó a descargar en la ventana se entrega antes de borrar la carpeta.
+                archivos = self._archivos_nuevos(todos=True)
+                self._cerrar_sesion_sii()
+                archivos += self._archivos_nuevos(todos=True)
+            except Exception:  # noqa: BLE001 - desconectar siempre debe cerrar la ventana y borrar el perfil
+                pass
+            finally:
+                self._cerrar()
             self.mensaje = ""
-            return {"estado": "desconectado", "mensaje": "", "archivos": []}
+            return {"estado": "desconectado", "mensaje": "", "archivos": archivos}
 
     def _cerrar_sesion_sii(self):
         if not self.nav or not self.nav.vivo():
@@ -227,9 +246,9 @@ class PortalSII:
                 return False
             ps = self._pestanas()
             tid = ps[0]["targetId"] if ps else self.nav.nueva_pestana("about:blank")
-            self.nav.navegar(tid, self.url_cerrar, espera=10)
+            self.nav.navegar(tid, self.url_cerrar, espera=6)
             return True
-        except navegador.ErrorNavegador:
+        except (navegador.ErrorNavegador, OSError):
             return False  # sin respuesta del SII: la sesión expirará sola
 
     def _cerrar(self):
@@ -242,6 +261,7 @@ class PortalSII:
         if self.carpeta:
             shutil.rmtree(self.carpeta, ignore_errors=True)
             self.carpeta = None
+        self._completo = {}
 
     # ---- estado
     def _pestanas(self) -> list:
@@ -325,8 +345,11 @@ class PortalSII:
                     return {"estado": "desconectado", "mensaje": self.mensaje, "archivos": archivos}
                 return {"estado": "esperando", "mensaje": str(e), "archivos": archivos}
 
-    def _archivos_nuevos(self) -> list:
-        """Archivos CSV que la persona descargó en la ventana. Se entregan una vez y se borran del disco."""
+    def _archivos_nuevos(self, todos: bool = False) -> list:
+        """Archivos que la persona descargó en la ventana. Se entregan una vez y se borran del disco.
+
+        Con todos=True no se espera a que el archivo lleve un segundo sin cambios (al desconectar).
+        """
         out = []
         if not self.carpeta or not os.path.isdir(self.carpeta):
             return out
@@ -337,7 +360,7 @@ class PortalSII:
                 continue
             try:
                 st = os.stat(ruta)
-                if ahora - st.st_mtime < 1:
+                if not todos and ahora - st.st_mtime < 1:
                     continue  # se está terminando de escribir
                 if st.st_size > MAX_ARCHIVO:
                     os.remove(ruta)
@@ -362,7 +385,8 @@ class PortalSII:
             try:
                 if not self._cookies().get(COOKIE_INGRESO):
                     raise ErrorPortal("Termine de ingresar al SII en la ventana que se abrió y vuelva a intentarlo.")
-                tid = self._pestana_rcv() or self._abrir_rcv()
+                tid = self._pestana_rcv()
+                tid = self._esperar_rcv(tid) if tid else self._abrir_rcv()
                 token = self._cookies().get(COOKIE_TOKEN)
                 if not token:
                     raise ErrorPortal("No encontré la sesión del Registro de Compras y Ventas (cookie TOKEN).")
@@ -373,21 +397,35 @@ class PortalSII:
                 raise ErrorPortal(f"No se pudo consultar al SII: {e}")
         if not isinstance(resp, dict):
             raise ErrorPortal("El SII no respondió.")
-        return interpretar(resp, self.url_rcv)
+        try:
+            return interpretar(resp, self.url_rcv)
+        except ErrorPortal as e:
+            rc = str(resp.get("recaptcha") or "")
+            if rc.startswith("error"):
+                raise ErrorPortal(f"{e} La verificación reCAPTCHA de la página falló ({rc[6:].strip()}); espere unos "
+                                  f"segundos y presione «Traer» otra vez.")
+            raise
 
     def _abrir_rcv(self, espera: float = 40) -> str:
         """Abre el RCV en una pestaña nueva y espera a que la aplicación termine de cargar."""
-        tid = self.nav.nueva_pestana(self.url_rcv)
+        return self._esperar_rcv(self.nav.nueva_pestana(self.url_rcv), espera)
+
+    def _esperar_rcv(self, tid: str, espera: float = 40) -> str:
+        """Espera a que la pestaña del RCV termine de cargar y le da 3 s a la aplicación para iniciar su
+        sesión con el SII (solo la primera vez que se la ve cargada)."""
         limite = time.monotonic() + espera
         while time.monotonic() < limite:
-            time.sleep(0.5)
             try:
                 v = self.nav.evaluar(tid, "[location.href, document.readyState]", timeout=5)
             except navegador.ErrorNavegador:
-                continue
+                v = None
             if v and v[0].startswith(self.url_rcv) and v[1] == "complete":
-                time.sleep(3)  # la aplicación del RCV inicia su sesión con el SII después de cargar
+                visto = self._completo.setdefault(tid, time.monotonic())
+                falta = 3 - (time.monotonic() - visto)
+                if falta > 0:
+                    time.sleep(falta)
                 return tid
             if v and self._es_ingreso(v[0]):
                 raise ErrorPortal("La sesión del SII expiró. Vuelva a ingresar en la ventana del SII.")
+            time.sleep(0.5)
         raise ErrorPortal("El Registro de Compras y Ventas tardó demasiado en abrir.")

@@ -227,13 +227,18 @@ class Navegador:
             msg = {"id": n, "method": metodo, "params": params or {}}
             if sesion:
                 msg["sessionId"] = sesion
-            self.ws.sock.settimeout(timeout)
-            self.ws.enviar(json.dumps(msg))
+            try:
+                self.ws.sock.settimeout(timeout)
+                self.ws.enviar(json.dumps(msg))
+            except OSError as e:
+                raise ErrorNavegador(f"Se perdió la conexión con el navegador: {e}")
             while True:
                 try:
                     r = json.loads(self.ws.recibir())
                 except socket.timeout:
                     raise ErrorNavegador("El navegador tardó demasiado en responder.")
+                except OSError as e:  # p. ej. la ventana se cerró mientras se esperaba la respuesta
+                    raise ErrorNavegador(f"Se perdió la conexión con el navegador: {e}")
                 if r.get("id") == n:
                     if "error" in r:
                         raise ErrorNavegador(f"{metodo}: {r['error'].get('message')}")
@@ -271,14 +276,17 @@ class Navegador:
             raise ErrorNavegador("Error en la página: " + (d.get("exception", {}).get("description") or d.get("text", "")))
         return r.get("result", {}).get("value")
 
-    def ir(self, target_id: str, url: str):
-        """Abre la dirección en la pestaña sin esperar a que cargue."""
-        self.en_pestana(target_id, "Page.navigate", {"url": url})
+    def ir(self, target_id: str, url: str, timeout: float = 60):
+        """Abre la dirección en la pestaña sin esperar a que cargue.
+
+        Page.navigate responde cuando el sitio contesta; timeout acota esa espera.
+        """
+        self.en_pestana(target_id, "Page.navigate", {"url": url}, timeout=timeout)
 
     def navegar(self, target_id: str, url: str, espera: float = 30):
-        """Abre la dirección en la pestaña y espera a que termine de cargar."""
-        self.ir(target_id, url)
+        """Abre la dirección en la pestaña y espera a que termine de cargar (en total, a lo más «espera» s)."""
         limite = time.monotonic() + espera
+        self.ir(target_id, url, timeout=espera)
         while time.monotonic() < limite:
             time.sleep(0.5)
             try:
