@@ -247,3 +247,21 @@ Corre dos suites:
   revisada: false
 }
 ```
+
+---
+
+## 🎯 Radar Dropshipping
+
+En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
+para analizar productos y anuncios que funcionan en redes sociales y adaptarlos
+a una tienda Shopify. Ver su README.
+
+---
+
+## 🏢 Constitución de empresas en línea
+
+En la carpeta [`constitucion-empresa/`](constitucion-empresa/README.md) hay un
+sitio para ofrecer la constitución de SpA, E.I.R.L. y Ltda. vía Registro de
+Empresas y Sociedades: formulario guiado para el cliente, plan de firma de
+cada socio y envío de la solicitud por WhatsApp o correo. Ver su README
+(incluye las fuentes legales y lo pendiente de verificar).
