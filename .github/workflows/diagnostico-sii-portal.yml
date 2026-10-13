@@ -1,48 +1,12 @@
-name: Prueba real Mi Contabilidad 0.2.0 (temporal)
-
+name: Diagnóstico cierre de sesión SII (temporal)
 on:
   push:
     branches: [claude/diagnostico-sii-portal]
-    paths-ignore: ["capturas/**"]
-
 permissions:
-  contents: write
-
+  contents: read
 jobs:
-  prueba:
-    runs-on: windows-latest
-    env:
-      PYTHONIOENCODING: utf-8
-    defaults:
-      run:
-        shell: pwsh
+  diag:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Descargar el instalador publicado, verificar su SHA256 e instalar
-        run: |
-          $b = "https://github.com/Patnic88/PATRICIO-GUILLERMO-ANDRADES-TORDECILLA/releases/download/mi-contabilidad-v0.2.0"
-          Invoke-WebRequest "$b/Instalar-MiContabilidad.exe" -OutFile Instalar-MiContabilidad.exe
-          Invoke-WebRequest "$b/SHA256.txt" -OutFile SHA256.txt
-          $h = (Get-FileHash Instalar-MiContabilidad.exe -Algorithm SHA256).Hash
-          if (-not (Select-String -Path SHA256.txt -Pattern $h -SimpleMatch -Quiet)) { throw "La huella SHA256 no coincide" }
-          Write-Host "SHA256 coincide: $h"
-          $p = Start-Process .\Instalar-MiContabilidad.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait -PassThru
-          if ($p.ExitCode -ne 0) { throw "El instalador terminó con código $($p.ExitCode)" }
-          Get-ChildItem (Join-Path $env:LOCALAPPDATA "Programs\Mi Contabilidad") | Select-Object -First 5
-      - name: Prueba real con el programa instalado
-        run: |
-          $exe = Join-Path $env:LOCALAPPDATA "Programs\Mi Contabilidad\MiContabilidad.exe"
-          $proc = Start-Process $exe -ArgumentList "--no-abrir", "--puerto", "8799" -PassThru
-          try { python prueba/prueba_real.py capturas; if ($LASTEXITCODE -ne 0) { throw "La prueba tuvo fallas" } }
-          finally { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
-      - name: Guardar las capturas en esta rama temporal
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add capturas
-          git commit -m "Capturas de la prueba real (temporal)"
-          git push origin HEAD:claude/diagnostico-sii-portal
+      - run: python3 diag/logout.py
