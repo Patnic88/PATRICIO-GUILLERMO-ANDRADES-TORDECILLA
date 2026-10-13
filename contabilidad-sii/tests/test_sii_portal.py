@@ -190,7 +190,7 @@ class TestPortalConNavegador(unittest.TestCase):
         self.fail(f"No se llegó al estado {estado}: {e}")
 
     def ingresar(self, p, clave):
-        tid = p.nav.pestanas()[0]["targetId"]
+        tid = p._pestanas()[0]["targetId"]
         p.nav.navegar(tid, p.url_ingreso)  # espera a que cargue la página de ingreso
         p.nav.evaluar(tid, f"document.getElementById('rutcntr').value='76111111-6';"
                            f"document.getElementById('clave').value={json.dumps(clave)};"
@@ -248,9 +248,10 @@ class TestPortalConNavegador(unittest.TestCase):
         for _ in range(3):
             self.assertEqual(p.estado()["estado"], "conectado")
             time.sleep(0.3)
-        self.assertEqual([x["url"] for x in p.nav.pestanas()], [f"{self.base}/misii"])
+        # (Edge abre además su pestaña interna de descargas, que el programa ignora)
+        self.assertEqual([x["url"] for x in p._pestanas()], [f"{self.base}/misii"])
         self.assertIsNotNone(p.descargar("76111111-6", "2026-10", "compra"))
-        self.assertEqual(len(p.nav.pestanas()), 2)
+        self.assertEqual(len(p._pestanas()), 2)
 
         p.desconectar()
         self.assertEqual(p.estado()["estado"], "desconectado")

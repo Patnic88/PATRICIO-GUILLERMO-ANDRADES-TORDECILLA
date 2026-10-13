@@ -52,6 +52,8 @@ TOKEN_RECAPTCHA_WEB = "t-o-k-e-n-web"  # valor que, según la fuente secundaria,
 # Páginas donde la persona está ingresando: no se le cambia la página mientras está en ellas.
 RUTAS_INGRESO = ("/AUT2000/", "/cgi_AUT2000/")
 DOMINIOS_INGRESO = ("claveunica.gob.cl",)
+# Pestañas propias del navegador (p. ej. Edge abre edge://downloads-hub/ al descargar): no son del SII.
+ESQUEMAS_INTERNOS = ("devtools:", "edge:", "chrome:", "chrome-extension:", "about:")
 EXTENSIONES = (".csv", ".txt")
 MAX_ARCHIVO = 30 * 1024 * 1024
 
@@ -207,7 +209,7 @@ class PortalSII:
 
     # ---- estado
     def _pestanas(self) -> list:
-        return [p for p in self.nav.pestanas() if not p.get("url", "").startswith("devtools://")]
+        return [p for p in self.nav.pestanas() if not p.get("url", "").startswith(ESQUEMAS_INTERNOS)]
 
     def _cookies(self) -> dict:
         out = {}
@@ -268,15 +270,16 @@ class PortalSII:
                     return {"estado": "conectado", "usuario": usuario, "mensaje": "", "archivos": archivos}
                 # Ingresó, pero la ventana quedó en otra página del SII (puede pasar con Clave Única):
                 # se abre el RCV una vez, sin interrumpir si la persona sigue en la página de ingreso.
-                ps = self._pestanas()
-                if not ps:
-                    self.nav.nueva_pestana(self.url_rcv)
-                elif time.monotonic() - self._abriendo_rcv > 20:
+                if time.monotonic() - self._abriendo_rcv > 20:
+                    ps = self._pestanas()
                     candidata = next((p for p in ps if self._es_sii(p.get("url", ""))
                                       and not self._es_ingreso(p.get("url", ""))), None)
                     if candidata:
                         self._abriendo_rcv = time.monotonic()
                         self.nav.ir(candidata["targetId"], self.url_rcv)
+                    elif not ps:
+                        self._abriendo_rcv = time.monotonic()
+                        self.nav.nueva_pestana(self.url_rcv)
                 return {"estado": "esperando", "usuario": usuario, "mensaje": "Abriendo el Registro de Compras y Ventas…",
                         "archivos": archivos}
             except navegador.ErrorNavegador as e:
