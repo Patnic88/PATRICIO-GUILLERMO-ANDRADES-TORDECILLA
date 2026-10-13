@@ -141,13 +141,59 @@ class TestEliminar(Base):
 
     def test_ids_estrictos(self):
         rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
-        for ids in ([True], [2.9], [10 ** 30], [float("inf")], [0], [-1], ["1a"], "1", {"a": 1}):
+        for ids in ([True], [2.9], [10 ** 30], [float("inf")], [0], [-1], ["1a"], "1", {"a": 1}, ["²"], ["1" * 5000]):
             with self.subTest(ids=ids):
                 with self.assertRaises(ErrorContable):
                     documentos.eliminar(self.lib, ids, "x")
         with self.assertRaises(ErrorContable):
             documentos.eliminar(self.lib, [1], {"a": 1})
         self.assertEqual(documentos.eliminar(self.lib, ["1"], "x")["eliminados"], 1)
+
+    def test_importado_despues_del_f29_se_puede_deshacer(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        n = impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")  # por error, después del F29
+        self.assertTrue(any(f"ya está registrado (N° {n})" in a for a in r.alertas), r.alertas)
+        res = documentos.eliminar(self.lib, r.documentos, "importación deshecha")
+        self.assertEqual(res["eliminados"], 4)
+        venta = self.lib.con.execute("SELECT id FROM documento WHERE libro='venta' LIMIT 1").fetchone()[0]
+        with self.assertRaises(ErrorContable) as cm:
+            documentos.eliminar(self.lib, [venta], "x")  # esta sí entró en el F29
+        self.assertIn(f"asiento N° {n}", str(cm.exception))
+        # Revivir un documento borrado en un mes con el F29 registrado avisa y se puede deshacer
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        self.assertTrue(any("ya está registrado" in a for a in r.alertas))
+        self.assertEqual(documentos.eliminar(self.lib, r.documentos, "otra vez")["eliminados"], 4)
+
+    def test_f29_con_anulacion_anulada_sigue_registrado(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        n = impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        r = self.lib.anular(n, "2026-10-31", "x")
+        self.lib.anular(r, "2026-10-31", "era correcto")
+        self.assertEqual(documentos.f29_registrado(self.lib, "2026-10"), n)
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, [self.doc("compra", "1001")["id"]], "x")
+
+    def test_centralizacion_se_borra_entera(self):
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        ids = [x[0] for x in self.lib.con.execute("SELECT id FROM documento")]
+        with self.assertRaises(ErrorContable) as cm:
+            documentos.eliminar(self.lib, ids[:2], "x")
+        self.assertIn("se borran todas juntas", str(cm.exception))
+        res = documentos.eliminar(self.lib, ids, "importada en la empresa equivocada")
+        self.assertEqual((res["eliminados"], res["contra_asientos"]), (4, [r.asientos[0] + 1]))
+        self.assertEqual(self.f29("credito_fiscal"), 0)
+        self.assertTrue(self.controles_ok()["IVA de compras"])
+        self.assertEqual(self.lib.verificar_integridad(), [])
+
+    def test_control_de_f29_contado_dos_veces(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        n = impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        self.assertTrue(self.controles_ok()["F29 registrado una sola vez"])
+        self.lib.anular(n, "2026-11-15", "anulado con la fecha de hoy (versión anterior)")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        self.assertFalse(self.controles_ok()["F29 registrado una sola vez"])
 
     def test_avisos_de_f29_confirmado_o_pagado(self):
         honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
@@ -388,6 +434,8 @@ class TestCLI(Base):
         self.assertIn("1 documento(s) borrado(s)", texto)
         self.assertNotIn(f"{doc_id:>6} ", correr("documentos", "2026-10")[1])
         self.assertIn("BORRADO", correr("documentos", "2026-10", "--borrados")[1])
+        otro = int(correr("documentos", "2026-10")[1].strip().splitlines()[0].split()[0])
+        self.assertIn("1 ya estaban borrados", correr("borrar-documento", str(doc_id), str(otro), "--motivo", "x")[1])
         # «anular» de la línea de comandos tampoco deja anular sueltos los registros de documentos
         n = cli.Libro(self.db)
         try:
@@ -445,13 +493,13 @@ class TestRutasWeb(unittest.TestCase):
                      {"ids": [1], "motivo": {"a": 1}}):
             st, r = self.req(e + "/documentos-eliminar", malo)
             self.assertEqual(st, 400, malo)
-        for crudo in (b'{"ids":[1e400],"motivo":"x"}', b'[1]'):
+        for crudo in (b'{"ids":[1e400],"motivo":"x"}', b'[1]', b'{"ids":[' + b"1" * 5000 + b'],"motivo":"x"}'):
             r = urllib.request.Request(f"http://127.0.0.1:{self.puerto}/api/{e}/documentos-eliminar", data=crudo,
                                        headers={"Content-Type": "application/json", "X-Contasii": "1"})
             with self.assertRaises(urllib.error.HTTPError) as cm:
                 urllib.request.urlopen(r)
             self.assertEqual(cm.exception.code, 400)
-        for numero in (True, 10 ** 30, "x"):
+        for numero in (True, 10 ** 30, "x", "²", "1" * 5000):
             self.assertEqual(self.req(e + "/anular", {"numero": numero, "motivo": "x"})[0], 400)
         st, r = self.req(e + "/documentos-eliminar", {"ids": x["documentos"], "motivo": "Importación deshecha: compras.csv"})
         self.assertEqual((st, r["eliminados"]), (200, 4), r)
@@ -471,6 +519,31 @@ class TestRutasWeb(unittest.TestCase):
         self.assertEqual(st, 200)
         st, f = self.req(e + "/f29?periodo=2026-10")
         self.assertEqual({l["clave"]: l["monto"] for l in f["lineas"]}["retencion_honorarios"], 0)
+
+    def test_corregir_el_f29_como_indica_la_pantalla(self):
+        # Mes pasado con F29 registrado: anularlo en «Pagos y cobros», borrar y volver a confirmar deja un
+        # solo F29 en el mes (la anulación se fecha en el mes del F29, no hoy).
+        st, r = self.req("empresa", {"rut": "76.999.999-K", "nombre": "DEMO", "regimen": "14D3"})
+        e = "e/" + r["archivo"]
+        for ruta, nombre in ((COMPRAS, "c.csv"), (VENTAS, "v.csv")):
+            with open(ruta, "rb") as f:
+                self.req(e + "/importar", {"contenido": base64.b64encode(f.read()).decode(), "nombre": nombre,
+                                           "periodo": "2026-09"})
+        st, r = self.req(e + "/f29-confirmar", {"periodo": "2026-09"})
+        n = r["numero"]
+        st, d = self.req(e + "/documentos?periodo=2026-09")
+        self.assertEqual(d["f29_asiento"], n)
+        st, a = self.req(e + "/anular", {"numero": n, "motivo": "corregir el F29"})
+        self.assertEqual(st, 200, a)
+        st, dia = self.req(e + "/diario?periodo=2026-09")
+        self.assertIn(a["numero"], [x["numero"] for x in dia["asientos"]])  # quedó en septiembre
+        compra = [x["id"] for x in d["documentos"] if x["libro"] == "compra"][0]
+        self.assertEqual(self.req(e + "/documentos-eliminar", {"ids": [compra], "motivo": "x"})[0], 200)
+        st, r = self.req(e + "/f29-confirmar", {"periodo": "2026-09"})
+        self.assertEqual(st, 200)
+        st, rv = self.req(e + "/revision?periodo=2026-09")
+        ok = {c["nombre"]: c["ok"] for c in rv["controles"]}
+        self.assertTrue(ok["F29 registrado una sola vez"] and ok["IVA de compras"] and ok["IVA de ventas"], rv)
 
 
 if __name__ == "__main__":

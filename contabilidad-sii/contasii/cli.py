@@ -109,8 +109,11 @@ def cmd_documentos(lib, a):
 
 def cmd_borrar_documento(lib, a):
     r = documentos.eliminar(lib, a.id, a.motivo)
-    print(f"{r['eliminados']} documento(s) borrado(s). Contra-asiento(s): "
-          f"{', '.join(f'N°{n}' for n in r['contra_asientos'])}.")
+    contra = ", ".join(f"N°{n}" for n in r["contra_asientos"])
+    print(f"{r['eliminados']} documento(s) borrado(s). " + (f"Contra-asiento(s): {contra}." if contra else
+                                                           "Su registro contable ya estaba anulado."))
+    if r["ya_borrados"]:
+        print(f"{r['ya_borrados']} ya estaban borrados y se saltaron.")
     _alertas(r["alertas"])
 
 

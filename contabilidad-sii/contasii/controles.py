@@ -26,6 +26,20 @@ def controles(lib: Libro, periodo: str) -> list:
             (f"rcv-{libro_doc}", cuenta, periodo)).fetchone()[0]
         mov *= signo
         out.append((nombre, doc == mov, f"documentos ${pesos(doc)} / contabilidad ${pesos(mov)}"))
+    # El F29 del mes registrado una sola vez: uno vigente como máximo, y los anulados con su anulación
+    # en el mismo mes (si no, el mes queda con el impuesto contado dos veces).
+    f29 = [r[0] for r in lib.con.execute("SELECT numero FROM asiento WHERE origen='f29' AND periodo=? ORDER BY numero",
+                                         (periodo,))]
+    vigentes = [n for n in f29 if lib.anulado_por(n) is None]
+    fuera = [n for n in f29 if lib.anulado_por(n) is not None and lib.con.execute(
+        "SELECT periodo FROM asiento WHERE numero=?", (lib.anulado_por(n),)).fetchone()[0] != periodo]
+    detalle = ("sin registrar" if not f29 else f"N° {', '.join(map(str, vigentes))}" if vigentes else "anulado")
+    if len(vigentes) > 1:
+        detalle = f"hay {len(vigentes)} registros vigentes (N° {', '.join(map(str, vigentes))}): anule los que sobran"
+    if fuera:
+        detalle = (f"el registro N° {', '.join(map(str, fuera))} se anuló en otro mes: este mes lo sigue contando; "
+                   f"revíselo con su contador")
+    out.append(("F29 registrado una sola vez", len(vigentes) <= 1 and not fuera, detalle))
     sin_rut = lib.con.execute("SELECT COUNT(*) FROM documento WHERE eliminado IS NULL AND periodo=? AND rut_contraparte NOT LIKE '%-%'",
                               (periodo,)).fetchone()[0]
     out.append(("Documentos con RUT válido", sin_rut == 0, f"{sin_rut} sin RUT válido"))

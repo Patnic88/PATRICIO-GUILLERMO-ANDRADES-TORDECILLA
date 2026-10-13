@@ -313,6 +313,9 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     acc[0] += de
                     acc[1] += h
 
+        if res.importados:
+            from . import documentos
+            res.alertas += documentos.avisos_importacion(lib, periodo)
         if modo == "centralizado" and acumulado:
             y, m = map(int, periodo.split("-"))
             a = Asiento(f"{periodo}-{monthrange(y, m)[1]:02d}",

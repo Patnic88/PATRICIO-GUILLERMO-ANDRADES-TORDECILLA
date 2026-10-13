@@ -209,6 +209,9 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
             res["asientos"].append(lib.registrar(a, _transaccion=False))
             res["importados"] += 1
             res["documentos"].append(cur.lastrowid)
+        if res["importados"]:
+            from . import documentos
+            res["alertas"] += documentos.avisos_importacion(lib, periodo)
     return res
 
 
@@ -220,8 +223,8 @@ def _avisar_si_registrada(lib: Libro, res, libro_doc: str, rut: str, folio: str)
     if not doc:
         return
     asientos = [x[0] for x in lib.con.execute(
-        "SELECT DISTINCT l.asiento FROM linea l WHERE l.documento=? AND l.asiento NOT IN "
-        "(SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL) ORDER BY l.asiento", (doc[0],))]
+        "SELECT DISTINCT l.asiento FROM linea l JOIN asiento a ON a.numero=l.asiento WHERE l.documento=? "
+        "AND a.anula_a IS NULL ORDER BY l.asiento", (doc[0],)) if lib.anulado_por(x[0]) is None]
     donde = f" (asiento N° {', '.join(map(str, asientos))})" if asientos else ""
     res["alertas"].append(
         f"Boleta {folio}{' de ' + rut if rut else ''}: ya estaba registrada en {doc[1]}{donde} y ahora el SII la "

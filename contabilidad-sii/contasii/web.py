@@ -312,9 +312,7 @@ class App:
             if periodo else 0,
             "utm": utm,
             "retencion_honorarios": self.params(periodo).valor_opcional("retencion_honorarios") if periodo else None,
-            "f29_registrado": bool(periodo and lib.con.execute(
-                "SELECT 1 FROM asiento WHERE origen='f29' AND periodo=? AND numero NOT IN "
-                "(SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL)", (periodo,)).fetchone()),
+            "f29_registrado": bool(periodo and documentos.f29_registrado(lib, periodo)),
         }
 
     # ---- importar
@@ -434,7 +432,7 @@ class App:
         if not motivo:
             raise ErrorUsuario("Indique el motivo de la anulación.")
         numero = b.get("numero")
-        if isinstance(numero, str) and numero.strip().isdigit():
+        if isinstance(numero, str) and re.fullmatch(r"[0-9]{1,19}", numero.strip()):
             numero = int(numero)
         if isinstance(numero, bool) or not isinstance(numero, int) or not 1 <= numero <= documentos.MAX_ID:
             raise ErrorUsuario("Registro no válido.")
@@ -442,7 +440,14 @@ class App:
         no = documentos.motivo_no_anulable(lib, numero)
         if no:
             raise ErrorUsuario(no)
-        return {"numero": lib.anular(numero, date.today().isoformat(), motivo)}
+        orig = lib.con.execute("SELECT fecha, periodo FROM asiento WHERE numero=?", (numero,)).fetchone()
+        if not orig:
+            raise ErrorUsuario("Ese registro no existe.")
+        # La anulación corrige un registro equivocado: se fecha igual que él para que su mes quede bien
+        # (por ejemplo, el F29 que se anula para corregirlo y se vuelve a confirmar). Si ese mes ya está
+        # cerrado, va en la fecha de hoy.
+        fecha = orig["fecha"] if not lib.periodo_cerrado(orig["periodo"]) else date.today().isoformat()
+        return {"numero": lib.anular(numero, fecha, motivo)}
 
     # ---- F29
     def _propuesta(self, lib, q):
@@ -467,8 +472,7 @@ class App:
     def f29(self, lib, q, b):
         p, venc, params = self._propuesta(lib, q)
         cod = {k: v.split(" ")[0] for k, v in impuestos.codigos_f29(params).items() if not k.startswith("_")}
-        ya = lib.con.execute("SELECT 1 FROM asiento WHERE origen='f29' AND periodo=? AND numero NOT IN "
-                             "(SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL)", (q["periodo"],)).fetchone()
+        ya = documentos.f29_registrado(lib, q["periodo"])
         return {"lineas": [{"clave": c, "texto": d, "monto": m, "codigo": cod.get(c, "")} for c, d, m in p.lineas],
                 "total": p.total_a_pagar, "remanente_siguiente": p.remanente_siguiente,
                 "vencimiento": venc.isoformat(), "alertas": p.alertas, "verificar": p.verificar,
@@ -516,7 +520,8 @@ class App:
 
     def diario(self, lib, q, b):
         desde, hasta = self._rango(q)
-        anulados = {r[0] for r in lib.con.execute("SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL")}
+        anulados = {r[0] for r in lib.con.execute("SELECT DISTINCT anula_a FROM asiento WHERE anula_a IS NOT NULL")
+                    if lib.anulado_por(r[0])}
         return {"asientos": [{"numero": a["numero"], "fecha": a["fecha"], "glosa": a["glosa"], "origen": a["origen"],
                               "tipo": a["tipo"], "anulado": a["numero"] in anulados,
                               "de_documento": any(l["documento"] for l in ls),
@@ -742,7 +747,7 @@ def crear_manejador(app: App, puerto_ref: list):
                     return self._json(413, {"error": "El archivo es demasiado grande."})
                 try:
                     b = json.loads(self.rfile.read(largo) or b"{}")
-                except json.JSONDecodeError:
+                except ValueError:  # JSON inválido, o un número con miles de dígitos
                     return self._json(400, {"error": "Solicitud inválida."})
                 if not isinstance(b, dict):
                     return self._json(400, {"error": "Solicitud inválida."})

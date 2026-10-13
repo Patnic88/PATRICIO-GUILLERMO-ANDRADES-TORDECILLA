@@ -461,21 +461,27 @@ async function analizarArchivo(file) {
   return analizarContenido(file.name, contenido);
 }
 // Pide confirmación y borra documentos importados: el programa anula su asiento y los saca del F29.
+let nConfirm = 0;
 function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alListo }) {
-  cont.innerHTML = `<div class="confirm" role="group" aria-label="Confirmar borrado"><b>${esc(texto)}</b>
-    <span>El programa anula su registro contable (queda en el Libro Diario como anulado) y los quita del F29 y de los libros. Si vuelve a importar el archivo, se registran de nuevo.</span>
-    <label>Motivo<input type="text" class="bMot" value="${esc(motivo)}" placeholder="Ej.: importado en la empresa equivocada"></label>
+  const origen = document.activeElement, id = "cb" + (++nConfirm);
+  // Al cerrar, el foco vuelve al botón que abrió la confirmación (si sigue en pantalla).
+  const cerrar = () => { cont.innerHTML = ""; if (origen && document.body.contains(origen)) origen.focus(); };
+  cont.innerHTML = `<div class="confirm" role="group" aria-labelledby="${id}q"><b id="${id}q">${esc(texto)}</b>
+    <span id="${id}e">El programa anula su registro contable (queda en el Libro Diario como anulado) y los quita del F29 y de los libros. Si vuelve a importar el archivo, se registran de nuevo.</span>
+    <label>Motivo<input type="text" class="bMot" value="${esc(motivo)}" placeholder="Ej.: importado en la empresa equivocada" aria-describedby="${id}q ${id}e"></label>
     <div class="row"><button class="btn danger bSi" type="button">Sí, borrar</button><button class="btn bCan" type="button">Cancelar</button></div><div class="bErr"></div></div>`;
-  $(".bCan", cont).onclick = () => cont.innerHTML = "";
+  $(".bCan", cont).onclick = cerrar;
+  $(".confirm", cont).onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); cerrar(); } };
   $(".bSi", cont).onclick = async () => {
     const b = $(".bSi", cont); b.disabled = true;
     try {
       const r = await api(`e/${encodeURIComponent(emp)}/documentos-eliminar`, { ids, motivo: $(".bMot", cont).value });
-      cont.innerHTML = `<div class="msg ok" role="status"><b>Listo: ${r.eliminados} documento(s) borrado(s).</b>
+      cont.innerHTML = `<div class="msg ok" role="status" tabindex="-1"><b>Listo: ${r.eliminados} documento(s) borrado(s).</b>
         <span>${r.contra_asientos.length ? `Su registro contable quedó anulado (N° ${r.contra_asientos.join(", ")}).` : "Su registro contable ya estaba anulado."}</span>
         ${r.ya_borrados ? `<span>${r.ya_borrados} ya estaban borrados.</span>` : ""}</div>`
         + (r.alertas.length ? `<div class="msg warn"><ul>${r.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : "");
       toast("Documentos borrados");
+      $(".msg", cont).focus();
       if (alListo) await alListo(r);
     } catch (e) { b.disabled = false; error($(".bErr", cont), e); }
   };
@@ -483,7 +489,6 @@ function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alLi
   // mano): sin esto, Enter enviaría ese formulario.
   $(".bMot", cont).onkeydown = ev => {
     if (ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation(); $(".bSi", cont).click(); }
-    else if (ev.key === "Escape") { ev.preventDefault(); cont.innerHTML = ""; }
   };
   $(".bMot", cont).focus();
 }
@@ -907,7 +912,8 @@ async function libro(t, q) {
         $("#docBorrar").onclick = () => {
           const ids = sel();
           confirmarBorrado($("#docConf"), { ids, texto: `¿Borrar ${ids.length} documento(s) de ${nomMes(periodo)}?`, motivo: "Importado por error",
-            alListo: async () => { const html = $("#docConf").innerHTML; await libro("documentos", q); if ($("#docConf")) $("#docConf").innerHTML = html; } });
+            alListo: async () => { const html = $("#docConf").innerHTML; await libro("documentos", q);
+              if ($("#docConf")) { $("#docConf").innerHTML = html; const m = $("#docConf .msg"); if (m) m.focus(); } } });
           $("#docConf").scrollIntoView({ behavior: "smooth", block: "center" });
         };
       }

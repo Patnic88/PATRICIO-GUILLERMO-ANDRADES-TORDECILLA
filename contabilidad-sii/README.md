@@ -122,12 +122,16 @@ anteriores.
 No se puede borrar:
 
 - en un **mes cerrado**;
-- si el **F29 del mes ya está registrado** en la contabilidad. Para corregirlo, primero
-  anule ese registro en «Pagos y cobros», borre los documentos y vuelva a confirmar el F29;
-- un documento importado con la opción de **centralización mensual** (solo por la línea de
-  comandos), porque comparte su registro con los demás documentos del mes. Por lo mismo, un
-  documento borrado no se puede volver a importar en modo centralizado: se importa por
-  documento.
+- un documento que **entró en el F29 registrado** del mes. Para corregirlo, primero anule ese
+  registro en «Pagos y cobros» (la anulación queda en el mismo mes del F29), borre los
+  documentos y vuelva a confirmar el F29. Un documento importado **después** de registrar el
+  F29 sí se puede borrar, porque no está en él: al importarlo, el programa avisa que el F29 ya
+  estaba registrado.
+
+Los documentos importados con la opción de **centralización mensual** (solo por la línea de
+comandos) comparten un solo registro contable: se borran **todos juntos** (los de ese libro y
+mes), y el programa anula esa centralización. Un documento borrado no se puede volver a
+importar en modo centralizado: se importa por documento.
 
 El programa avisa, sin impedir el borrado, cuando:
 
@@ -141,7 +145,10 @@ Si hay pagos o cobros registrados con el RUT de un documento borrado, el program
 movimientos no se anulan solos. En «Pagos y cobros» (y con el comando `anular`) no se anulan
 sueltos los registros que vienen de una factura o boleta, las centralizaciones de documentos
 ni las anulaciones: el documento seguiría contando en el F29 o volvería a la contabilidad sin
-volver al F29. Para los documentos, el programa indica borrarlos en «Documentos».
+volver al F29. Para los documentos, el programa indica borrarlos en «Documentos». Las demás
+anulaciones de «Pagos y cobros» se fechan igual que el registro anulado mientras su mes siga
+abierto, para que ese mes quede corregido; si ya está cerrado, van con la fecha de hoy.
+«Revisar y cerrar» comprueba además que el F29 del mes esté registrado una sola vez.
 
 ## Traer compras y ventas desde el SII (clave tributaria o Clave Única)
 
