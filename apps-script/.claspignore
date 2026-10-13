@@ -1,0 +1,5 @@
+# clasp empuja TODO lo del directorio salvo lo aquí listado.
+# Como apps-script/ sólo contiene el manifest y el .js generado, esto está casi vacío.
+**/*.md
+**/*.sh
+.DS_Store
