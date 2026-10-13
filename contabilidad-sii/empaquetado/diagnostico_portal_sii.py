@@ -40,7 +40,8 @@ def main():
                     campos = p.nav.evaluar(tid, "[document.readyState, location.href, "
                                                 "['#rutcntr','#clave','#bt_ingresar','#myHref']"
                                                 ".map(s => !!document.querySelector(s))]", timeout=10)
-                    if campos and campos[0] == "complete":
+                    # Edge informa la dirección nueva antes de reemplazar about:blank: se exige la página real.
+                    if campos and campos[0] == "complete" and "/AUT2000/" in campos[1]:
                         break
                 except Exception as e:  # noqa: BLE001
                     campos = repr(e)
