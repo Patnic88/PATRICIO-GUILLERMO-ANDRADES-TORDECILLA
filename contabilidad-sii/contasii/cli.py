@@ -75,6 +75,9 @@ def cmd_asiento(lib, a):
 
 
 def cmd_anular(lib, a):
+    no = documentos.motivo_no_anulable(lib, a.numero)
+    if no:
+        raise ErrorContable(no)
     print(f"Asiento N°{a.numero} anulado con el contra-asiento N°{lib.anular(a.numero, a.fecha, a.motivo)}.")
 
 

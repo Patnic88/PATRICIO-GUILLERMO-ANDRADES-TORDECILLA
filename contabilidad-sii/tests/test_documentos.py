@@ -88,19 +88,81 @@ class TestEliminar(Base):
         rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
         credito = self.f29("credito_fiscal")
         ids = [d["id"] for d in self.lib.con.execute("SELECT id FROM documento")]
+        self.lib.con.execute("INSERT INTO estado_sii (documento, ambiente, estado) VALUES (?, 'produccion', 'DOK')",
+                             (ids[0],))
+        self.lib.con.commit()
         documentos.eliminar(self.lib, ids, "importación deshecha")
         self.assertEqual(self.f29("credito_fiscal"), 0)
         r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
         self.assertEqual((r.importados, r.duplicados), (4, 0))
+        self.assertEqual(sum("estaba borrada (importación deshecha)" in a for a in r.alertas), 4, r.alertas)
+        self.assertEqual(sii_dte.ultimos_estados(self.lib, "2026-10"), {})  # el estado era de los datos anteriores
         self.assertEqual(sorted(r.documentos), sorted(ids))  # misma fila, vuelve a estar vigente
         self.assertEqual(self.f29("credito_fiscal"), credito)
         self.assertTrue(self.controles_ok()["IVA de compras"])
         self.assertEqual(self.lib.verificar_integridad(), [])
         r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
         self.assertEqual((r.importados, r.duplicados), (0, 4))
-        # y se puede volver a borrar
-        documentos.eliminar(self.lib, ids, "otra vez")
-        self.assertEqual(self.f29("credito_fiscal"), 0)
+        # y se puede volver a borrar: solo se anulan los registros nuevos
+        r2 = documentos.eliminar(self.lib, ids[:2], "otra vez")
+        self.assertEqual(len(r2["contra_asientos"]), 2)
+        self.assertEqual(self.lib.verificar_integridad(), [])
+        self.assertTrue(self.controles_ok()["IVA de compras"])
+
+    def test_revivido_en_otro_mes_con_el_mes_viejo_cerrado(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "1001")["id"]
+        documentos.eliminar(self.lib, [d], "mes equivocado")
+        self.lib.cerrar_periodo("2026-10")
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-11")
+        self.assertIn(d, r.documentos)
+        self.assertEqual(self.doc("compra", "1001")["periodo"], "2026-11")
+        res = documentos.eliminar(self.lib, [d], "tampoco era de noviembre")
+        a = self.lib.con.execute("SELECT periodo FROM asiento WHERE numero=?", (res["contra_asientos"][0],)).fetchone()
+        self.assertEqual(a[0], "2026-11")
+
+    def test_borrado_no_revive_en_centralizacion(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "1001")["id"]
+        documentos.eliminar(self.lib, [d], "x")
+        antes = self.lib.con.execute("SELECT COUNT(*) FROM asiento").fetchone()[0]
+        with self.assertRaises(ErrorContable) as cm:
+            rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        self.assertIn("impórtela por documento", str(cm.exception))
+        self.assertEqual(self.lib.con.execute("SELECT COUNT(*) FROM asiento").fetchone()[0], antes)
+        self.assertIsNotNone(self.doc("compra", "1001")["eliminado"])
+
+    def test_ya_borrados_se_saltan(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        a, b = self.doc("compra", "1001")["id"], self.doc("compra", "303")["id"]
+        documentos.eliminar(self.lib, [a], "x")
+        r = documentos.eliminar(self.lib, [a, b], "deshacer importación")
+        self.assertEqual((r["eliminados"], r["ya_borrados"]), (1, 1))
+
+    def test_ids_estrictos(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        for ids in ([True], [2.9], [10 ** 30], [float("inf")], [0], [-1], ["1a"], "1", {"a": 1}):
+            with self.subTest(ids=ids):
+                with self.assertRaises(ErrorContable):
+                    documentos.eliminar(self.lib, ids, "x")
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, [1], {"a": 1})
+        self.assertEqual(documentos.eliminar(self.lib, ["1"], "x")["eliminados"], 1)
+
+    def test_avisos_de_f29_confirmado_o_pagado(self):
+        honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
+        impuestos.guardar_remanente(self.lib, "2026-10", 0)  # F29 confirmado sin asiento (solo retenciones)
+        operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"retencion_honorarios": 122000})
+        r = documentos.eliminar(self.lib, [self.doc("honorario_recibido", "45")["id"]], "x")
+        self.assertTrue(any("ya se había confirmado y pagado" in a for a in r["alertas"]), r["alertas"])
+
+    def test_aviso_de_f29_siguiente(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-11")
+        impuestos.guardar_remanente(self.lib, "2026-10", 551000)
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-11"))
+        r = documentos.eliminar(self.lib, [self.doc("compra", "2002")["id"]], "x")
+        self.assertTrue(any("2026-11" in a and "remanente" in a for a in r["alertas"]), r["alertas"])
 
     def test_boleta_de_honorarios(self):
         r = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
@@ -111,6 +173,7 @@ class TestEliminar(Base):
         self.assertEqual(self.f29("retencion_honorarios"), 45750)
         r = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
         self.assertEqual((r["importados"], r["duplicados"]), (1, 1))
+        self.assertTrue(any("Boleta 45 de 12345678-5: estaba borrada (boleta de otro cliente)" in a for a in r["alertas"]))
         self.assertEqual(self.f29("retencion_honorarios"), 76250 + 45750)
         self.assertEqual(self.lib.verificar_integridad(), [])
 
@@ -172,8 +235,44 @@ class TestEliminar(Base):
         m = self.lib.anular(n, "2026-10-12", "a mano")
         total = self.lib.con.execute("SELECT COUNT(*) FROM asiento").fetchone()[0]
         r = documentos.eliminar(self.lib, [d], "x")
-        self.assertEqual(r["contra_asientos"], [m])
+        self.assertEqual((r["contra_asientos"], r["alertas"]), ([], []))
+        self.assertEqual(self.lib.con.execute("SELECT asiento_eliminado FROM documento WHERE id=?", (d,)).fetchone()[0], m)
         self.assertEqual(self.lib.con.execute("SELECT COUNT(*) FROM asiento").fetchone()[0], total)
+
+    def test_anulado_a_mano_en_otro_mes_avisa(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "303")["id"]
+        n = self.lib.con.execute("SELECT DISTINCT asiento FROM linea WHERE documento=?", (d,)).fetchone()[0]
+        self.lib.anular(n, "2026-11-15", "a mano, versión anterior")
+        r = documentos.eliminar(self.lib, [d], "x")
+        self.assertTrue(any("otro mes" in a for a in r["alertas"]), r["alertas"])
+
+    def test_cadena_de_anulaciones(self):
+        # Asiento anulado y su anulación anulada (posible en versiones anteriores): el asiento vuelve a estar
+        # vigente; al borrar se anula de nuevo y el control de IVA cuadra con toda la cadena.
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "1001")["id"]
+        n = self.lib.con.execute("SELECT DISTINCT asiento FROM linea WHERE documento=?", (d,)).fetchone()[0]
+        r = self.lib.anular(n, "2026-10-03", "x")
+        self.lib.anular(r, "2026-10-03", "era correcto")
+        self.assertIsNone(self.lib.anulado_por(n))
+        res = documentos.eliminar(self.lib, [d], "x")
+        self.assertEqual(len(res["contra_asientos"]), 1)
+        self.assertEqual(self.lib.anulado_por(n), res["contra_asientos"][0])
+        self.assertTrue(self.controles_ok()["IVA de compras"])
+        self.assertEqual(self.lib.verificar_integridad(), [])
+
+    def test_no_se_anulan_sueltos(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "1001")["id"]
+        n = self.lib.con.execute("SELECT DISTINCT asiento FROM linea WHERE documento=?", (d,)).fetchone()[0]
+        self.assertIn("Documentos", documentos.motivo_no_anulable(self.lib, n))
+        r = documentos.eliminar(self.lib, [d], "x")["contra_asientos"][0]
+        self.assertIn("anulación", documentos.motivo_no_anulable(self.lib, r))
+        c = rcv.importar(self.lib, VENTAS, "venta", "2026-10", modo="centralizado").asientos[0]
+        self.assertIn("centraliza", documentos.motivo_no_anulable(self.lib, c))
+        p = operaciones.registrar(self.lib, "gasto_sin_factura", "2026-10-20", 1000, "caja")
+        self.assertIsNone(documentos.motivo_no_anulable(self.lib, p))
 
     def test_asiento_compartido_se_borra_junto(self):
         rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
@@ -248,6 +347,29 @@ class TestMigracion(unittest.TestCase):
             Libro(ruta).con.close()  # abrirla otra vez no vuelve a migrar
 
 
+class TestMigracionConcurrente(unittest.TestCase):
+    def test_varias_aperturas_a_la_vez(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = os.path.join(tmp, "vieja.db")
+            con = sqlite3.connect(ruta)
+            con.executescript("\n".join(l for l in db.ESQUEMA.splitlines() if "eliminado" not in l))
+            con.close()
+            errores = []
+
+            def abrir():
+                for _ in range(15):
+                    try:
+                        Libro(ruta).con.close()
+                    except Exception as e:  # noqa: BLE001
+                        errores.append(repr(e))
+            hilos = [threading.Thread(target=abrir) for _ in range(4)]
+            for h in hilos:
+                h.start()
+            for h in hilos:
+                h.join()
+            self.assertEqual([e for e in errores if "duplicate column" in e], [])
+
+
 class TestCLI(Base):
     def test_listar_y_borrar(self):
         self.lib.con.close()
@@ -266,6 +388,14 @@ class TestCLI(Base):
         self.assertIn("1 documento(s) borrado(s)", texto)
         self.assertNotIn(f"{doc_id:>6} ", correr("documentos", "2026-10")[1])
         self.assertIn("BORRADO", correr("documentos", "2026-10", "--borrados")[1])
+        # «anular» de la línea de comandos tampoco deja anular sueltos los registros de documentos
+        n = cli.Libro(self.db)
+        try:
+            vigente = n.con.execute("SELECT DISTINCT l.asiento FROM linea l JOIN documento d ON d.id=l.documento "
+                                    "WHERE d.eliminado IS NULL").fetchone()[0]
+        finally:
+            n.con.close()
+        self.assertEqual(correr("anular", str(vigente), "--fecha", "2026-10-31", "--motivo", "x")[0], 1)
         self.lib = Libro(self.db)
 
 
@@ -304,14 +434,25 @@ class TestRutasWeb(unittest.TestCase):
         st, d = self.req(e + "/diario?periodo=2026-10")
         a = d["asientos"][0]
         self.assertTrue(a["de_documento"])
+        self.assertFalse(a["anulable"])
         st, r = self.req(e + "/anular", {"numero": a["numero"], "motivo": "x"})
         self.assertEqual(st, 400)
         self.assertIn("Documentos", r["error"])
 
         st, r = self.req(e + "/documentos-eliminar", {"ids": x["documentos"], "motivo": ""})
         self.assertEqual(st, 400)
-        st, r = self.req(e + "/documentos-eliminar", {"ids": "1", "motivo": "x"})
-        self.assertEqual(st, 400)
+        for malo in ({"ids": "1", "motivo": "x"}, {"ids": [True], "motivo": "x"}, {"ids": [10 ** 30], "motivo": "x"},
+                     {"ids": [1], "motivo": {"a": 1}}):
+            st, r = self.req(e + "/documentos-eliminar", malo)
+            self.assertEqual(st, 400, malo)
+        for crudo in (b'{"ids":[1e400],"motivo":"x"}', b'[1]'):
+            r = urllib.request.Request(f"http://127.0.0.1:{self.puerto}/api/{e}/documentos-eliminar", data=crudo,
+                                       headers={"Content-Type": "application/json", "X-Contasii": "1"})
+            with self.assertRaises(urllib.error.HTTPError) as cm:
+                urllib.request.urlopen(r)
+            self.assertEqual(cm.exception.code, 400)
+        for numero in (True, 10 ** 30, "x"):
+            self.assertEqual(self.req(e + "/anular", {"numero": numero, "motivo": "x"})[0], 400)
         st, r = self.req(e + "/documentos-eliminar", {"ids": x["documentos"], "motivo": "Importación deshecha: compras.csv"})
         self.assertEqual((st, r["eliminados"]), (200, 4), r)
         st, d = self.req(e + "/documentos?periodo=2026-10")

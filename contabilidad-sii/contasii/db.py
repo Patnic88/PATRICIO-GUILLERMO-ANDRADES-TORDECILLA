@@ -131,11 +131,16 @@ def conectar(ruta: str) -> sqlite3.Connection:
 def _migrar(con: sqlite3.Connection) -> None:
     for tabla, columnas in COLUMNAS_NUEVAS.items():
         existentes = {r[1] for r in con.execute(f"PRAGMA table_info({tabla})")}
-        faltan = [(c, t) for c, t in columnas if c not in existentes]
-        if faltan:
-            with con:
-                for c, t in faltan:
+        for c, t in columnas:
+            if c in existentes:
+                continue
+            try:
+                with con:
                     con.execute(f"ALTER TABLE {tabla} ADD COLUMN {c} {t}")
+            except sqlite3.OperationalError as e:
+                # Otra conexión (la línea de comandos, otro hilo del servidor) la agregó recién.
+                if "duplicate column" not in str(e).lower():
+                    raise
 
 
 def registrar_bitacora(con, accion: str, detalle: str = "") -> None:

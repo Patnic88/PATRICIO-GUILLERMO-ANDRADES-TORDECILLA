@@ -182,6 +182,11 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
                                "AND eliminado IS NULL", (libro_doc, r, folio)).fetchone():
                 res["duplicados"] += 1
                 continue
+            borrada = lib.con.execute("SELECT motivo_eliminado FROM documento WHERE libro=? AND rut_contraparte=? "
+                                      "AND folio=? AND eliminado IS NOT NULL ORDER BY id DESC", (libro_doc, r, folio)).fetchone()
+            if borrada:
+                res["alertas"].append(f"Boleta {folio}{' de ' + r if r else ''}: estaba borrada ({borrada[0]}) y se "
+                                      f"registró de nuevo.")
             cur = lib.con.execute(
                 "INSERT INTO documento (libro, tipo_dte, rut_contraparte, razon_social, folio, fecha, periodo, bruto,"
                 " retencion, total, fuente) VALUES (?,?,?,?,?,?,?,?,?,?,?)",

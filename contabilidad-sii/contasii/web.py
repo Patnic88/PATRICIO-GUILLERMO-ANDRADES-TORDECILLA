@@ -429,18 +429,19 @@ class App:
         return {"numero": n}
 
     def anular(self, lib, q, b):
-        motivo = (b.get("motivo") or "").strip()
+        motivo = b.get("motivo")
+        motivo = motivo.strip() if isinstance(motivo, str) else ""
         if not motivo:
             raise ErrorUsuario("Indique el motivo de la anulación.")
-        try:
-            numero = int(b.get("numero"))
-        except (TypeError, ValueError):
+        numero = b.get("numero")
+        if isinstance(numero, str) and numero.strip().isdigit():
+            numero = int(numero)
+        if isinstance(numero, bool) or not isinstance(numero, int) or not 1 <= numero <= documentos.MAX_ID:
             raise ErrorUsuario("Registro no válido.")
         # Anular solo el asiento de una factura o boleta dejaría el documento contando en el F29.
-        if lib.con.execute("SELECT 1 FROM linea l JOIN documento d ON d.id=l.documento WHERE l.asiento=? "
-                           "AND d.eliminado IS NULL", (numero,)).fetchone():
-            raise ErrorUsuario("Este registro viene de una factura o boleta importada. Para quitarlo, bórrela en "
-                               "«Libros» → «Documentos»: así también deja de contar en el F29.")
+        no = documentos.motivo_no_anulable(lib, numero)
+        if no:
+            raise ErrorUsuario(no)
         return {"numero": lib.anular(numero, date.today().isoformat(), motivo)}
 
     # ---- F29
@@ -519,6 +520,7 @@ class App:
         return {"asientos": [{"numero": a["numero"], "fecha": a["fecha"], "glosa": a["glosa"], "origen": a["origen"],
                               "tipo": a["tipo"], "anulado": a["numero"] in anulados,
                               "de_documento": any(l["documento"] for l in ls),
+                              "anulable": documentos.motivo_no_anulable(lib, a["numero"]) is None,
                               "lineas": [{"cuenta": l["cuenta"], "nombre": l["nombre"], "debe": l["debe"],
                                           "haber": l["haber"], "rut": l["rut_aux"] or ""} for l in ls]}
                              for a, ls in lib.libro_diario(desde, hasta)]}
@@ -554,11 +556,9 @@ class App:
     def documentos_eliminar(self, lib, q, b):
         """Borra documentos importados: anula su asiento y los saca del F29 y de los libros."""
         ids = b.get("ids")
-        if not isinstance(ids, list) or not ids:
-            raise ErrorUsuario("No eligió documentos para borrar.")
-        if len(ids) > 5000:
+        if isinstance(ids, list) and len(ids) > 5000:
             raise ErrorUsuario("Demasiados documentos de una vez.")
-        return documentos.eliminar(lib, ids, b.get("motivo") or "")
+        return documentos.eliminar(lib, ids, b.get("motivo", ""))
 
     def excel(self, lib, q, b):
         desde, hasta = self._rango(q)
@@ -743,6 +743,8 @@ def crear_manejador(app: App, puerto_ref: list):
                 try:
                     b = json.loads(self.rfile.read(largo) or b"{}")
                 except json.JSONDecodeError:
+                    return self._json(400, {"error": "Solicitud inválida."})
+                if not isinstance(b, dict):
                     return self._json(400, {"error": "Solicitud inválida."})
             partes = url.path.strip("/").split("/")[1:]  # sin 'api'
             try:

@@ -257,11 +257,15 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
             if d["tipo_dte"] not in TIPOS_DTE:
                 res.alertas.append(f"{libro_tipo} folio {d['folio']}: tipo de documento {d['tipo_dte']} no reconocido.")
             existe = lib.con.execute(
-                "SELECT id, eliminado FROM documento WHERE libro=? AND tipo_dte=? AND rut_contraparte=? AND folio=?",
-                (libro_tipo, d["tipo_dte"], d["rut_contraparte"], d["folio"])).fetchone()
+                "SELECT id, eliminado, motivo_eliminado FROM documento WHERE libro=? AND tipo_dte=? AND rut_contraparte=? "
+                "AND folio=?", (libro_tipo, d["tipo_dte"], d["rut_contraparte"], d["folio"])).fetchone()
             if existe and not existe["eliminado"]:
                 res.duplicados += 1
                 continue
+            if existe and modo != "documento":
+                # Una centralización no deja asiento propio: el documento no se podría volver a borrar.
+                raise ErrorContable(f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']} "
+                                    f"estaba borrada: para registrarla de nuevo, impórtela por documento.")
             valores = (d["razon_social"], d["fecha"], periodo, d["exento"], d["neto"], d["iva"], d["iva_no_rec"],
                        d["iva_uso_comun"], d["iva_retenido"], d["otros_imp"], d["total"], ruta)
             if existe:
@@ -272,6 +276,10 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     " iva_uso_comun=?, iva_retenido=?, otros_imp=?, total=?, fuente=?, estado=NULL, eliminado=NULL,"
                     " motivo_eliminado=NULL, asiento_eliminado=NULL WHERE id=?", valores + (existe["id"],))
                 doc_id = existe["id"]
+                # Las consultas de estado al SII eran de los datos anteriores: no deben mostrarse como actuales.
+                lib.con.execute("DELETE FROM estado_sii WHERE documento=?", (doc_id,))
+                res.alertas.append(f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']}: "
+                                   f"estaba borrada ({existe['motivo_eliminado']}) y se registró de nuevo.")
             else:
                 cur = lib.con.execute(
                     "INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, razon_social, fecha, periodo,"

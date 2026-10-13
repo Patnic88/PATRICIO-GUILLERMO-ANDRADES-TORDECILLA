@@ -16,11 +16,14 @@ def controles(lib: Libro, periodo: str) -> list:
         doc = lib.con.execute(
             f"SELECT COALESCE(SUM(iva*{_signo_sql()}),0) FROM documento WHERE eliminado IS NULL AND libro=? AND periodo=? "
             f"AND (tipo_dte IS NULL OR tipo_dte NOT IN ({fc}))", (libro_doc, periodo)).fetchone()[0]
-        # Cuentan también los contra-asientos que anulan esos registros (por ejemplo, al borrar un documento).
+        # Cuentan también los contra-asientos que anulan esos registros (por ejemplo, al borrar un documento)
+        # y, si alguno de ellos se anuló a su vez, esa anulación: toda la cadena.
         mov = lib.con.execute(
+            "WITH RECURSIVE cadena(numero) AS (SELECT numero FROM asiento WHERE origen=? "
+            "UNION SELECT a.numero FROM asiento a JOIN cadena c ON a.anula_a=c.numero) "
             "SELECT COALESCE(SUM(l.debe - l.haber),0) FROM linea l JOIN asiento s ON s.numero=l.asiento "
-            "WHERE l.cuenta=? AND s.periodo=? AND (s.origen=? OR s.anula_a IN (SELECT numero FROM asiento WHERE origen=?))",
-            (cuenta, periodo, f"rcv-{libro_doc}", f"rcv-{libro_doc}")).fetchone()[0]
+            "WHERE l.cuenta=? AND s.periodo=? AND s.numero IN cadena",
+            (f"rcv-{libro_doc}", cuenta, periodo)).fetchone()[0]
         mov *= signo
         out.append((nombre, doc == mov, f"documentos ${pesos(doc)} / contabilidad ${pesos(mov)}"))
     sin_rut = lib.con.execute("SELECT COUNT(*) FROM documento WHERE eliminado IS NULL AND periodo=? AND rut_contraparte NOT LIKE '%-%'",

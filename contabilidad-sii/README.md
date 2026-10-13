@@ -114,7 +114,10 @@ Qué hace el programa al borrar:
    «Documentos», en «Documentos borrados de este mes».
 3. **Lo anota en la bitácora** de la base.
 
-Si después vuelve a importar el mismo archivo, los documentos se registran de nuevo.
+Si después vuelve a importar el mismo archivo, los documentos borrados se registran de nuevo,
+con un aviso por cada uno (los que no se borraron se omiten como repetidos). Las consultas de
+estado al SII que se hicieron antes del borrado se descartan, porque eran de los datos
+anteriores.
 
 No se puede borrar:
 
@@ -122,12 +125,23 @@ No se puede borrar:
 - si el **F29 del mes ya está registrado** en la contabilidad. Para corregirlo, primero
   anule ese registro en «Pagos y cobros», borre los documentos y vuelva a confirmar el F29;
 - un documento importado con la opción de **centralización mensual** (solo por la línea de
-  comandos), porque comparte su registro con los demás documentos del mes.
+  comandos), porque comparte su registro con los demás documentos del mes. Por lo mismo, un
+  documento borrado no se puede volver a importar en modo centralizado: se importa por
+  documento.
+
+El programa avisa, sin impedir el borrado, cuando:
+
+- el F29 del mes ya se había confirmado sin registro contable (por ejemplo, un mes que solo
+  tiene boletas) o ya se pagó: hay que volver a confirmarlo y, si ya se declaró, rectificarlo;
+- un F29 de un mes siguiente ya se confirmó con el remanente de IVA, que cambia con el borrado;
+- el registro del documento se había anulado a mano en otro mes (posible en versiones
+  anteriores): los controles de esos dos meses pueden quedar descuadrados.
 
 Si hay pagos o cobros registrados con el RUT de un documento borrado, el programa avisa: esos
-movimientos no se anulan solos. En «Pagos y cobros», los registros que vienen de una factura
-o boleta ya no se anulan sueltos (el documento seguiría contando en el F29): el programa
-indica borrarlos en «Documentos».
+movimientos no se anulan solos. En «Pagos y cobros» (y con el comando `anular`) no se anulan
+sueltos los registros que vienen de una factura o boleta, las centralizaciones de documentos
+ni las anulaciones: el documento seguiría contando en el F29 o volvería a la contabilidad sin
+volver al F29. Para los documentos, el programa indica borrarlos en «Documentos».
 
 ## Traer compras y ventas desde el SII (clave tributaria o Clave Única)
 

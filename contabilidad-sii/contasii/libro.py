@@ -185,7 +185,7 @@ class Libro:
         orig = self.con.execute("SELECT * FROM asiento WHERE numero=?", (numero,)).fetchone()
         if not orig:
             raise ErrorContable(f"No existe el asiento {numero}.")
-        if self.con.execute("SELECT 1 FROM asiento WHERE anula_a=?", (numero,)).fetchone():
+        if self.anulado_por(numero):
             raise ErrorContable(f"El asiento {numero} ya fue anulado.")
         a = Asiento(fecha, f"Anula asiento N°{numero}: {motivo}", tipo="anulacion", origen="manual", anula_a=numero)
         for l in self.lineas_de(numero):
@@ -199,6 +199,14 @@ class Libro:
         with self.con:
             db.registrar_bitacora(self.con, "anular", f"{numero} -> {n}: {motivo}")
         return n
+
+    def anulado_por(self, numero: int):
+        """Contra-asiento vigente que anula este asiento, o None. Si ese contra-asiento fue a su vez
+        anulado, el asiento vuelve a estar vigente."""
+        for (r,) in self.con.execute("SELECT numero FROM asiento WHERE anula_a=? ORDER BY numero", (numero,)).fetchall():
+            if self.anulado_por(r) is None:
+                return r
+        return None
 
     def lineas_de(self, numero: int):
         return self.con.execute("SELECT * FROM linea WHERE asiento=? ORDER BY id", (numero,)).fetchall()
