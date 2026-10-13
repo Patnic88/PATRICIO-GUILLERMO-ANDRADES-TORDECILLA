@@ -3,9 +3,10 @@ name: Prueba real Mi Contabilidad 0.2.0 (temporal)
 on:
   push:
     branches: [claude/diagnostico-sii-portal]
+    paths-ignore: ["capturas/**"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   prueba:
@@ -37,8 +38,11 @@ jobs:
           $proc = Start-Process $exe -ArgumentList "--no-abrir", "--puerto", "8799" -PassThru
           try { python prueba/prueba_real.py capturas; if ($LASTEXITCODE -ne 0) { throw "La prueba tuvo fallas" } }
           finally { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
-      - uses: actions/upload-artifact@v4
+      - name: Guardar las capturas en esta rama temporal
         if: always()
-        with:
-          name: capturas
-          path: capturas
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add capturas
+          git commit -m "Capturas de la prueba real (temporal)"
+          git push origin HEAD:claude/diagnostico-sii-portal
