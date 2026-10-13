@@ -5,4 +5,4 @@ tablas, UTM) viven en contasii/parametros/*.json con su fuente y estado de
 verificación; el sistema no los inventa ni los rellena por defecto.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

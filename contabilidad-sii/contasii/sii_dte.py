@@ -96,7 +96,7 @@ def documentos_consultables(lib: Libro, periodo: str, libro_doc: str | None = No
     """Documentos del período que se pueden consultar, con emisor y receptor según el libro."""
     rut_empresa = lib.contribuyente()["rut"]
     tipos = ",".join(str(t) for t in sorted(TIPOS_CONSULTABLES))
-    sql = (f"SELECT * FROM documento WHERE periodo=? AND libro IN ('compra','venta') AND tipo_dte IN ({tipos})"
+    sql = (f"SELECT * FROM documento WHERE eliminado IS NULL AND periodo=? AND libro IN ('compra','venta') AND tipo_dte IN ({tipos})"
            + (" AND libro=?" if libro_doc else "") + " ORDER BY libro, fecha, folio")
     args = (periodo, libro_doc) if libro_doc else (periodo,)
     out = []

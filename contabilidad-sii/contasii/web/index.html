@@ -442,7 +442,10 @@ function formBoleta() {
     try {
       const x = await api(E("boleta"), { periodo: S.periodo, sentido, folio: $("#bFolio").value, fecha, rut: $("#bRut").value,
         nombre: $("#bNom").value, bruto, retenido });
-      $("#bRes").innerHTML = x.importados ? `<div class="msg ok"><b>Boleta registrada.</b></div>` : `<div class="msg warn">Esa boleta ya estaba registrada: no se agregó de nuevo.</div>`;
+      $("#bRes").innerHTML = x.importados ? `<div class="msg ok"><b>Boleta registrada.</b></div><div><button class="btn link peligro" type="button" id="bBorrar">Borrar esta boleta</button></div><div id="bBorrarConf"></div>` : `<div class="msg warn">Esa boleta ya estaba registrada: no se agregó de nuevo.</div>`;
+      if (x.importados) $("#bBorrar").onclick = () => confirmarBorrado($("#bBorrarConf"), { ids: x.documentos,
+        texto: "¿Borrar la boleta que acaba de registrar?", motivo: "Boleta ingresada a mano por error",
+        alListo: () => { const d = $("#bBorrar"); if (d) d.remove(); } });
       if (x.alertas.length) $("#bRes").innerHTML += `<div class="msg warn"><b>Para revisar:</b><ul>${x.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>`;
       if (x.importados) { ["#bFolio", "#bRut", "#bNom", "#bBruto", "#bRet"].forEach(k => $(k).value = ""); retEditada = false; liquido(); toast("Boleta registrada"); }
     } catch (e) { error($("#bRes"), e); }
@@ -455,6 +458,25 @@ async function analizarArchivo(file) {
   try { contenido = await aBase64(file); }
   catch (e) { const box = document.createElement("div"); box.className = "panel"; $("#cola").prepend(box); error(box, e); return; }
   return analizarContenido(file.name, contenido);
+}
+// Pide confirmación y borra documentos importados: el programa anula su asiento y los saca del F29.
+function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alListo }) {
+  cont.innerHTML = `<div class="confirm" role="group" aria-label="Confirmar borrado"><b>${esc(texto)}</b>
+    <span>El programa anula su registro contable (queda en el Libro Diario como anulado) y los quita del F29 y de los libros. Si vuelve a importar el archivo, se registran de nuevo.</span>
+    <label>Motivo<input type="text" class="bMot" value="${esc(motivo)}" placeholder="Ej.: importado en la empresa equivocada"></label>
+    <div class="row"><button class="btn danger bSi" type="button">Sí, borrar</button><button class="btn bCan" type="button">Cancelar</button></div><div class="bErr"></div></div>`;
+  $(".bCan", cont).onclick = () => cont.innerHTML = "";
+  $(".bSi", cont).onclick = async () => {
+    const b = $(".bSi", cont); b.disabled = true;
+    try {
+      const r = await api(`e/${encodeURIComponent(emp)}/documentos-eliminar`, { ids, motivo: $(".bMot", cont).value });
+      cont.innerHTML = `<div class="msg ok" role="status"><b>Listo: ${r.eliminados} documento(s) borrado(s).</b><span>Su registro contable quedó anulado (N° ${r.contra_asientos.join(", ")}).</span></div>`
+        + (r.alertas.length ? `<div class="msg warn"><ul>${r.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : "");
+      toast("Documentos borrados");
+      if (alListo) await alListo(r);
+    } catch (e) { b.disabled = false; error($(".bErr", cont), e); }
+  };
+  $(".bMot", cont).focus();
 }
 // Muestra un archivo para revisarlo e importarlo. La tarjeta queda amarrada a la empresa y al mes de la
 // pantalla donde se abrió (opc.emp), aunque después se cambie de empresa. Devuelve true si se reconoció.
@@ -510,7 +532,11 @@ async function analizarContenido(nombre, contenido, origen, opc = {}) {
         box.querySelectorAll(".selT, .selP, .chkAjeno").forEach(x => x.disabled = true);
         $(".res", box).innerHTML = `<div class="msg ok"><b>Listo: ${x.importados} documentos registrados en la contabilidad.</b>
           ${x.duplicados ? `<span>${x.duplicados} ya estaban registrados y se omitieron.</span>` : ""}${x.anuladas ? `<span>${x.anuladas} boletas anuladas se omitieron.</span>` : ""}${x.omitidas ? `<span>${x.omitidas} filas sin número de boleta legible se omitieron.</span>` : ""}</div>
-          ${x.alertas.length ? `<div class="msg warn"><b>Para revisar con su contador (${x.alertas.length}):</b><ul>${x.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}`;
+          ${x.alertas.length ? `<div class="msg warn"><b>Para revisar con su contador (${x.alertas.length}):</b><ul>${x.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}
+          ${(x.documentos || []).length ? `<div><button class="btn link peligro bDes" type="button">Deshacer esta importación</button></div><div class="desConf"></div>` : ""}`;
+        if ((x.documentos || []).length) $(".bDes", box).onclick = () => confirmarBorrado($(".desConf", box), { ids: x.documentos, emp,
+          texto: `¿Deshacer la importación de «${file.name}»? Se borrarán los ${x.documentos.length} documentos que registró.`,
+          motivo: `Importación deshecha: ${file.name}`, alListo: () => { const d = $(".bDes", box); if (d) d.remove(); } });
         toast("Archivo importado");
       } catch (e) { b.disabled = false; b.textContent = "Importar"; error($(".res", box), e); }
     };
@@ -704,8 +730,9 @@ async function listaMovimientos() {
     l.innerHTML = `<div class="tablewrap"><table><thead><tr><th>N°</th><th>Fecha</th><th>Descripción</th><th class="num">Monto</th><th></th></tr></thead><tbody>
       ${d.asientos.slice().reverse().map(a => { const m = a.lineas.reduce((s, x) => s + x.debe, 0);
         return `<tr class="${a.anulado || a.tipo === "anulacion" ? "anulado" : ""}"><td>${a.numero}</td><td class="fecha">${a.fecha.split("-").reverse().join("-")}</td><td>${esc(a.glosa)}</td><td class="num">${peso(m)}</td>
-        <td>${!S.info.cerrado && !a.anulado && a.tipo !== "anulacion" ? `<button class="btn link small" type="button" data-anular="${a.numero}">Anular</button>` : ""}</td></tr>`; }).join("")}
+        <td>${S.info.cerrado || a.anulado || a.tipo === "anulacion" ? "" : a.de_documento ? `<button class="btn link small" type="button" data-irdocs title="Viene de una factura o boleta importada">Borrar en Documentos</button>` : `<button class="btn link small" type="button" data-anular="${a.numero}">Anular</button>`}</td></tr>`; }).join("")}
       </tbody></table></div><div id="anu"></div>`;
+    l.querySelectorAll("[data-irdocs]").forEach(b => b.onclick = () => { pestana = "documentos"; ir("libros"); });
     l.querySelectorAll("[data-anular]").forEach(b => b.onclick = () => {
       const n = b.dataset.anular;
       $("#anu").innerHTML = `<div class="confirm"><b>¿Anular el registro N° ${n}?</b><p>No se borra: se agrega un registro contrario que lo deja sin efecto, como exige la contabilidad.</p>
@@ -838,6 +865,7 @@ async function libro(t, q) {
       const nom = { compra: "Compra", venta: "Venta", honorario_recibido: "Boleta recibida", honorario_emitido: "Boleta emitida" };
       const pillEst = e => e ? `<span class="pill ${e.nivel === "ok" ? "ok" : e.nivel === "revisar" ? "warn" : "bad"}" title="${esc(e.explicacion)} (consultado ${esc(e.consultado)}, ${e.ambiente === "produccion" ? "producción" : "ambiente de pruebas"})">${esc(e.estado || "error")}</span>` : `<span class="small muted">—</span>`;
       const hayFacturas = r.documentos.some(d => d.libro === "compra" || d.libro === "venta");
+      const periodo = q.split("=")[1], puede = !r.cerrado && !r.f29_asiento && r.documentos.length > 0;
       el.innerHTML = (hayFacturas ? `<details class="panel" id="estSII"><summary><b>Consultar el estado de estas facturas en el SII</b></summary>
           <div class="stack"><p class="muted small">El SII indica si cada factura o nota fue recibida y si sus datos coinciden. Necesita su certificado digital; el archivo y la clave se usan solo en memoria. La consulta no modifica nada en el SII.</p>
           <div class="grid2">
@@ -848,10 +876,29 @@ async function libro(t, q) {
             <label for="eqLibro">Documentos<select id="eqLibro"><option value="">Compras y ventas</option><option value="compra">Solo compras</option><option value="venta">Solo ventas</option></select></label>
           </div>
           <div><button class="btn primary" type="button" id="eqBtn">Consultar en el SII</button></div><div id="eqRes"></div></div></details>` : "")
-        + (r.documentos.length ? `<div class="tablewrap"><table><thead><tr><th>Tipo</th><th>Documento</th><th>Fecha</th><th>RUT</th><th>Nombre</th><th class="num">Neto/Bruto</th><th class="num">IVA/Retención</th><th class="num">Total</th><th>Estado SII</th></tr></thead><tbody>
-        ${r.documentos.map(d => `<tr><td>${nom[d.libro]}</td><td>${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td class="fecha">${d.fecha.split("-").reverse().join("-")}</td><td>${esc(d.rut_contraparte)}</td><td>${esc(d.razon_social)}</td>
-          <td class="num">${peso(d.bruto || d.neto + d.exento)}</td><td class="num">${peso(d.retencion || d.iva)}</td><td class="num">${peso(d.total)}</td><td>${pillEst(est.estados[String(d.id)])}</td></tr>`).join("")}</tbody></table></div>`
-        : `<p class="muted">No hay documentos en este mes.</p>`);
+        + (r.documentos.length ? `${puede ? "" : `<p class="small muted">${esc(r.cerrado ? "Este mes está cerrado: sus documentos no se pueden borrar." : `El F29 de este mes ya está registrado (N° ${r.f29_asiento}). Para borrar documentos, primero anule ese registro en «Pagos y cobros».`)}</p>`}
+        <div class="tablewrap"><table><thead><tr>${puede ? `<th><input type="checkbox" id="docTodos" aria-label="Elegir todos los documentos"></th>` : ""}<th>Tipo</th><th>Documento</th><th>Fecha</th><th>RUT</th><th>Nombre</th><th class="num">Neto/Bruto</th><th class="num">IVA/Retención</th><th class="num">Total</th><th>Estado SII</th></tr></thead><tbody>
+        ${r.documentos.map(d => `<tr>${puede ? `<td><input type="checkbox" class="docSel" value="${d.id}" aria-label="Elegir ${esc(nom[d.libro])} N° ${esc(d.folio)}"></td>` : ""}<td>${nom[d.libro]}</td><td>${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td class="fecha">${d.fecha.split("-").reverse().join("-")}</td><td>${esc(d.rut_contraparte)}</td><td>${esc(d.razon_social)}</td>
+          <td class="num">${peso(d.bruto || d.neto + d.exento)}</td><td class="num">${peso(d.retencion || d.iva)}</td><td class="num">${peso(d.total)}</td><td>${pillEst(est.estados[String(d.id)])}</td></tr>`).join("")}</tbody></table></div>
+        ${puede ? `<div class="row"><button class="btn danger" type="button" id="docBorrar" disabled>Borrar los elegidos</button><span class="small muted" id="docCuenta"></span></div>` : ""}`
+        : `<p class="muted">No hay documentos en este mes.</p>`)
+        + `<div id="docConf"></div>`
+        + (r.eliminados.length ? `<details class="panel"><summary>Documentos borrados de este mes (${r.eliminados.length})</summary>
+          <div class="tablewrap"><table><thead><tr><th>Documento</th><th>RUT</th><th class="num">Total</th><th>Borrado</th><th>Motivo</th><th>Anulado con</th></tr></thead><tbody>
+          ${r.eliminados.map(d => `<tr class="anulado"><td>${nom[d.libro]}: ${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td>${esc(d.rut_contraparte)}</td><td class="num">${peso(d.total)}</td>
+            <td class="fecha">${esc(d.eliminado)}</td><td>${esc(d.motivo)}</td><td>N° ${esc(d.asiento)}</td></tr>`).join("")}</tbody></table></div></details>` : "");
+      if (puede) {
+        const sel = () => [...el.querySelectorAll(".docSel:checked")].map(x => +x.value);
+        const contar = () => { const n = sel().length; $("#docBorrar").disabled = !n; $("#docCuenta").textContent = n ? `${n} elegido(s)` : ""; };
+        el.querySelectorAll(".docSel").forEach(x => x.onchange = contar);
+        $("#docTodos").onchange = () => { el.querySelectorAll(".docSel").forEach(x => x.checked = $("#docTodos").checked); contar(); };
+        $("#docBorrar").onclick = () => {
+          const ids = sel();
+          confirmarBorrado($("#docConf"), { ids, texto: `¿Borrar ${ids.length} documento(s) de ${nomMes(periodo)}?`, motivo: "Importado por error",
+            alListo: async () => { const html = $("#docConf").innerHTML; await libro("documentos", q); if ($("#docConf")) $("#docConf").innerHTML = html; } });
+          $("#docConf").scrollIntoView({ behavior: "smooth", block: "center" });
+        };
+      }
       const btn = $("#eqBtn");
       if (btn) btn.onclick = async () => {
         const f = $("#eqPfx").files[0];

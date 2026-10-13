@@ -126,7 +126,8 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
     libro_doc = f"honorario_{sentido}"
     y, m = map(int, periodo.split("-"))
     fin = f"{periodo}-{monthrange(y, m)[1]:02d}"
-    res = {"importados": 0, "duplicados": 0, "anuladas": 0, "omitidas": 0, "asientos": [], "alertas": []}
+    res = {"importados": 0, "duplicados": 0, "anuladas": 0, "omitidas": 0, "asientos": [], "alertas": [],
+           "documentos": []}
     if tasa is None:
         res["alertas"].append("Sin tasa de retención verificada en parámetros: no se controló el monto retenido.")
 
@@ -149,7 +150,7 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
                 continue
             if es_vca(g("estado")):
                 res["alertas"].append(f"Boleta {folio}: vigente con solicitud de anulación pendiente; se registró. "
-                                      f"Si la anulación se confirma, anule este registro.")
+                                      f"Si la anulación se confirma, bórrela en «Libros» → «Documentos».")
             if not r:
                 if sentido == "emitido":
                     # El informe de emitidas muestra «EMITIDA SIN RECEPTOR» cuando no se identificó al cliente.
@@ -177,8 +178,8 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
             if ret == 0 and sentido == "recibido":
                 res["alertas"].append(f"Boleta {folio} de {r}: sin retención; verificar si correspondía retener.")
             fecha = _fecha_iso(g("fecha"))
-            if lib.con.execute("SELECT 1 FROM documento WHERE libro=? AND rut_contraparte=? AND folio=?",
-                               (libro_doc, r, folio)).fetchone():
+            if lib.con.execute("SELECT 1 FROM documento WHERE libro=? AND rut_contraparte=? AND folio=? "
+                               "AND eliminado IS NULL", (libro_doc, r, folio)).fetchone():
                 res["duplicados"] += 1
                 continue
             cur = lib.con.execute(
@@ -202,21 +203,22 @@ def importar(lib: Libro, ruta: str, sentido: str, periodo: str, params: Parametr
             a.lineas = [l for l in a.lineas if l.debe or l.haber]
             res["asientos"].append(lib.registrar(a, _transaccion=False))
             res["importados"] += 1
+            res["documentos"].append(cur.lastrowid)
     return res
 
 
 def _avisar_si_registrada(lib: Libro, res, libro_doc: str, rut: str, folio: str):
     """Una boleta que ya se registró (por ejemplo, cuando estaba con solicitud de anulación) y ahora
     figura anulada no se quita sola: se avisa para que no siga contando sin que nadie lo note."""
-    doc = lib.con.execute("SELECT id, periodo FROM documento WHERE libro=? AND rut_contraparte=? AND folio=?",
-                          (libro_doc, rut, folio)).fetchone()
+    doc = lib.con.execute("SELECT id, periodo FROM documento WHERE libro=? AND rut_contraparte=? AND folio=? "
+                          "AND eliminado IS NULL", (libro_doc, rut, folio)).fetchone()
     if not doc:
         return
     asientos = [x[0] for x in lib.con.execute(
         "SELECT DISTINCT l.asiento FROM linea l WHERE l.documento=? AND l.asiento NOT IN "
         "(SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL) ORDER BY l.asiento", (doc[0],))]
-    donde = f"el asiento N° {', '.join(map(str, asientos))}" if asientos else "su asiento (ya anulado)"
+    donde = f" (asiento N° {', '.join(map(str, asientos))})" if asientos else ""
     res["alertas"].append(
-        f"Boleta {folio}{' de ' + rut if rut else ''}: ya estaba registrada en {doc[1]} y ahora el SII la informa "
-        f"ANULADA. El programa no la quitó: sigue en el libro de honorarios y su monto sigue contando en la "
-        f"propuesta del F29 de ese mes. Anule {donde} y descuente esta boleta al revisar el F29.")
+        f"Boleta {folio}{' de ' + rut if rut else ''}: ya estaba registrada en {doc[1]}{donde} y ahora el SII la "
+        f"informa ANULADA. El programa no la quitó sola: sigue contando en el F29 de ese mes. Para quitarla, "
+        f"bórrela en «Libros» → «Documentos» de {doc[1]}.")

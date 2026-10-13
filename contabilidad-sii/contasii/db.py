@@ -5,6 +5,9 @@ Principios de integridad:
 - Cada asiento lleva un hash encadenado al anterior (bitácora inmutable), de
   modo que cualquier alteración posterior de la base es detectable.
 - Un período cerrado no admite nuevos asientos.
+- Un documento importado no se borra de la tabla: se marca como eliminado y su asiento se
+  anula con un contra-asiento (las líneas de los asientos lo siguen apuntando y forman parte
+  del hash).
 """
 
 import sqlite3
@@ -80,6 +83,9 @@ CREATE TABLE IF NOT EXISTS documento (
     total           INTEGER NOT NULL DEFAULT 0,
     estado          TEXT,
     fuente          TEXT,                    -- archivo de origen
+    eliminado       TEXT,                    -- fecha y hora en que se borró (NULL = vigente)
+    motivo_eliminado TEXT,
+    asiento_eliminado INTEGER,               -- contra-asiento que anuló su registro
     UNIQUE (libro, tipo_dte, rut_contraparte, folio)
 );
 
@@ -109,12 +115,27 @@ CREATE TABLE IF NOT EXISTS bitacora (
 """
 
 
+# Columnas agregadas después de la primera versión: se añaden a las bases existentes al abrirlas.
+COLUMNAS_NUEVAS = {"documento": [("eliminado", "TEXT"), ("motivo_eliminado", "TEXT"), ("asiento_eliminado", "INTEGER")]}
+
+
 def conectar(ruta: str) -> sqlite3.Connection:
     con = sqlite3.connect(ruta)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
     con.executescript(ESQUEMA)
+    _migrar(con)
     return con
+
+
+def _migrar(con: sqlite3.Connection) -> None:
+    for tabla, columnas in COLUMNAS_NUEVAS.items():
+        existentes = {r[1] for r in con.execute(f"PRAGMA table_info({tabla})")}
+        faltan = [(c, t) for c, t in columnas if c not in existentes]
+        if faltan:
+            with con:
+                for c, t in faltan:
+                    con.execute(f"ALTER TABLE {tabla} ADD COLUMN {c} {t}")
 
 
 def registrar_bitacora(con, accion: str, detalle: str = "") -> None:

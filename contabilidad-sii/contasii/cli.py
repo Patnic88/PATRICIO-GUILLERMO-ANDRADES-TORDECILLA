@@ -9,7 +9,7 @@ import sys
 import tempfile
 from calendar import monthrange
 
-from . import controles, honorarios, impuestos, obligaciones, rcv, reportes, tablas
+from . import controles, documentos, honorarios, impuestos, obligaciones, rcv, reportes, tablas
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros
 
@@ -89,6 +89,25 @@ def cmd_importar_honorarios(lib, a):
     r = _importar(lib, a.archivo, lambda ruta: honorarios.importar(lib, ruta, a.sentido, a.periodo, _params(a.periodo)))
     print(f"Honorarios {a.sentido}s {a.periodo}: {r['importados']} boletas, {r['duplicados']} duplicadas, "
           f"{r['anuladas']} anuladas omitidas.")
+    _alertas(r["alertas"])
+
+
+def cmd_documentos(lib, a):
+    filtro = "" if a.borrados else " AND eliminado IS NULL"
+    filas = lib.con.execute(f"SELECT * FROM documento WHERE periodo=?{filtro} ORDER BY libro, fecha, folio",
+                            (a.periodo,)).fetchall()
+    if not filas:
+        print(f"Sin documentos en {a.periodo}.")
+    for d in filas:
+        borrado = f"  [BORRADO {d['eliminado']}: {d['motivo_eliminado']}]" if d["eliminado"] else ""
+        print(f"{d['id']:>6}  {d['libro']:<18} {d['tipo_dte'] or '':>3} N°{d['folio']:<10} {d['fecha']}  "
+              f"{d['rut_contraparte']:<12} {d['total']:>12}{borrado}")
+
+
+def cmd_borrar_documento(lib, a):
+    r = documentos.eliminar(lib, a.id, a.motivo)
+    print(f"{r['eliminados']} documento(s) borrado(s). Contra-asiento(s): "
+          f"{', '.join(f'N°{n}' for n in r['contra_asientos'])}.")
     _alertas(r["alertas"])
 
 
@@ -235,6 +254,16 @@ def parser():
     p.add_argument("--sentido", choices=["recibido", "emitido"], required=True)
     p.add_argument("--periodo", required=True)
     p.set_defaults(f=cmd_importar_honorarios)
+
+    p = sp.add_parser("documentos", help="listar los documentos importados de un período, con su número interno")
+    p.add_argument("periodo")
+    p.add_argument("--borrados", action="store_true", help="incluir los documentos borrados")
+    p.set_defaults(f=cmd_documentos)
+
+    p = sp.add_parser("borrar-documento", help="borrar documentos importados (anula su asiento y los saca del F29)")
+    p.add_argument("id", type=int, nargs="+", help="número interno (ver el comando documentos)")
+    p.add_argument("--motivo", required=True)
+    p.set_defaults(f=cmd_borrar_documento)
 
     for nombre, f, ayuda in (("diario", cmd_diario, "libro diario"), ("balance", cmd_balance, "balance de 8 columnas"),
                              ("resultados", cmd_resultados, "estado de resultados")):

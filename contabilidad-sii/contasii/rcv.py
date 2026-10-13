@@ -74,6 +74,7 @@ class ResultadoImportacion:
     duplicados: int = 0
     asientos: list = field(default_factory=list)
     alertas: list = field(default_factory=list)
+    documentos: list = field(default_factory=list)  # id de cada documento registrado (para poder deshacer)
 
 
 def _entero(v) -> int:
@@ -256,20 +257,30 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
             if d["tipo_dte"] not in TIPOS_DTE:
                 res.alertas.append(f"{libro_tipo} folio {d['folio']}: tipo de documento {d['tipo_dte']} no reconocido.")
             existe = lib.con.execute(
-                "SELECT id FROM documento WHERE libro=? AND tipo_dte=? AND rut_contraparte=? AND folio=?",
+                "SELECT id, eliminado FROM documento WHERE libro=? AND tipo_dte=? AND rut_contraparte=? AND folio=?",
                 (libro_tipo, d["tipo_dte"], d["rut_contraparte"], d["folio"])).fetchone()
-            if existe:
+            if existe and not existe["eliminado"]:
                 res.duplicados += 1
                 continue
-            cur = lib.con.execute(
-                "INSERT INTO documento (libro, tipo_dte, rut_contraparte, razon_social, folio, fecha, periodo, exento,"
-                " neto, iva, iva_no_rec, iva_uso_comun, iva_retenido, otros_imp, total, fuente)"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (libro_tipo, d["tipo_dte"], d["rut_contraparte"], d["razon_social"], d["folio"], d["fecha"], periodo,
-                 d["exento"], d["neto"], d["iva"], d["iva_no_rec"], d["iva_uso_comun"], d["iva_retenido"],
-                 d["otros_imp"], d["total"], ruta))
-            doc_id = cur.lastrowid
+            valores = (d["razon_social"], d["fecha"], periodo, d["exento"], d["neto"], d["iva"], d["iva_no_rec"],
+                       d["iva_uso_comun"], d["iva_retenido"], d["otros_imp"], d["total"], ruta)
+            if existe:
+                # Se había borrado: vuelve a quedar vigente con los datos de este archivo. La clave única
+                # (libro, tipo, RUT, folio) impide otra fila; su borrado anterior queda en la bitácora.
+                lib.con.execute(
+                    "UPDATE documento SET razon_social=?, fecha=?, periodo=?, exento=?, neto=?, iva=?, iva_no_rec=?,"
+                    " iva_uso_comun=?, iva_retenido=?, otros_imp=?, total=?, fuente=?, estado=NULL, eliminado=NULL,"
+                    " motivo_eliminado=NULL, asiento_eliminado=NULL WHERE id=?", valores + (existe["id"],))
+                doc_id = existe["id"]
+            else:
+                cur = lib.con.execute(
+                    "INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, razon_social, fecha, periodo,"
+                    " exento, neto, iva, iva_no_rec, iva_uso_comun, iva_retenido, otros_imp, total, fuente)"
+                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (libro_tipo, d["tipo_dte"], d["rut_contraparte"], d["folio"]) + valores)
+                doc_id = cur.lastrowid
             res.importados += 1
+            res.documentos.append(doc_id)
 
             if libro_tipo == "compra":
                 lineas = _lineas_compra(lib, d, res.alertas)

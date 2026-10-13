@@ -28,7 +28,7 @@ from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from . import (controles, honorarios, impuestos, navegador, obligaciones, operaciones, rcv, reportes, sii_dte,
+from . import (controles, documentos, honorarios, impuestos, navegador, obligaciones, operaciones, rcv, reportes, sii_dte,
                sii_portal, sii_ws, tablas)
 from . import rut as rutmod
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
@@ -290,11 +290,12 @@ class App:
         saldos = {s["codigo"]: s["debe"] - s["haber"] for s in lib.saldos()}
         docs = {}
         if periodo:
-            for r in lib.con.execute("SELECT libro, COUNT(*) n, SUM(total) t FROM documento WHERE periodo=? "
+            for r in lib.con.execute("SELECT libro, COUNT(*) n, SUM(total) t FROM documento WHERE eliminado IS NULL "
+                                     "AND periodo=? "
                                      "GROUP BY libro", (periodo,)):
                 docs[r["libro"]] = {"n": r["n"], "total": r["t"]}
         periodos = [r[0] for r in lib.con.execute(
-            "SELECT periodo FROM asiento UNION SELECT periodo FROM documento ORDER BY 1 DESC")]
+            "SELECT periodo FROM asiento UNION SELECT periodo FROM documento WHERE eliminado IS NULL ORDER BY 1 DESC")]
         utm = None
         if periodo:
             try:
@@ -379,11 +380,12 @@ class App:
         try:
             if tipo in ("compra", "venta"):
                 r = rcv.importar(lib, tmp, tipo, periodo, modo)
-                res = {"importados": r.importados, "duplicados": r.duplicados, "alertas": r.alertas}
+                res = {"importados": r.importados, "duplicados": r.duplicados, "alertas": r.alertas,
+                       "documentos": r.documentos if modo == "documento" else []}
             elif tipo in ("honorario_recibido", "honorario_emitido"):
                 r = honorarios.importar(lib, tmp, tipo.split("_")[1], periodo, self.params(periodo))
                 res = {"importados": r["importados"], "duplicados": r["duplicados"], "alertas": r["alertas"],
-                       "anuladas": r["anuladas"], "omitidas": r["omitidas"]}
+                       "anuladas": r["anuladas"], "omitidas": r["omitidas"], "documentos": r["documentos"]}
             else:
                 raise ErrorUsuario("Tipo de archivo no reconocido.")
         finally:
@@ -430,7 +432,16 @@ class App:
         motivo = (b.get("motivo") or "").strip()
         if not motivo:
             raise ErrorUsuario("Indique el motivo de la anulación.")
-        return {"numero": lib.anular(int(b.get("numero")), date.today().isoformat(), motivo)}
+        try:
+            numero = int(b.get("numero"))
+        except (TypeError, ValueError):
+            raise ErrorUsuario("Registro no válido.")
+        # Anular solo el asiento de una factura o boleta dejaría el documento contando en el F29.
+        if lib.con.execute("SELECT 1 FROM linea l JOIN documento d ON d.id=l.documento WHERE l.asiento=? "
+                           "AND d.eliminado IS NULL", (numero,)).fetchone():
+            raise ErrorUsuario("Este registro viene de una factura o boleta importada. Para quitarlo, bórrela en "
+                               "«Libros» → «Documentos»: así también deja de contar en el F29.")
+        return {"numero": lib.anular(numero, date.today().isoformat(), motivo)}
 
     # ---- F29
     def _propuesta(self, lib, q):
@@ -507,6 +518,7 @@ class App:
         anulados = {r[0] for r in lib.con.execute("SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL")}
         return {"asientos": [{"numero": a["numero"], "fecha": a["fecha"], "glosa": a["glosa"], "origen": a["origen"],
                               "tipo": a["tipo"], "anulado": a["numero"] in anulados,
+                              "de_documento": any(l["documento"] for l in ls),
                               "lineas": [{"cuenta": l["cuenta"], "nombre": l["nombre"], "debe": l["debe"],
                                           "haber": l["haber"], "rut": l["rut_aux"] or ""} for l in ls]}
                              for a, ls in lib.libro_diario(desde, hasta)]}
@@ -528,11 +540,25 @@ class App:
                 "ingresos": ing, "gastos": gas, "resultado": res}
 
     def documentos(self, lib, q, b):
-        rows = lib.con.execute("SELECT * FROM documento WHERE periodo=? ORDER BY libro, fecha, folio",
-                               (q.get("periodo", ""),)).fetchall()
-        return {"documentos": [{k: r[k] for k in ("id", "libro", "tipo_dte", "rut_contraparte", "razon_social", "folio",
-                                                    "fecha", "neto", "exento", "iva", "bruto", "retencion", "total")}
-                               for r in rows], "tipos": rcv.TIPOS_DTE}
+        periodo = q.get("periodo", "")
+        campos = ("id", "libro", "tipo_dte", "rut_contraparte", "razon_social", "folio", "fecha", "neto", "exento", "iva",
+                  "bruto", "retencion", "total")
+        rows = lib.con.execute("SELECT * FROM documento WHERE periodo=? ORDER BY libro, fecha, folio", (periodo,)).fetchall()
+        f29 = documentos.f29_registrado(lib, periodo) if PERIODO.match(periodo) else None
+        return {"documentos": [{k: r[k] for k in campos} for r in rows if not r["eliminado"]],
+                "eliminados": [{**{k: r[k] for k in campos}, "eliminado": r["eliminado"], "motivo": r["motivo_eliminado"],
+                                "asiento": r["asiento_eliminado"]} for r in rows if r["eliminado"]],
+                "tipos": rcv.TIPOS_DTE, "cerrado": lib.periodo_cerrado(periodo) if periodo else False,
+                "f29_asiento": f29}
+
+    def documentos_eliminar(self, lib, q, b):
+        """Borra documentos importados: anula su asiento y los saca del F29 y de los libros."""
+        ids = b.get("ids")
+        if not isinstance(ids, list) or not ids:
+            raise ErrorUsuario("No eligió documentos para borrar.")
+        if len(ids) > 5000:
+            raise ErrorUsuario("Demasiados documentos de una vez.")
+        return documentos.eliminar(lib, ids, b.get("motivo") or "")
 
     def excel(self, lib, q, b):
         desde, hasta = self._rango(q)
@@ -665,6 +691,7 @@ POR_EMPRESA = {
     "f29": ("GET", "f29"), "f29-confirmar": ("POST", "f29_confirmar"), "revision": ("GET", "revision"),
     "cerrar": ("POST", "cerrar"), "diario": ("GET", "diario"), "mayor": ("GET", "mayor"),
     "balance": ("GET", "balance"), "resultados": ("GET", "resultados"), "documentos": ("GET", "documentos"),
+    "documentos-eliminar": ("POST", "documentos_eliminar"),
     "excel": ("GET", "excel"), "integridad": ("GET", "integridad"), "sii-estados": ("GET", "sii_estados"),
 }
 

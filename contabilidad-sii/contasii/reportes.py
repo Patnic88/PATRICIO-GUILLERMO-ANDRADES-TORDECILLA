@@ -155,7 +155,8 @@ def exportar_excel(lib: Libro, ruta: str, desde: str, hasta: str, propuesta=None
                               ("honorario_recibido", "Honorarios recibidos"), ("honorario_emitido", "Honorarios emitidos")):
         ws = hoja(titulo, ["Período", "Tipo DTE", "RUT", "Razón social", "Folio", "Fecha", "Exento", "Neto", "IVA",
                            "IVA no rec.", "IVA uso común", "Bruto", "Retención", "Total"])
-        for d in lib.con.execute("SELECT * FROM documento WHERE libro=? AND fecha BETWEEN ? AND ? ORDER BY fecha, folio",
+        for d in lib.con.execute("SELECT * FROM documento WHERE eliminado IS NULL AND libro=? AND fecha BETWEEN ? AND ? "
+                                 "ORDER BY fecha, folio",
                                  (libro_doc, desde, hasta)):
             ws.append([d["periodo"], d["tipo_dte"], d["rut_contraparte"], d["razon_social"], d["folio"], d["fecha"],
                        d["exento"], d["neto"], d["iva"], d["iva_no_rec"], d["iva_uso_comun"], d["bruto"],

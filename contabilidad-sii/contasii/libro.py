@@ -180,7 +180,7 @@ class Libro:
             _insertar()
         return numero
 
-    def anular(self, numero: int, fecha: str, motivo: str) -> int:
+    def anular(self, numero: int, fecha: str, motivo: str, _transaccion=True) -> int:
         """Anula un asiento mediante contra-asiento (nunca se borra)."""
         orig = self.con.execute("SELECT * FROM asiento WHERE numero=?", (numero,)).fetchone()
         if not orig:
@@ -191,6 +191,10 @@ class Libro:
         for l in self.lineas_de(numero):
             a.lineas.append(Linea(l["cuenta"], debe=l["haber"], haber=l["debe"],
                                   detalle=l["detalle"] or "", rut_aux=l["rut_aux"] or "", documento=l["documento"]))
+        if not _transaccion:
+            n = self.registrar(a, _transaccion=False)
+            db.registrar_bitacora(self.con, "anular", f"{numero} -> {n}: {motivo}")
+            return n
         n = self.registrar(a)
         with self.con:
             db.registrar_bitacora(self.con, "anular", f"{numero} -> {n}: {motivo}")

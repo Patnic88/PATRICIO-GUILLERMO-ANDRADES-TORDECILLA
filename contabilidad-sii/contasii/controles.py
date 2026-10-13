@@ -14,14 +14,16 @@ def controles(lib: Libro, periodo: str) -> list:
     for libro_doc, cuenta, nombre, signo in (("venta", A("iva_df"), "IVA de ventas", -1),
                                              ("compra", A("iva_cf"), "IVA de compras", 1)):
         doc = lib.con.execute(
-            f"SELECT COALESCE(SUM(iva*{_signo_sql()}),0) FROM documento WHERE libro=? AND periodo=? "
+            f"SELECT COALESCE(SUM(iva*{_signo_sql()}),0) FROM documento WHERE eliminado IS NULL AND libro=? AND periodo=? "
             f"AND (tipo_dte IS NULL OR tipo_dte NOT IN ({fc}))", (libro_doc, periodo)).fetchone()[0]
+        # Cuentan también los contra-asientos que anulan esos registros (por ejemplo, al borrar un documento).
         mov = lib.con.execute(
             "SELECT COALESCE(SUM(l.debe - l.haber),0) FROM linea l JOIN asiento s ON s.numero=l.asiento "
-            "WHERE l.cuenta=? AND s.origen=? AND s.periodo=?", (cuenta, f"rcv-{libro_doc}", periodo)).fetchone()[0]
+            "WHERE l.cuenta=? AND s.periodo=? AND (s.origen=? OR s.anula_a IN (SELECT numero FROM asiento WHERE origen=?))",
+            (cuenta, periodo, f"rcv-{libro_doc}", f"rcv-{libro_doc}")).fetchone()[0]
         mov *= signo
         out.append((nombre, doc == mov, f"documentos ${pesos(doc)} / contabilidad ${pesos(mov)}"))
-    sin_rut = lib.con.execute("SELECT COUNT(*) FROM documento WHERE periodo=? AND rut_contraparte NOT LIKE '%-%'",
+    sin_rut = lib.con.execute("SELECT COUNT(*) FROM documento WHERE eliminado IS NULL AND periodo=? AND rut_contraparte NOT LIKE '%-%'",
                               (periodo,)).fetchone()[0]
     out.append(("Documentos con RUT válido", sin_rut == 0, f"{sin_rut} sin RUT válido"))
     problemas = lib.verificar_integridad()

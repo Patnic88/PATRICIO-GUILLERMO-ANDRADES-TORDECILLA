@@ -20,7 +20,7 @@ comandos para contadores.
 ### Windows: instalador, sin Python
 
 1. Descargue **`Instalar-MiContabilidad.exe`** desde la sección **Releases** del
-   repositorio, versión «Mi Contabilidad 0.3.0 (preliminar)».
+   repositorio, versión «Mi Contabilidad 0.4.0 (preliminar)».
 2. Haga doble clic en el archivo. El programa no está firmado digitalmente, así que
    Windows puede mostrar **«Windows protegió su PC»**: presione **«Más información»** y
    luego **«Ejecutar de todos modos»**.
@@ -91,6 +91,43 @@ carpeta de datos), con la fecha y hora en que se eliminó. Desde la Papelera, al
 misma pantalla, puede **«Restaurar»** la contabilidad o **«Borrar para siempre»**; para borrar
 hay que escribir el RUT y no se puede deshacer. No se puede restaurar encima de una
 contabilidad activa con el mismo RUT.
+
+### Borrar documentos o boletas importados
+
+Para quitar facturas, notas o boletas de honorarios que se importaron por error (por ejemplo,
+en la empresa equivocada o en el mes equivocado):
+
+- **Al importar:** la tarjeta del archivo ofrece **«Deshacer esta importación»**, que borra
+  los documentos que ese archivo registró. Una boleta agregada a mano ofrece **«Borrar esta
+  boleta»**.
+- **Después:** en **«Libros» → «Documentos»** del mes, marque los documentos y presione
+  **«Borrar los elegidos»**. Se pide un motivo.
+
+Qué hace el programa al borrar:
+
+1. **Anula el registro contable** de cada documento con un registro contrario fechado igual
+   que el original. Los dos quedan en el Libro Diario: la contabilidad no borra asientos, los
+   anula.
+2. **Marca el documento como borrado**, con la fecha, el motivo y el número del registro que
+   lo anuló. Deja de contar en el F29, en los libros, en el Excel, en los controles de
+   «Revisar y cerrar» y en la consulta de estado al SII. Los borrados se ven al pie de
+   «Documentos», en «Documentos borrados de este mes».
+3. **Lo anota en la bitácora** de la base.
+
+Si después vuelve a importar el mismo archivo, los documentos se registran de nuevo.
+
+No se puede borrar:
+
+- en un **mes cerrado**;
+- si el **F29 del mes ya está registrado** en la contabilidad. Para corregirlo, primero
+  anule ese registro en «Pagos y cobros», borre los documentos y vuelva a confirmar el F29;
+- un documento importado con la opción de **centralización mensual** (solo por la línea de
+  comandos), porque comparte su registro con los demás documentos del mes.
+
+Si hay pagos o cobros registrados con el RUT de un documento borrado, el programa avisa: esos
+movimientos no se anulan solos. En «Pagos y cobros», los registros que vienen de una factura
+o boleta ya no se anulan sueltos (el documento seguiría contando en el F29): el programa
+indica borrarlos en «Documentos».
 
 ## Traer compras y ventas desde el SII (clave tributaria o Clave Única)
 
@@ -214,8 +251,9 @@ número de boleta no se puede leer, se omite **con una alerta** para registrarla
 número se lee sin separadores de miles ni ceros a la izquierda («1.002» = 1002,
 «0045» = 45), así la misma boleta no se registra dos veces si llega por dos vías. Si la
 tabla trae «Folio» y «N°», se usa «Folio». Si una boleta ya registrada aparece después
-como ANULADA, el programa no la quita: avisa el asiento que hay que anular y que su monto
-sigue contando en la propuesta del F29 de ese mes. Una boleta «vigente con solicitud de
+como ANULADA, el programa no la quita sola: avisa que sigue contando en el F29 de ese mes y
+que se puede borrar en «Libros» → «Documentos» (ver «Borrar documentos o boletas
+importados»). Una boleta «vigente con solicitud de
 anulación pendiente» se registra con una alerta. Una boleta emitida sin receptor se
 registra sin cliente, con alerta. Si el informe de emitidas trae retención a cargo del
 emisor («Ret. Emisor»), no se registra y queda como alerta para revisarla.
@@ -353,6 +391,9 @@ $C importar-rcv RCV_VENTA_202610.csv  --libro venta  --periodo 2026-10
 $C importar-honorarios bhe_recibidas.csv --sentido recibido --periodo 2026-10
 $C asiento --fecha 2026-10-31 --glosa "Pago proveedor" --linea 2.1.01:1190000:0:76111111-6 --linea 1.1.02:0:1190000
 
+$C documentos 2026-10               # lista los documentos con su número interno (--borrados incluye los borrados)
+$C borrar-documento 12 13 --motivo "importado por error"   # anula su asiento y los saca del F29
+
 $C f29 2026-10                      # propuesta de trabajo; agregue --contabilizar --guardar-remanente
 $C controles 2026-10                # cuadraturas
 $C balance --periodo 2026-10
@@ -427,7 +468,6 @@ Para un año nuevo, copie `2026.json` a `AAAA.json` y actualice cada valor con s
   se descarga en la ventana del SII o se ingresa a mano. La descarga automática de compras
   y ventas está pendiente de verificar con una sesión real (ver «Traer compras y ventas
   desde el SII»).
-- No borra documentos ya importados (el botón «Eliminar» es para empresas completas).
 - No envía libros contables electrónicos al SII ni genera sus formatos oficiales.
 - No calcula la corrección monetaria, la depreciación tributaria, la RLI, el F22, los registros
   empresariales (RAI, SAC, etc.) ni las declaraciones juradas.

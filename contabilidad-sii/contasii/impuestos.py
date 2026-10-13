@@ -73,20 +73,20 @@ def propuesta_f29(lib: Libro, params: Parametros, periodo: str, *, impuesto_unic
     fc = ",".join(str(x) for x in sorted(FACTURAS_COMPRA))
 
     # Débito fiscal
-    debito = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE libro='venta' AND periodo=? "
+    debito = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE eliminado IS NULL AND libro='venta' AND periodo=? "
                         f"AND (tipo_dte IS NULL OR tipo_dte NOT IN ({fc}))", (periodo,))
     iva_ret_fc = _suma(lib, f"SELECT SUM(CASE WHEN iva_retenido>0 THEN iva_retenido ELSE iva END*{s}) "
-                            f"FROM documento WHERE libro='venta' AND periodo=? AND tipo_dte IN ({fc})", (periodo,))
-    n_ret_ventas = _suma(lib, f"SELECT COUNT(*) FROM documento WHERE libro='venta' AND periodo=? AND iva_retenido>0 "
+                            f"FROM documento WHERE eliminado IS NULL AND libro='venta' AND periodo=? AND tipo_dte IN ({fc})", (periodo,))
+    n_ret_ventas = _suma(lib, f"SELECT COUNT(*) FROM documento WHERE eliminado IS NULL AND libro='venta' AND periodo=? AND iva_retenido>0 "
                               f"AND tipo_dte NOT IN ({fc})", (periodo,))
     if n_ret_ventas:
         p.alertas.append(f"{n_ret_ventas} venta(s) con IVA retenido por el comprador: ajustar el débito declarado.")
 
     # Crédito fiscal
-    credito = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE libro='compra' AND periodo=?", (periodo,))
-    credito_fc = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE libro='venta' AND periodo=? "
+    credito = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE eliminado IS NULL AND libro='compra' AND periodo=?", (periodo,))
+    credito_fc = _suma(lib, f"SELECT SUM(iva*{s}) FROM documento WHERE eliminado IS NULL AND libro='venta' AND periodo=? "
                             f"AND tipo_dte IN ({fc})", (periodo,))
-    uso_comun = _suma(lib, f"SELECT SUM(iva_uso_comun*{s}) FROM documento WHERE libro='compra' AND periodo=?",
+    uso_comun = _suma(lib, f"SELECT SUM(iva_uso_comun*{s}) FROM documento WHERE eliminado IS NULL AND libro='compra' AND periodo=?",
                       (periodo,))
     credito_uc = 0
     if uso_comun:
@@ -119,14 +119,14 @@ def propuesta_f29(lib: Libro, params: Parametros, periodo: str, *, impuesto_unic
     p.remanente_siguiente = max(-iva_determinado, 0)
 
     # PPM
-    ingresos = _suma(lib, f"SELECT SUM((neto+exento)*{s}) FROM documento WHERE libro='venta' AND periodo=? "
+    ingresos = _suma(lib, f"SELECT SUM((neto+exento)*{s}) FROM documento WHERE eliminado IS NULL AND libro='venta' AND periodo=? "
                           f"AND (tipo_dte IS NULL OR tipo_dte NOT IN ({fc}))", (periodo,))
-    ingresos += _suma(lib, "SELECT SUM(bruto) FROM documento WHERE libro='honorario_emitido' AND periodo=?",
+    ingresos += _suma(lib, "SELECT SUM(bruto) FROM documento WHERE eliminado IS NULL AND libro='honorario_emitido' AND periodo=?",
                       (periodo,))
     ppm = 0
     reg = c["regimen"]
     if reg == "PN_HONORARIOS":
-        base_ppm = _suma(lib, "SELECT SUM(bruto) FROM documento WHERE libro='honorario_emitido' AND periodo=? "
+        base_ppm = _suma(lib, "SELECT SUM(bruto) FROM documento WHERE eliminado IS NULL AND libro='honorario_emitido' AND periodo=? "
                               "AND retencion=0", (periodo,))
         if base_ppm:
             tasa = tasa_ppm if tasa_ppm is not None else params.valor_opcional("ppm_honorarios_sin_retencion")
@@ -147,7 +147,7 @@ def propuesta_f29(lib: Libro, params: Parametros, periodo: str, *, impuesto_unic
         if tasa_ppm is not None and base_ppm > 0:
             ppm = int(round(base_ppm * tasa_ppm))
 
-    ret_hon = _suma(lib, "SELECT SUM(retencion) FROM documento WHERE libro='honorario_recibido' AND periodo=?",
+    ret_hon = _suma(lib, "SELECT SUM(retencion) FROM documento WHERE eliminado IS NULL AND libro='honorario_recibido' AND periodo=?",
                     (periodo,))
 
     p.lineas = [
