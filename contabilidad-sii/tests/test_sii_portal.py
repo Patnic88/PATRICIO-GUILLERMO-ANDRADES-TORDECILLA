@@ -29,6 +29,7 @@ def leer(nombre):
 
 class SIISimulado(BaseHTTPRequestHandler):
     pedidos = []
+    cierres = 0
 
     def log_message(self, *a):
         pass
@@ -59,14 +60,23 @@ class SIISimulado(BaseHTTPRequestHandler):
               <input id="clave" name="clave" type="password"><button id="bt_ingresar">Ingresar</button></form>
               <script>document.getElementById('referencia').value = location.search.slice(1);</script></body></html>"""
             return self._enviar(200, html.encode())
+        if u.path == "/cgi_AUT2000/autTermino.cgi":  # «Cerrar Sesión» del SII: borra la sesión
+            type(self).cierres += 1
+            return self._enviar(200, b"<html><body>Sesion cerrada</body></html>", extra=[
+                ("Set-Cookie", "RUT_NS=; Path=/; Max-Age=0"), ("Set-Cookie", "DV_NS=; Path=/; Max-Age=0"),
+                ("Set-Cookie", "TOKEN=; Path=/; Max-Age=0")])
         if u.path == "/misii":
             return self._enviar(200, b"<html><body>Mi SII</body></html>")
         if u.path == "/consdcvinternetui/":
             if not self._cookies().get("RUT_NS"):
                 return self._enviar(302, extra=[("Location", f"{base}/AUT2000/InicioAutenticacion/IngresoRutClave.html?"
                                                              f"{base}/consdcvinternetui/")])
-            return self._enviar(200, b'<html><body>RCV <a id="desc" href="/consdcvinternetui/descarga">'
+            return self._enviar(200, b'<html><head><script src="/recaptcha/api.js?render=CLAVE-SITIO"></script></head>'
+                                     b'<body>RCV <a id="desc" href="/consdcvinternetui/descarga">'
                                      b'Descargar Detalles</a></body></html>')
+        if u.path == "/recaptcha/api.js":  # imita grecaptcha v3: entrega un código que depende de la clave y la acción
+            return self._enviar(200, b"window.grecaptcha = {ready: f => f(), execute: (k, o) => "
+                                     b"Promise.resolve('rc-' + k + '-' + o.action)};", "application/javascript")
         if u.path == "/consdcvinternetui/descarga":
             return self._enviar(200, leer("rcv_compras_2026-10.csv").encode("latin-1"), "text/csv",
                                 [("Content-Disposition", 'attachment; filename="RCV_COMPRA_REGISTRO_202610.csv"')])
@@ -89,6 +99,10 @@ class SIISimulado(BaseHTTPRequestHandler):
             type(self).pedidos.append((servicio, cuerpo, self._cookies()))
             if self._cookies().get("TOKEN") != TOKEN or cuerpo["metaData"]["conversationId"] != TOKEN:
                 return self._enviar(401, b'{"respEstado":{"codRespuesta":99}}', "application/json")
+            accion = cuerpo["data"]["accionRecaptcha"]
+            if cuerpo["data"].get("tokenRecaptcha") != f"rc-CLAVE-SITIO-{accion}":
+                r = {"respEstado": {"codRespuesta": 1, "msgeRespuesta": "Captcha inválido"}, "data": None}
+                return self._enviar(200, json.dumps(r).encode(), "application/json")
             if cuerpo["data"]["rutEmisor"] == "99999999":
                 r = {"respEstado": {"codRespuesta": 2, "msgeRespuesta": "Sin acceso a la empresa"}, "data": None}
                 return self._enviar(200, json.dumps(r).encode(), "application/json")
@@ -173,7 +187,8 @@ class TestPortalConNavegador(unittest.TestCase):
 
     def portal(self, retorno):
         p = sii_portal.PortalSII(url_ingreso=f"{self.base}/AUT2000/InicioAutenticacion/IngresoRutClave.html?{retorno}",
-                                 url_rcv=f"{self.base}/consdcvinternetui/", dominio="127.0.0.1", headless=True)
+                                 url_rcv=f"{self.base}/consdcvinternetui/", dominio="127.0.0.1", headless=True,
+                                 url_cerrar=f"{self.base}/cgi_AUT2000/autTermino.cgi")
         self.addCleanup(p.desconectar)
         return p
 
@@ -253,7 +268,9 @@ class TestPortalConNavegador(unittest.TestCase):
         self.assertIsNotNone(p.descargar("76111111-6", "2026-10", "compra"))
         self.assertEqual(len(p._pestanas()), 2)
 
+        cierres = SIISimulado.cierres
         p.desconectar()
+        self.assertEqual(SIISimulado.cierres, cierres + 1)  # se cerró la sesión en el SII antes de cerrar la ventana
         self.assertEqual(p.estado()["estado"], "desconectado")
         self.assertFalse(os.path.exists(perfil))
 
@@ -266,6 +283,10 @@ class TestPortalConNavegador(unittest.TestCase):
 
     def test_ventana_cerrada_por_la_persona(self):
         p = self.portal(f"{self.base}/consdcvinternetui/")
+        p.conectar()
+        cierres = SIISimulado.cierres
+        p.desconectar()  # sin haber ingresado: no hay sesión que cerrar en el SII
+        self.assertEqual(SIISimulado.cierres, cierres)
         p.conectar()
         p.nav.cerrar()
         e = self.esperar(p, "desconectado")

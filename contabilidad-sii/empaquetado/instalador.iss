@@ -1,6 +1,6 @@
 ﻿; Instalador de Mi Contabilidad para Windows (Inno Setup 6).
 ; Se compila en GitHub Actions: ver .github/workflows/instalador-windows.yml
-;   ISCC.exe /DSourceDir=<carpeta dist\MiContabilidad> /DMyAppVersion=0.2.0 /O<salida> instalador.iss
+;   ISCC.exe /DSourceDir=<carpeta dist\MiContabilidad> /DMyAppVersion=0.3.0 /O<salida> instalador.iss
 ;
 ; Se instala para el usuario actual, sin pedir permisos de administrador.
 ; Los datos NO quedan en la carpeta del programa sino en Documentos\Mi Contabilidad,
@@ -9,7 +9,7 @@
 #define MyAppName "Mi Contabilidad"
 #define MyAppExe "MiContabilidad.exe"
 #ifndef MyAppVersion
-  #define MyAppVersion "0.2.0"
+  #define MyAppVersion "0.3.0"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\dist\MiContabilidad"

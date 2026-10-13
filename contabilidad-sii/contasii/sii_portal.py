@@ -39,6 +39,9 @@ from . import navegador
 from . import rut as rutmod
 
 URL_RCV = "https://www4.sii.cl/consdcvinternetui/"
+# Verificado (13-10-2026) en el código público del SII, zeusr.sii.cl/admin/responsive_barranav.js:
+# var urlCerrarSesion = "https://zeusr.sii.cl/cgi_AUT2000/autTermino.cgi" (enlace «Cerrar Sesión»).
+URL_CERRAR_SESION = "https://zeusr.sii.cl/cgi_AUT2000/autTermino.cgi"
 URL_INGRESO = "https://zeusr.sii.cl/AUT2000/InicioAutenticacion/IngresoRutClave.html?" + URL_RCV
 DOMINIO = "sii.cl"
 COOKIE_INGRESO, COOKIE_DV = "RUT_NS", "DV_NS"  # verificadas en AutAll.js del SII
@@ -54,18 +57,32 @@ RUTAS_INGRESO = ("/AUT2000/", "/cgi_AUT2000/")
 DOMINIOS_INGRESO = ("claveunica.gob.cl",)
 # Pestañas propias del navegador (p. ej. Edge abre edge://downloads-hub/ al descargar): no son del SII.
 ESQUEMAS_INTERNOS = ("devtools:", "edge:", "chrome:", "chrome-extension:", "about:")
-EXTENSIONES = (".csv", ".txt")
+EXTENSIONES = (".csv", ".txt", ".xls", ".xlsx", ".htm", ".html")
 MAX_ARCHIVO = 30 * 1024 * 1024
 
-# Se ejecuta dentro de la página del RCV, con la sesión de la persona.
-JS_PEDIR = """async (url, cuerpo) => {
+# Se ejecuta dentro de la página del RCV, con la sesión de la persona. Si la página tiene cargado
+# reCAPTCHA v3 de Google, se pide ahí un código para la acción, como haría la propia página; si no,
+# se envía el valor que describe la fuente secundaria. [VERIFICAR] con una sesión real: según la
+# biblioteca devlas-cl/dte-sii (SiiPortalAuth.js, octubre de 2026) el detalle exige reCAPTCHA v3.
+JS_PEDIR = r"""async (url, cuerpo) => {
+  let recaptcha = "no";
+  try {
+    const g = window.grecaptcha && (window.grecaptcha.enterprise || window.grecaptcha);
+    const src = [...document.scripts].map(x => x.src || "").find(u => /recaptcha\/(api|enterprise)\.js/.test(u) && /[?&]render=/.test(u));
+    const clave = src ? new URL(src).searchParams.get("render") : null;
+    if (g && g.execute && clave && clave !== "explicit") {
+      if (g.ready) await new Promise(ok => g.ready(ok));
+      cuerpo.data.tokenRecaptcha = await g.execute(clave, {action: cuerpo.data.accionRecaptcha});
+      recaptcha = "si";
+    }
+  } catch (e) { recaptcha = "error: " + e; }
   const r = await fetch(url, {method: "POST", credentials: "include",
     headers: {"Content-Type": "application/json;charset=UTF-8", "Accept": "application/json, text/plain, */*"},
     body: JSON.stringify(cuerpo)});
   const b = new Uint8Array(await r.arrayBuffer());
   let s = "";
   for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
-  return {estado: r.status, tipo: r.headers.get("content-type") || "", url: r.url, b64: btoa(s)};
+  return {estado: r.status, tipo: r.headers.get("content-type") || "", url: r.url, b64: btoa(s), recaptcha};
 }"""
 
 
@@ -153,8 +170,8 @@ class PortalSII:
     """La conexión con el SII a través de una ventana del navegador. Hay una por programa."""
 
     def __init__(self, url_ingreso: str = URL_INGRESO, url_rcv: str = URL_RCV, dominio: str = DOMINIO,
-                 crear_navegador=navegador.Navegador, headless: bool = False):
-        self.url_ingreso, self.url_rcv, self.dominio = url_ingreso, url_rcv, dominio
+                 crear_navegador=navegador.Navegador, headless: bool = False, url_cerrar: str = URL_CERRAR_SESION):
+        self.url_ingreso, self.url_rcv, self.dominio, self.url_cerrar = url_ingreso, url_rcv, dominio, url_cerrar
         self.crear_navegador = crear_navegador
         self.headless = headless
         self.lock = threading.RLock()
@@ -191,10 +208,29 @@ class PortalSII:
             return self.estado()
 
     def desconectar(self) -> dict:
+        """Cierra la sesión en el SII (si se ingresó) y luego la ventana.
+
+        El SII limita las sesiones abiertas al mismo tiempo por RUT; cerrar solo la ventana deja la
+        sesión abierta del lado del SII hasta que expire.
+        """
         with self.lock:
+            self._cerrar_sesion_sii()
             self._cerrar()
             self.mensaje = ""
             return {"estado": "desconectado", "mensaje": "", "archivos": []}
+
+    def _cerrar_sesion_sii(self):
+        if not self.nav or not self.nav.vivo():
+            return False
+        try:
+            if not self._cookies().get(COOKIE_INGRESO):
+                return False
+            ps = self._pestanas()
+            tid = ps[0]["targetId"] if ps else self.nav.nueva_pestana("about:blank")
+            self.nav.navegar(tid, self.url_cerrar, espera=10)
+            return True
+        except navegador.ErrorNavegador:
+            return False  # sin respuesta del SII: la sesión expirará sola
 
     def _cerrar(self):
         if self.nav:

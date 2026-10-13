@@ -20,7 +20,7 @@ comandos para contadores.
 ### Windows: instalador, sin Python
 
 1. Descargue **`Instalar-MiContabilidad.exe`** desde la sección **Releases** del
-   repositorio, versión «Mi Contabilidad 0.2.0 (preliminar)».
+   repositorio, versión «Mi Contabilidad 0.3.0 (preliminar)».
 2. Haga doble clic en el archivo. El programa no está firmado digitalmente, así que
    Windows puede mostrar **«Windows protegió su PC»**: presione **«Más información»** y
    luego **«Ejecutar de todos modos»**.
@@ -60,7 +60,7 @@ Cada mes se trabaja en **4 pasos**, en lenguaje simple:
 
 | Paso | Qué hace la persona |
 |---|---|
-| 1. Subir los archivos del SII | Trae las compras y ventas del mes desde el SII, ingresando con su clave tributaria o Clave Única (ver más abajo), o arrastra los CSV de compras, ventas y boletas. El programa reconoce cuál es cuál, muestra cuántos documentos y qué total trae cada uno, y pide confirmar antes de registrarlos. |
+| 1. Subir los archivos del SII | Trae las compras y ventas del mes desde el SII, ingresando con su clave tributaria o Clave Única (ver más abajo). También acepta archivos: CSV, Excel (.xlsx), la planilla de boletas que descarga el SII (.xls) o una tabla copiada desde la página del SII. Las boletas de honorarios se pueden agregar a mano. El programa reconoce cuál es cuál, muestra cuántos documentos y qué total trae cada uno, y pide confirmar antes de registrarlos. |
 | 2. Registrar pagos y cobros | Elige lo que pasó ("Me pagó un cliente", "Pagué a un proveedor", "Pagué el impuesto mensual"…), escribe monto y fecha, e indica banco o efectivo. El programa arma el asiento contable. |
 | 3. Calcular el impuesto (F29) | Ve el total a pagar, la fecha límite y el detalle explicado en palabras simples, y confirma para registrarlo. |
 | 4. Revisar y cerrar el mes | Ve las comprobaciones de cuadratura en verde o rojo y cierra el mes. |
@@ -83,6 +83,15 @@ pantalla de Ayuda muestra la ubicación exacta. El programa solo acepta conexion
 mismo computador y solo se conecta al SII cuando usted lo pide. **Respalde esa carpeta** con regularidad, por ejemplo en OneDrive o en un
 pendrive.
 
+### Eliminar una empresa o cliente
+
+En la pantalla «¿De quién es la contabilidad?», cada empresa tiene el botón **«Eliminar»**.
+Pide confirmación y mueve la contabilidad a la **Papelera** (la subcarpeta `Papelera` de la
+carpeta de datos), con la fecha y hora en que se eliminó. Desde la Papelera, al pie de esa
+misma pantalla, puede **«Restaurar»** la contabilidad o **«Borrar para siempre»**; para borrar
+hay que escribir el RUT y no se puede deshacer. No se puede restaurar encima de una
+contabilidad activa con el mismo RUT.
+
 ## Traer compras y ventas desde el SII (clave tributaria o Clave Única)
 
 En el paso 1 del mes, el botón **«Ingresar al SII»** hace lo siguiente:
@@ -95,10 +104,15 @@ En el paso 1 del mes, el botón **«Ingresar al SII»** hace lo siguiente:
 3. **«Traer compras y ventas de [mes]»** pide al SII el detalle del mes de la empresa
    abierta. Lo muestra en la lista con el número de documentos y el total, y usted
    confirma con «Importar». Nada se registra sin su confirmación.
+   Con la casilla **«Traer compras y ventas apenas me conecte»** (marcada al instalar), lo
+   hace solo al detectar el ingreso, sin otro clic.
 4. Si la descarga automática falla, el programa lo dice. En la ventana del SII, elija el
    mes, abra Compras o Ventas y presione «Descargar Detalles». El programa recibe el
-   archivo solo y lo muestra en la lista.
-5. «Desconectar» cierra la ventana.
+   archivo solo y lo muestra en la lista. Lo mismo vale para el informe de boletas de
+   honorarios descargado en esa ventana.
+5. «Desconectar» **cierra la sesión en el SII** (el mismo «Cerrar Sesión» de su sitio) y
+   luego la ventana. Conviene usarlo en vez de cerrar la ventana: el SII limita las sesiones
+   abiertas al mismo tiempo por RUT.
 
 **Su clave.** El programa no pide, no ve y no guarda la clave tributaria ni la Clave
 Única: se escriben en la página del SII. La ventana usa un perfil temporal, separado de
@@ -107,7 +121,32 @@ Mientras está abierta, el programa la controla por un puerto local (solo `127.0
 
 **Contador con varias empresas.** El programa pide el detalle del RUT de la empresa
 abierta. Si quien ingresó no tiene acceso a esa empresa en el SII, el programa muestra
-el error que entrega el SII.
+el error que entrega el SII. La conexión sirve para todas las empresas del programa:
+cambie de empresa y presione «Traer» sin volver a ingresar. Según guías del SII leídas en
+fragmentos de búsqueda (fuente secundaria; [VERIFICAR] en
+[sii.cl, guía de modificación del tipo de compra en el RCV](https://www.sii.cl/servicios_online/guia_modificacion_tipo_compra_en_rcv.pdf)),
+quien es **usuario autorizado** de una empresa entra al RCV con su propia clave y el campo
+RUT le lista todas las empresas en que lo es. Cada empresa lo agrega en «Mantención de
+usuarios autorizados». Las boletas de honorarios, en cambio, se consultan con la sesión del
+propio contribuyente (fuentes de terceros, sin confirmación oficial vigente).
+
+### Por qué no es inmediato
+
+- **El ingreso lo hace una persona.** El SII no publica un servicio web que entregue el
+  detalle del RCV ni de las boletas (no se encontró ninguno; los servicios con certificado
+  que sí existen, como el de aceptación y reclamo de DTE, trabajan documento por documento).
+- **El SII protege el detalle.** Según la biblioteca
+  [devlas-cl/dte-sii](https://github.com/devlas-cl/dte-sii) (`SiiPortalAuth.js`, octubre de
+  2026; fuente secundaria), el detalle del RCV exige reCAPTCHA v3. Por eso la solicitud se
+  hace dentro de la página real del RCV y, si esa página tiene reCAPTCHA cargado, el
+  programa pide ahí el código, como lo haría la propia página.
+- **La aplicación del RCV tarda en iniciar.** Al abrir el RCV en una pestaña nueva, el
+  programa espera a que cargue (hasta 40 s) y 3 s más para que inicie su sesión.
+- **Las compras recientes pueden estar en «Pendientes».** Según preguntas frecuentes del
+  SII (leídas en fragmentos de búsqueda, [VERIFICAR] en
+  [sii.cl](https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6976.htm)),
+  una factura recibida sin acuse ni reclamo pasa al Registro a los 8 días corridos. El
+  programa trae solo el Registro, que es lo que cuenta para el F29.
 
 ### Qué está verificado y qué falta
 
@@ -135,10 +174,46 @@ Windows con Edge:
   (punto 4).
 - El ingreso con Clave Única no se pudo probar: desde los servidores de GitHub,
   `accounts.claveunica.gob.cl` respondió «403 Forbidden».
+- Si el detalle exige reCAPTCHA v3 y si la página del RCV lo tiene cargado al momento de
+  pedirlo. Las fuentes secundarias se contradicen: emisso-sii envía un valor fijo y
+  devlas-cl/dte-sii dice que hace falta reCAPTCHA v3.
 
-**Boletas de honorarios:** no se traen automáticamente. Si en la ventana del SII
-descarga un informe de boletas en CSV con columnas reconocibles, el programa lo recibe
-igual; si no, súbalo a mano.
+También verificado (13-10-2026, código público del SII en
+`zeusr.sii.cl/admin/responsive_barranav.js`): el enlace «Cerrar Sesión» del SII apunta a
+`https://zeusr.sii.cl/cgi_AUT2000/autTermino.cgi`, que es la dirección que usa
+«Desconectar».
+
+## Boletas de honorarios
+
+Se pueden registrar de tres maneras, en el paso 1 del mes:
+
+1. **Subir el informe del SII.** En sii.cl: Servicios online → Boletas de honorarios
+   electrónicas → Consultas sobre boletas de honorarios electrónicas → «Consultar boletas
+   recibidas» (o «emitidas») → informe mensual → **«Ver informe como planilla
+   electrónica»**. Se sube ese archivo tal cual, aunque termine en `.xls`.
+2. **Pegar la tabla** copiada desde esa página, con los títulos de las columnas.
+3. **Agregar una boleta a mano**: recibida o emitida, número, fecha, RUT, nombre, monto
+   bruto y retención. La retención se sugiere con la tasa del año de los parámetros
+   (15,25 % en 2026, `retencion_honorarios` en `parametros/2026.json`) y se puede corregir.
+
+Al importar un archivo de boletas se puede indicar si son **recibidas** (usted pagó) o
+**emitidas** (usted cobró); el programa lo propone según las columnas. Se omiten las
+anuladas, la fila de totales y las notas al pie. Una boleta «vigente con solicitud de
+anulación pendiente» se registra con una alerta. Una boleta emitida sin receptor se
+registra sin cliente, con alerta. Si el informe de emitidas trae retención a cargo del
+emisor («Ret. Emisor»), no se registra y queda como alerta para revisarla.
+
+**Fuentes y lo que falta verificar.** La ruta del menú viene de preguntas frecuentes del
+SII leídas en fragmentos de búsqueda. El formato del archivo viene de repositorios de
+terceros: [Erin3012/icontador](https://github.com/Erin3012/icontador) (PR 15) indica que
+el `informeMensualREC.xls` de recibidas es una tabla HTML en ISO-8859-1 con las columnas
+N°, Fecha, Estado, Fecha Anulación, Rut, Nombre o Razón Social, Soc. Prof., Brutos,
+Retenido y Pagado; [crilam/mcp-sii](https://github.com/crilam/mcp-sii) (`tests/fixtures`)
+muestra el informe de emitidas en pantalla, con «Ret. Emisor», «Ret. Receptor» y
+«Líquidos». **[VERIFICAR] con un archivo real del SII**: las columnas exactas de la
+planilla de emitidas, cómo aparece el estado de una boleta con anulación pendiente y si la
+planilla incluye todas las páginas cuando el mes tiene más de 100 boletas. El Excel antiguo
+(`.xls` binario) no se puede leer: el programa pide guardarlo como `.xlsx` o `.csv`.
 
 Las pruebas automáticas (`tests/test_sii_portal.py`) recorren todo el flujo con Edge o
 Chrome reales contra un SII simulado en el mismo computador.
@@ -331,9 +406,11 @@ Para un año nuevo, copie `2026.json` a `AAAA.json` y actualice cada valor con s
 
 ## Qué NO hace (todavía)
 
-- No trae las boletas de honorarios desde el SII: ese archivo se sube a mano. La descarga
-  automática de compras y ventas está pendiente de verificar con una sesión real (ver
-  «Traer compras y ventas desde el SII»).
+- No pide automáticamente al SII el informe de boletas de honorarios: se sube, se pega,
+  se descarga en la ventana del SII o se ingresa a mano. La descarga automática de compras
+  y ventas está pendiente de verificar con una sesión real (ver «Traer compras y ventas
+  desde el SII»).
+- No borra documentos ya importados (el botón «Eliminar» es para empresas completas).
 - No envía libros contables electrónicos al SII ni genera sus formatos oficiales.
 - No calcula la corrección monetaria, la depreciación tributaria, la RLI, el F22, los registros
   empresariales (RAI, SAC, etc.) ni las declaraciones juradas.
@@ -366,6 +443,7 @@ contasii/
   sii_dte.py        consulta del estado de facturas y notas en el SII (QueryEstDte)
   sii_portal.py     ingreso al portal del SII y descarga del Registro de Compras y Ventas
   navegador.py      ventana de Edge o Chrome controlada por el programa (perfil temporal)
+  tablas.py         convierte Excel (.xlsx), planillas HTML del SII y tablas pegadas a CSV
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026
 ejemplos/           datos ficticios

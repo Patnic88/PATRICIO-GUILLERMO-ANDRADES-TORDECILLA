@@ -77,7 +77,7 @@ class ResultadoImportacion:
 
 
 def _entero(v) -> int:
-    v = str(v or "").strip()
+    v = "".join(str(v or "").replace("$", "").split())  # «$ 1.234.567» como viene en tablas copiadas
     if not v:
         return 0
     if re.fullmatch(r"-?\d{1,3}(\.\d{3})+(,\d+)?", v):  # formato chileno 1.234.567,89

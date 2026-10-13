@@ -126,6 +126,13 @@ details[open] summary { margin-bottom: 10px; }
 .card { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; cursor: pointer; display: grid; gap: 4px; }
 .card:hover { border-color: var(--accent); }
 .card.add { border-style: dashed; place-items: center; color: var(--accent); font-weight: 700; min-height: 110px; }
+.cardw { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.cardw .card { width: 100%; }
+.btn.link.peligro { color: var(--bad); justify-self: start; font-size: 14px; font-weight: 600; }
+textarea { font: inherit; color: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); width: 100%; min-height: 120px; resize: vertical; }
+.lista-pap { display: grid; gap: 10px; }
+.lista-pap .item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; }
+@media (max-width: 560px) { .lista-pap .item { grid-template-columns: 1fr; } }
 .lines td input, .lines td select { min-height: 40px; padding: 6px 8px; }
 dl.glos { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 8px 16px; margin: 0; }
 dl.glos dt { font-weight: 700; } dl.glos dd { margin: 0; }
@@ -179,16 +186,60 @@ document.addEventListener("click", ev => { const b = ev.target.closest("[data-ir
 async function pantallaEmpresas() {
   S.empresa = null; S.info = null;
   $("#topEmp").textContent = ""; $("#btnEmpresas").hidden = true;
-  const a = render(`<div class="stack"><h1>¿De quién es la contabilidad?</h1><p class="muted">Elija una empresa o persona, o agregue una nueva.</p></div><div id="lista" class="cards"></div><div id="nueva"></div>`);
+  const a = render(`<div class="stack"><h1>¿De quién es la contabilidad?</h1><p class="muted">Elija una empresa o persona, o agregue una nueva.</p></div><div id="lista" class="cards"></div><div id="nueva"></div><div id="pap"></div>`);
   try {
     const d = await api("empresas");
     S.regimenes = d.regimenes;
-    $("#lista").innerHTML = d.empresas.map(e => `<button class="card" type="button" data-arch="${esc(e.archivo)}"><b>${esc(e.nombre)}</b><span class="muted">RUT ${esc(e.rut)}</span><span class="small muted">${esc(e.regimen_texto)}</span></button>`).join("")
+    $("#lista").innerHTML = d.empresas.map(e => `<div class="cardw"><button class="card" type="button" data-arch="${esc(e.archivo)}"><b>${esc(e.nombre)}</b><span class="muted">RUT ${esc(e.rut)}</span><span class="small muted">${esc(e.regimen_texto)}</span></button>
+        <button class="btn link peligro" type="button" data-del="${esc(e.archivo)}" data-nom="${esc(e.nombre)}" data-rut="${esc(e.rut)}" aria-label="Eliminar ${esc(e.nombre)}">Eliminar</button></div>`).join("")
       + `<button class="card add" type="button" id="btnNueva">+ Agregar empresa o persona</button>`;
     a.querySelectorAll("[data-arch]").forEach(b => b.onclick = () => abrirEmpresa(b.dataset.arch));
+    a.querySelectorAll("[data-del]").forEach(b => b.onclick = () => confirmarEliminar(b));
     $("#btnNueva").onclick = formNueva;
     if (!d.empresas.length) formNueva();
   } catch (e) { error($("#lista"), e); }
+  mostrarPapelera();
+}
+
+function confirmarEliminar(btn) {
+  const { del: arch, nom, rut } = btn.dataset, w = btn.closest(".cardw");
+  w.innerHTML = `<div class="confirm" role="group" aria-label="Confirmar eliminación"><b>¿Eliminar la contabilidad de ${esc(nom)} (RUT ${esc(rut)})?</b>
+    <span>Se mueve a la Papelera, abajo en esta pantalla. Desde ahí puede restaurarla.</span>
+    <div class="row"><button class="btn danger" type="button" data-si>Sí, eliminar</button><button class="btn" type="button" data-no>Cancelar</button></div><div data-err></div></div>`;
+  $("[data-no]", w).onclick = pantallaEmpresas;
+  $("[data-si]", w).focus();
+  $("[data-si]", w).onclick = async () => {
+    $("[data-si]", w).disabled = true;
+    try { await api("empresa-eliminar", { archivo: arch, confirmar: arch }); toast("Contabilidad enviada a la Papelera"); pantallaEmpresas(); }
+    catch (e) { $("[data-si]", w).disabled = false; error($("[data-err]", w), e); }
+  };
+}
+
+async function mostrarPapelera() {
+  let d;
+  try { d = await api("papelera"); } catch (e) { return; }
+  const el = $("#pap");
+  if (!el || !d.papelera.length) { if (el) el.innerHTML = ""; return; }
+  el.innerHTML = `<details class="panel"><summary>Papelera (${d.papelera.length})</summary><div class="stack">
+    <p class="small muted">Contabilidades eliminadas. «Restaurar» la devuelve a la lista. «Borrar para siempre» elimina el archivo y no se puede deshacer.</p>
+    <div class="lista-pap">${d.papelera.map(x => `<div class="item"><div><b>${esc(x.nombre)}</b> <span class="muted">RUT ${esc(x.rut)}</span><div class="small muted">Eliminada el ${esc(x.eliminada)}</div></div>
+      <div class="row"><button class="btn" type="button" data-rest="${esc(x.archivo)}" ${x.activa ? "disabled title='Ya hay una contabilidad activa con este RUT'" : ""}>Restaurar</button>
+      <button class="btn danger" type="button" data-borrar="${esc(x.archivo)}" data-rut="${esc(x.rut)}">Borrar para siempre</button></div><div class="pe" style="grid-column:1/-1"></div></div>`).join("")}</div></div></details>`;
+  el.querySelectorAll("[data-rest]").forEach(b => b.onclick = async () => {
+    try { await api("papelera-restaurar", { archivo: b.dataset.rest }); toast("Contabilidad restaurada"); pantallaEmpresas(); }
+    catch (e) { error($(".pe", b.closest(".item")), e); }
+  });
+  el.querySelectorAll("[data-borrar]").forEach(b => b.onclick = () => {
+    const pe = $(".pe", b.closest(".item"));
+    pe.innerHTML = `<div class="confirm"><b>Esto no se puede deshacer.</b><label>Escriba el RUT ${esc(b.dataset.rut)} para confirmar<input type="text" autocomplete="off" data-conf></label>
+      <div class="row"><button class="btn danger" type="button" data-ok>Borrar para siempre</button><button class="btn" type="button" data-cancel>Cancelar</button></div><div data-err></div></div>`;
+    $("[data-conf]", pe).focus();
+    $("[data-cancel]", pe).onclick = () => pe.innerHTML = "";
+    $("[data-ok]", pe).onclick = async () => {
+      try { await api("papelera-borrar", { archivo: b.dataset.borrar, confirmar: $("[data-conf]", pe).value }); toast("Borrada para siempre"); pantallaEmpresas(); }
+      catch (e) { error($("[data-err]", pe), e); }
+    };
+  });
 }
 
 function formNueva() {
@@ -300,18 +351,32 @@ function pantallaArchivos() {
         <p class="muted">Se abre una ventana del SII. Ingrese ahí con su RUT y clave tributaria, o con su Clave Única. El programa no ve ni guarda su clave.</p></div>
       <div id="siiEstado" aria-live="polite"></div>
       <div class="row" id="siiAcciones"></div>
+      <label class="row small" style="gap:8px;font-weight:400"><input type="checkbox" id="siiAuto"> Traer compras y ventas apenas me conecte</label>
     </section>
     <label class="drop" id="drop" for="fileIn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-      <b>Arrastre aquí los archivos</b><span class="muted">o haga clic para buscarlos en su computador (archivos .csv)</span>
-      <input id="fileIn" type="file" accept=".csv,.txt" multiple hidden></label>`}
+      <b>Arrastre aquí los archivos</b><span class="muted">o haga clic para buscarlos en su computador: CSV, Excel (.xlsx) o la página del SII guardada (.html)</span>
+      <input id="fileIn" type="file" accept=".csv,.txt,.xls,.xlsx,.htm,.html" multiple hidden></label>
     <div id="cola" class="stack"></div>
+    <details id="pegar"><summary>Pegar una tabla copiada (por ejemplo, desde la página del SII)</summary><div class="stack">
+      <p class="small muted">En la página del SII, seleccione la tabla completa con el mouse, incluidos los títulos de las columnas, cópiela (Ctrl+C) y péguela aquí (Ctrl+V).</p>
+      <textarea id="tablaPegada" aria-label="Tabla pegada"></textarea>
+      <div><button class="btn" type="button" id="bPegar">Revisar la tabla</button></div></div></details>
+    <details id="manual"><summary>Agregar una boleta de honorarios a mano</summary><div id="fBolW"></div></details>`}
     <details><summary>¿Dónde consigo estos archivos?</summary><div class="stack small">
       <p><b>Compras y ventas:</b> use «Ingresar al SII» arriba. Si prefiere hacerlo a mano: en sii.cl, ingrese al <b>Registro de Compras y Ventas</b>, elija el mes y use la opción para descargar el detalle. Descargue un archivo para compras y otro para ventas.</p>
-      <p><b>Boletas de honorarios:</b> en sii.cl, en la sección de boletas de honorarios electrónicas, descargue el informe de boletas recibidas (o emitidas) del mes.</p>
+      <p><b>Boletas de honorarios:</b> en sii.cl, entre a <b>Servicios online → Boletas de honorarios electrónicas → Consultas sobre boletas de honorarios electrónicas</b> y elija «Consultar boletas recibidas» (o «emitidas»). Abra el informe mensual y presione <b>«Ver informe como planilla electrónica»</b>: suba ese archivo tal cual, aunque termine en .xls. También puede copiar la tabla de esa página y pegarla arriba. Si lo hace en la ventana del SII que abre el programa, el archivo llega solo.</p>
+      <p class="muted">Las boletas se consultan con la sesión de quien las emitió o recibió: para las de un cliente, ingrese con el RUT de ese cliente.</p>
       <p class="muted">Si importa dos veces el mismo archivo no pasa nada: los documentos repetidos se omiten.</p></div></details>`);
   if (S.info.cerrado) return;
   panelSII();
+  $("#bPegar").onclick = () => {
+    const t = $("#tablaPegada").value;
+    if (!t.trim()) { toast("Primero pegue la tabla"); return; }
+    analizarContenido("Tabla pegada", b64Texto(t), "Tabla pegada en el programa");
+    $("#tablaPegada").value = "";
+  };
+  formBoleta();
   const drop = $("#drop"), inp = $("#fileIn");
   ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
   ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
@@ -319,6 +384,44 @@ function pantallaArchivos() {
   inp.onchange = () => { [...inp.files].forEach(analizarArchivo); inp.value = ""; };
 }
 const NOMBRE_TIPO = { compra: "Compras (facturas recibidas)", venta: "Ventas (facturas emitidas)", honorario_recibido: "Boletas de honorarios recibidas", honorario_emitido: "Boletas de honorarios emitidas" };
+function b64Texto(t) { const b = new TextEncoder().encode(t); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function formBoleta() {
+  const tasa = S.info.retencion_honorarios;
+  $("#fBolW").innerHTML = `<form class="stack" id="fBol" novalidate>
+    <div class="stack"><b>¿La boleta la recibió o la emitió?</b>
+      <div class="seg" role="group" aria-label="Tipo de boleta"><button type="button" data-s="recibido" aria-pressed="true">Recibida (usted pagó)</button><button type="button" data-s="emitido" aria-pressed="false">Emitida (usted cobró)</button></div></div>
+    <div class="grid2">
+      <label for="bFolio">N° de boleta<input id="bFolio" type="text" inputmode="numeric" autocomplete="off" required></label>
+      <label for="bFecha">Fecha<input id="bFecha" type="date" value="${fechaDefecto()}" required></label>
+      <label for="bRut"><span id="bRutTxt">RUT de quien emitió la boleta</span><input id="bRut" type="text" autocomplete="off" required></label>
+      <label for="bNom">Nombre o razón social<input id="bNom" type="text" required></label>
+      <label for="bBruto">Monto bruto<input id="bBruto" type="text" inputmode="numeric" required></label>
+      <label for="bRet">Retención<span class="hint" id="bRetHint">${tasa ? `Sugerida: ${(tasa * 100).toLocaleString("es-CL")} % del bruto. Corríjala si la boleta dice otra cosa.` : "Escriba la retención que indica la boleta."}</span><input id="bRet" type="text" inputmode="numeric"></label>
+    </div>
+    <p class="small muted" id="bLiq"></p>
+    <div><button class="btn primary" type="submit">Registrar la boleta en ${esc(nomMes(S.periodo))}</button></div><div id="bRes"></div></form>`;
+  let sentido = "recibido", retEditada = false;
+  const num = v => parseInt(String(v).replace(/[^0-9]/g, ""), 10) || 0;
+  const liquido = () => { const b = num($("#bBruto").value), r = num($("#bRet").value); $("#bLiq").textContent = b ? `Líquido: ${peso(b - r)}` : ""; };
+  $("#fBol").querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
+    sentido = b.dataset.s; $("#fBol").querySelectorAll("[data-s]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    $("#bRutTxt").textContent = sentido === "recibido" ? "RUT de quien emitió la boleta" : "RUT de quien recibió la boleta (su cliente)";
+  });
+  $("#bRet").oninput = () => { retEditada = true; liquido(); };
+  $("#bBruto").oninput = () => { if (tasa && !retEditada) $("#bRet").value = num($("#bBruto").value) ? Math.round(num($("#bBruto").value) * tasa) : ""; liquido(); };
+  $("#fBol").onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = $("#fBol button[type=submit]"); btn.disabled = true;
+    try {
+      const x = await api(E("boleta"), { periodo: S.periodo, sentido, folio: $("#bFolio").value, fecha: $("#bFecha").value, rut: $("#bRut").value,
+        nombre: $("#bNom").value, bruto: num($("#bBruto").value), retenido: num($("#bRet").value) });
+      $("#bRes").innerHTML = x.importados ? `<div class="msg ok"><b>Boleta registrada.</b></div>` : `<div class="msg warn">Esa boleta ya estaba registrada: no se agregó de nuevo.</div>`;
+      if (x.alertas.length) $("#bRes").innerHTML += `<div class="msg warn"><b>Para revisar:</b><ul>${x.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>`;
+      if (x.importados) { ["#bFolio", "#bRut", "#bNom", "#bBruto", "#bRet"].forEach(k => $(k).value = ""); retEditada = false; liquido(); toast("Boleta registrada"); }
+    } catch (e) { error($("#bRes"), e); }
+    btn.disabled = false;
+  };
+}
 function aBase64(file) { return new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1] || ""); r.onerror = () => mal(new Error("No se pudo leer el archivo.")); r.readAsDataURL(file); }); }
 async function analizarArchivo(file) {
   let contenido;
@@ -330,10 +433,14 @@ async function analizarContenido(nombre, contenido, origen) {
   const file = { name: nombre };
   const box = document.createElement("div"); box.className = "panel"; $("#cola").prepend(box);
   box.innerHTML = `<b>${esc(file.name)}</b><p class="muted">Revisando…</p>`;
+  box.scrollIntoView({ block: "nearest", behavior: "smooth" });
   try {
-    const r = await api(E("analizar"), { contenido });
+    const r = await api(E("analizar"), { contenido, nombre });
     const otroMes = r.mes_sugerido && r.mes_sugerido !== S.periodo;
+    const esBoleta = r.tipo.startsWith("honorario");
     box.innerHTML = `<div class="row" style="justify-content:space-between"><b>${esc(file.name)}</b><span class="pill">${esc(NOMBRE_TIPO[r.tipo])}</span></div>
+      ${esBoleta ? `<label class="row" style="gap:8px">Estas boletas son
+        <select class="selT" style="width:auto"><option value="honorario_recibido" ${r.tipo === "honorario_recibido" ? "selected" : ""}>recibidas (usted pagó)</option><option value="honorario_emitido" ${r.tipo === "honorario_emitido" ? "selected" : ""}>emitidas (usted cobró)</option></select></label>` : ""}
       ${origen ? `<p class="small muted">${esc(origen)}</p>` : ""}
       <p>${r.documentos} documentos por un total de <b>${peso(r.total)}</b>.</p>
       ${otroMes ? `<div class="msg warn">Los documentos son mayormente de <b>${esc(nomMes(r.mes_sugerido))}</b>, pero usted está trabajando en <b>${esc(nomMes(S.periodo))}</b>. Elija abajo el mes del registro del SII al que corresponde el archivo.</div>` : ""}
@@ -341,10 +448,11 @@ async function analizarContenido(nombre, contenido, origen) {
         <select class="selP" style="width:auto">${[S.periodo, r.mes_sugerido].filter((v, i, a) => v && a.indexOf(v) === i).map(p => `<option value="${p}">${esc(nomMes(p))}</option>`).join("")}</select></label>
         <button class="btn primary bImp" type="button">Importar</button><button class="btn bNo" type="button">Descartar</button></div><div class="res"></div>`;
     $(".bNo", box).onclick = () => box.remove();
+    if (esBoleta) $(".selT", box).onchange = () => $(".pill", box).textContent = NOMBRE_TIPO[$(".selT", box).value];
     $(".bImp", box).onclick = async () => {
       const b = $(".bImp", box); b.disabled = true; b.textContent = "Importando…";
       try {
-        const x = await api(E("importar"), { contenido, tipo: r.tipo, periodo: $(".selP", box).value, nombre: file.name });
+        const x = await api(E("importar"), { contenido, tipo: esBoleta ? $(".selT", box).value : r.tipo, periodo: $(".selP", box).value, nombre: file.name });
         b.remove(); $(".bNo", box).remove();
         $(".res", box).innerHTML = `<div class="msg ok"><b>Listo: ${x.importados} documentos registrados en la contabilidad.</b>
           ${x.duplicados ? `<span>${x.duplicados} ya estaban registrados y se omitieron.</span>` : ""}${x.anuladas ? `<span>${x.anuladas} boletas anuladas se omitieron.</span>` : ""}</div>
@@ -356,7 +464,13 @@ async function analizarContenido(nombre, contenido, origen) {
 }
 
 /* ------------------------------------------------------------ paso 1: traer desde el SII */
-function panelSII() { siiPedir("estado"); }
+function panelSII() {
+  let auto = true;
+  try { auto = localStorage.getItem("siiAuto") !== "0"; } catch (e) {}
+  $("#siiAuto").checked = auto;
+  $("#siiAuto").onchange = () => { try { localStorage.setItem("siiAuto", $("#siiAuto").checked ? "1" : "0"); } catch (e) {} };
+  siiPedir("estado");
+}
 async function siiPedir(accion) {
   if (!$("#siiEstado")) return;
   clearTimeout(siiTimer);
@@ -380,12 +494,15 @@ function siiMostrar(r) {
   } else if (r.estado === "conectado") {
     if (previo !== "conectado" || !$("#siiOk", est)) {
       est.innerHTML = `<div class="msg ok" id="siiOk"><b>Conectado al SII${r.usuario ? ` con el RUT ${esc(r.usuario)}` : ""}.</b>
-        <span>Traiga el detalle del mes con el botón de abajo. También puede descargarlo usted en la ventana del SII con «Descargar Detalles»: el archivo aparecerá aquí abajo, listo para importar.</span></div><div id="siiRes" class="stack"></div>`;
+        <span>Traiga el detalle del mes con el botón de abajo. También puede descargarlo usted en la ventana del SII con «Descargar Detalles»: el archivo aparecerá aquí abajo, listo para importar.</span>
+        <span class="small">Las facturas de compra sin acuse de recibo quedan en «Pendientes» del SII y se traen cuando pasan al Registro (con el acuse, o solas a los 8 días). Al terminar use «Desconectar»: así también se cierra la sesión en el SII.</span></div><div id="siiRes" class="stack"></div>`;
     }
   } else {
     est.innerHTML = r.mensaje ? `<div class="msg warn">${esc(r.mensaje)}</div>` : "";
   }
   if (previo !== r.estado || r.estado === "desconectado") siiBotones(r);
+  // Al pasar de «esperando» a «conectado», trae el mes sin otro clic (si la persona lo dejó marcado).
+  if (r.estado === "conectado" && previo === "esperando" && $("#siiAuto") && $("#siiAuto").checked) siiTraer();
 }
 function siiBotones(r) {
   const a = $("#siiAcciones");

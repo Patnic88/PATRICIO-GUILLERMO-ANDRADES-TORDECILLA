@@ -4,10 +4,12 @@ Ejecute `python -m contasii -h` para la lista de comandos.
 """
 
 import argparse
+import os
 import sys
+import tempfile
 from calendar import monthrange
 
-from . import controles, honorarios, impuestos, obligaciones, rcv, reportes
+from . import controles, honorarios, impuestos, obligaciones, rcv, reportes, tablas
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros
 
@@ -21,6 +23,27 @@ def _rango(periodo=None, desde=None, hasta=None):
 
 def _params(periodo=None, anio=None):
     return Parametros(int(anio or periodo[:4]))
+
+
+def _como_csv(ruta):
+    """Copia temporal del archivo como CSV (acepta también Excel .xlsx y las planillas HTML del SII)."""
+    with open(ruta, "rb") as f:
+        texto = tablas.a_csv(ruta, f.read())
+    fd, tmp = tempfile.mkstemp(suffix=".csv")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(texto)
+    return tmp
+
+
+def _importar(lib, ruta, importar):
+    tmp = _como_csv(ruta)
+    try:
+        r = importar(tmp)
+    finally:
+        os.unlink(tmp)
+    lib.con.execute("UPDATE documento SET fuente=? WHERE fuente=?", (ruta, tmp))
+    lib.con.commit()
+    return r
 
 
 def _alertas(lista, titulo="ALERTAS"):
@@ -56,14 +79,14 @@ def cmd_anular(lib, a):
 
 
 def cmd_importar_rcv(lib, a):
-    r = rcv.importar(lib, a.archivo, a.libro, a.periodo, a.modo)
+    r = _importar(lib, a.archivo, lambda ruta: rcv.importar(lib, ruta, a.libro, a.periodo, a.modo))
     print(f"RCV {a.libro}s {a.periodo}: {r.importados} documentos importados, {r.duplicados} duplicados omitidos, "
           f"{len(r.asientos)} asientos generados.")
     _alertas(r.alertas)
 
 
 def cmd_importar_honorarios(lib, a):
-    r = honorarios.importar(lib, a.archivo, a.sentido, a.periodo, _params(a.periodo))
+    r = _importar(lib, a.archivo, lambda ruta: honorarios.importar(lib, ruta, a.sentido, a.periodo, _params(a.periodo)))
     print(f"Honorarios {a.sentido}s {a.periodo}: {r['importados']} boletas, {r['duplicados']} duplicadas, "
           f"{r['anuladas']} anuladas omitidas.")
     _alertas(r["alertas"])
@@ -200,14 +223,14 @@ def parser():
     p.add_argument("--motivo", required=True)
     p.set_defaults(f=cmd_anular)
 
-    p = sp.add_parser("importar-rcv", help="importar detalle CSV del Registro de Compras y Ventas")
+    p = sp.add_parser("importar-rcv", help="importar el detalle del Registro de Compras y Ventas (CSV o Excel .xlsx)")
     p.add_argument("archivo")
     p.add_argument("--libro", choices=["compra", "venta"], required=True)
     p.add_argument("--periodo", required=True)
     p.add_argument("--modo", choices=["documento", "centralizado"], default="documento")
     p.set_defaults(f=cmd_importar_rcv)
 
-    p = sp.add_parser("importar-honorarios", help="importar boletas de honorarios (CSV)")
+    p = sp.add_parser("importar-honorarios", help="importar boletas de honorarios (CSV, Excel .xlsx o planilla del SII)")
     p.add_argument("archivo")
     p.add_argument("--sentido", choices=["recibido", "emitido"], required=True)
     p.add_argument("--periodo", required=True)
@@ -267,14 +290,16 @@ def parser():
 def main(argv=None):
     a = parser().parse_args(argv)
     lib = Libro(a.db)
-    if a.cmd != "init" and not lib.contribuyente():
-        print("La base no está inicializada: use el comando init.", file=sys.stderr)
-        return 2
     try:
+        if a.cmd != "init" and not lib.contribuyente():
+            print("La base no está inicializada: use el comando init.", file=sys.stderr)
+            return 2
         return a.f(lib, a) or 0
-    except (ErrorContable, ParametroFaltante, ValueError) as e:
+    except (ErrorContable, ParametroFaltante, ValueError, tablas.ErrorTabla) as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
+    finally:
+        lib.con.close()
 
 
 if __name__ == "__main__":

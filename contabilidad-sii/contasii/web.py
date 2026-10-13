@@ -21,12 +21,12 @@ import tempfile
 import threading
 import traceback
 import webbrowser
-from datetime import date
+from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from . import (controles, honorarios, impuestos, navegador, obligaciones, operaciones, rcv, reportes, sii_dte,
-               sii_portal, sii_ws)
+               sii_portal, sii_ws, tablas)
 from . import rut as rutmod
 from .libro import REGIMENES, Asiento, ErrorContable, Libro, Linea
 from .parametros import ParametroFaltante, Parametros, guardar_utm_local
@@ -34,6 +34,9 @@ from .parametros import ParametroFaltante, Parametros, guardar_utm_local
 AQUI = os.path.dirname(os.path.abspath(__file__))
 HTML = os.path.join(AQUI, "web", "index.html")
 NOMBRE_DB = re.compile(r"^[0-9]{1,8}-[0-9K]\.db$")
+# En la papelera: <rut>__<AAAAMMDD-HHMMSS>[-N].db (fecha y hora en que se eliminó; N si se repite)
+PAPELERA = "Papelera"
+NOMBRE_PAPELERA = re.compile(r"^([0-9]{1,8}-[0-9K])__(\d{8}-\d{6})(?:-\d{1,3})?\.db$")
 PERIODO = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -58,12 +61,15 @@ def detectar_archivo(texto: str):
         tipo = "compra"
     elif "rutcliente" in enc:
         tipo = "venta"
-    elif enc & {"brutos", "bruto", "montobruto", "honorariobruto"} and enc & {"retenido", "retencion", "montoretenido"}:
-        tipo = "honorario_emitido" if "rutreceptor" in enc else "honorario_recibido"
+    elif enc & {"brutos", "bruto", "montobruto", "honorariobruto"} and \
+            enc & {"retenido", "retencion", "montoretenido", "retemisor", "retreceptor"}:
+        emitidas = {"rutreceptor", "retemisor", "retreceptor", "liquidos"}
+        tipo = "honorario_emitido" if enc & emitidas else "honorario_recibido"
     else:
         raise ErrorUsuario(
             "No reconozco este archivo. Debe ser el detalle de compras o de ventas del Registro de Compras y "
-            "Ventas (RCV), o el informe de boletas de honorarios, descargado desde sii.cl en formato CSV.")
+            "Ventas (RCV), o el informe de boletas de honorarios del SII: un CSV, un Excel (.xlsx), la planilla "
+            "que descarga el SII (.xls) o la tabla copiada desde la página, con los títulos de las columnas.")
     if tipo in ("compra", "venta"):
         mapa, filas = rcv.leer_csv(texto)
         fechas = [rcv._fecha_iso(f.get(mapa["fecha"], "")) for f in filas if f.get(mapa["fecha"])]
@@ -71,13 +77,28 @@ def detectar_archivo(texto: str):
                     for f in filas)
     else:
         mapa, filas = honorarios.leer(texto)
-        filas = [f for f in filas if (f.get(mapa["folio"]) or "").strip()
-                 and "anul" not in (f.get(mapa.get("estado", ""), "") or "").lower()]
+        filas = [f for f in filas if honorarios.FOLIO_NUMERICO.match((f.get(mapa["folio"]) or "").strip())
+                 and not honorarios.anulada(f.get(mapa.get("estado", ""), "") or "")]
         fechas = [rcv._fecha_iso(f.get(mapa["fecha"], "")) for f in filas if f.get(mapa["fecha"])]
         total = sum(rcv._entero(f.get(mapa["bruto"])) for f in filas)
     meses = collections.Counter(f[:7] for f in fechas)
     return {"tipo": tipo, "documentos": len(filas), "total": total,
             "mes_sugerido": meses.most_common(1)[0][0] if meses else None}
+
+
+def leer_contenido(b) -> str:
+    """Contenido de un archivo subido (CSV, Excel, página HTML o tabla pegada) como texto CSV."""
+    try:
+        crudo = base64.b64decode(b.get("contenido") or "", validate=False)
+    except ValueError:
+        raise ErrorUsuario("No se pudo leer el archivo.")
+    if not crudo.strip():
+        raise ErrorUsuario("El archivo está vacío.")
+    return tablas.a_csv(b.get("nombre") or "", crudo)
+
+
+TIPOS_ARCHIVO = ("compra", "venta", "honorario_recibido", "honorario_emitido")
+ENCABEZADO_BOLETA = "N° Boleta;Fecha;Estado;Rut;Nombre o Razón Social;Brutos;Retenido;Pagado"
 
 
 def decodificar(b64: str) -> str:
@@ -158,6 +179,93 @@ class App:
         lib.con.close()
         return {"archivo": archivo}
 
+    # ---- eliminar empresas (van a la Papelera y se pueden restaurar)
+    def _papelera(self):
+        return os.path.join(self.carpeta, PAPELERA)
+
+    @staticmethod
+    def _mover(origen, destino):
+        """Mueve la base y, si existe, su archivo de diario de SQLite. Falla si el destino ya existe."""
+        if os.path.exists(destino):
+            raise ErrorUsuario("Ya existe un archivo con ese nombre. Inténtelo de nuevo en un momento.")
+        try:
+            os.replace(origen, destino)
+        except PermissionError:
+            raise ErrorUsuario("No se pudo mover la contabilidad porque está en uso. Espere a que termine lo que se "
+                               "está haciendo (por ejemplo, traer archivos del SII) e inténtelo de nuevo.")
+        if os.path.exists(origen + "-journal"):
+            os.replace(origen + "-journal", destino + "-journal")
+
+    def eliminar_empresa(self, q, b):
+        archivo = b.get("archivo") or ""
+        if not NOMBRE_DB.match(archivo):
+            raise ErrorUsuario("Empresa no válida.")
+        ruta = os.path.join(self.carpeta, archivo)
+        if not os.path.exists(ruta):
+            raise ErrorUsuario("No encuentro esa empresa.")
+        if (b.get("confirmar") or "") != archivo:
+            raise ErrorUsuario("Falta confirmar la eliminación.")
+        os.makedirs(self._papelera(), exist_ok=True)
+        marca = datetime.now().strftime("%Y%m%d-%H%M%S")
+        destino = os.path.join(self._papelera(), f"{archivo[:-3]}__{marca}.db")
+        n = 1
+        while os.path.exists(destino) and n < 999:
+            n += 1
+            destino = os.path.join(self._papelera(), f"{archivo[:-3]}__{marca}-{n}.db")
+        self._mover(ruta, destino)
+        return {"ok": True, "papelera": os.path.basename(destino)}
+
+    def papelera(self, q, b):
+        out = []
+        carpeta = self._papelera()
+        if os.path.isdir(carpeta):
+            for nombre in sorted(os.listdir(carpeta), reverse=True):
+                m = NOMBRE_PAPELERA.match(nombre)
+                if not m:
+                    continue
+                nombre_emp = ""
+                try:
+                    lib = Libro(os.path.join(carpeta, nombre))
+                    c = lib.contribuyente()
+                    nombre_emp = c["razon_social"] if c else ""
+                    lib.con.close()
+                except Exception:  # noqa: BLE001 - un archivo dañado igual se muestra para poder borrarlo
+                    nombre_emp = "(no se pudo leer)"
+                d = m.group(2)
+                out.append({"archivo": nombre, "rut": rutmod.formatear(m.group(1)), "nombre": nombre_emp,
+                            "eliminada": f"{d[6:8]}-{d[4:6]}-{d[:4]} {d[9:11]}:{d[11:13]}",
+                            "activa": os.path.exists(os.path.join(self.carpeta, m.group(1) + ".db"))})
+        return {"papelera": out, "carpeta": carpeta}
+
+    def _en_papelera(self, b):
+        nombre = b.get("archivo") or ""
+        m = NOMBRE_PAPELERA.match(nombre)
+        ruta = os.path.join(self._papelera(), nombre)
+        if not m or not os.path.exists(ruta):
+            raise ErrorUsuario("No encuentro esa contabilidad en la papelera.")
+        return m, ruta
+
+    def restaurar_empresa(self, q, b):
+        m, ruta = self._en_papelera(b)
+        destino = os.path.join(self.carpeta, m.group(1) + ".db")
+        if os.path.exists(destino):
+            raise ErrorUsuario("Ya hay una contabilidad activa con ese RUT. Para restaurar esta, primero elimine la "
+                               "activa.")
+        self._mover(ruta, destino)
+        return {"archivo": m.group(1) + ".db"}
+
+    def borrar_definitivo(self, q, b):
+        m, ruta = self._en_papelera(b)
+        if rutmod.limpiar(b.get("confirmar") or "") != rutmod.limpiar(m.group(1)):
+            raise ErrorUsuario("Para borrar para siempre, escriba el RUT de la empresa tal como aparece.")
+        try:
+            os.remove(ruta)
+        except PermissionError:
+            raise ErrorUsuario("No se pudo borrar el archivo porque está en uso. Inténtelo de nuevo en un momento.")
+        if os.path.exists(ruta + "-journal"):
+            os.remove(ruta + "-journal")
+        return {"ok": True}
+
     # ---- resumen de una empresa
     def resumen(self, lib, q, b):
         c = lib.contribuyente()
@@ -186,6 +294,7 @@ class App:
             "asientos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=?", (periodo,)).fetchone()[0]
             if periodo else 0,
             "utm": utm,
+            "retencion_honorarios": self.params(periodo).valor_opcional("retencion_honorarios") if periodo else None,
             "f29_registrado": bool(periodo and lib.con.execute(
                 "SELECT 1 FROM asiento WHERE origen='f29' AND periodo=? AND numero NOT IN "
                 "(SELECT anula_a FROM asiento WHERE anula_a IS NOT NULL)", (periodo,)).fetchone()),
@@ -193,20 +302,64 @@ class App:
 
     # ---- importar
     def analizar(self, lib, q, b):
-        return detectar_archivo(decodificar(b.get("contenido", "")))
+        return detectar_archivo(leer_contenido(b))
 
     def importar(self, lib, q, b):
         periodo = b.get("periodo", "")
         if not PERIODO.match(periodo):
             raise ErrorUsuario("Elija el mes al que corresponde el archivo.")
-        texto = decodificar(b.get("contenido", ""))
+        texto = leer_contenido(b)
         tipo = b.get("tipo") or detectar_archivo(texto)["tipo"]
+        if tipo not in TIPOS_ARCHIVO:
+            raise ErrorUsuario("Tipo de archivo no reconocido.")
+        return self._importar_texto(lib, texto, tipo, periodo, b.get("nombre") or "archivo", b.get("modo") or "documento")
+
+    def boleta_manual(self, lib, q, b):
+        """Registra una boleta de honorarios escrita a mano, con las mismas validaciones que un archivo."""
+        periodo = b.get("periodo", "")
+        if not PERIODO.match(periodo):
+            raise ErrorUsuario("Elija el mes.")
+        sentido = b.get("sentido")
+        if sentido not in ("recibido", "emitido"):
+            raise ErrorUsuario("Indique si la boleta la recibió (usted pagó) o la emitió (usted cobró).")
+        folio = str(b.get("folio") or "").strip()
+        if not re.fullmatch(r"\d{1,12}", folio):
+            raise ErrorUsuario("Escriba el número de la boleta, solo con dígitos.")
+        fecha = b.get("fecha") or ""
+        if not FECHA.match(fecha):
+            raise ErrorUsuario("Indique la fecha de la boleta.")
+        try:
+            date.fromisoformat(fecha)
+        except ValueError:
+            raise ErrorUsuario("La fecha de la boleta no es válida.")
+        rut = (b.get("rut") or "").strip()
+        if not rutmod.es_valido(rut):
+            raise ErrorUsuario("El RUT no es válido. Revise el número y el dígito verificador.")
+        nombre = " ".join(str(b.get("nombre") or "").replace(";", ",").split())
+        if not nombre:
+            raise ErrorUsuario("Escriba el nombre o razón social.")
+        def monto(v, defecto):
+            return int(str(defecto if v is None or str(v).strip() == "" else v).replace(".", "").strip())
+        try:
+            bruto, ret = monto(b.get("bruto"), ""), monto(b.get("retenido"), 0)
+        except ValueError:
+            raise ErrorUsuario("Escriba los montos como números enteros, por ejemplo 500000.")
+        if bruto <= 0:
+            raise ErrorUsuario("El monto bruto debe ser mayor que cero.")
+        if not 0 <= ret <= bruto:
+            raise ErrorUsuario("La retención no puede ser negativa ni mayor que el monto bruto.")
+        d = date.fromisoformat(fecha)
+        texto = (f"{ENCABEZADO_BOLETA}\n{folio};{d.strftime('%d/%m/%Y')};VIGENTE;{rutmod.normalizar(rut)};{nombre};"
+                 f"{bruto};{ret};{bruto - ret}\n")
+        return self._importar_texto(lib, texto, f"honorario_{sentido}", periodo, "ingreso manual")
+
+    def _importar_texto(self, lib, texto, tipo, periodo, nombre, modo="documento"):
         with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8") as f:
             f.write(texto)
             tmp = f.name
         try:
             if tipo in ("compra", "venta"):
-                r = rcv.importar(lib, tmp, tipo, periodo, b.get("modo") or "documento")
+                r = rcv.importar(lib, tmp, tipo, periodo, modo)
                 res = {"importados": r.importados, "duplicados": r.duplicados, "alertas": r.alertas}
             elif tipo in ("honorario_recibido", "honorario_emitido"):
                 r = honorarios.importar(lib, tmp, tipo.split("_")[1], periodo, self.params(periodo))
@@ -216,7 +369,7 @@ class App:
                 raise ErrorUsuario("Tipo de archivo no reconocido.")
         finally:
             os.unlink(tmp)
-        lib.con.execute("UPDATE documento SET fuente=? WHERE fuente=?", (b.get("nombre") or "archivo", tmp))
+        lib.con.execute("UPDATE documento SET fuente=? WHERE fuente=?", (nombre, tmp))
         lib.con.commit()
         return res
 
@@ -483,9 +636,12 @@ class App:
 SII = {"sii-semilla": "sii_semilla", "sii-certificado": "sii_certificado", "sii-token": "sii_token"}
 # Todas por POST: exigen la cabecera X-Contasii, así ningún sitio externo puede abrir la ventana ni leer descargas.
 PORTAL = {"conectar": "portal_conectar", "estado": "portal_estado", "desconectar": "portal_desconectar"}
-GLOBAL = {"ping": ("GET", "ping"), "carpeta": ("GET", "info_carpeta"), "empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm")}
+GLOBAL = {"ping": ("GET", "ping"), "carpeta": ("GET", "info_carpeta"), "empresas": ("GET", "empresas"), "empresa": ("POST", "crear_empresa"), "utm": ("POST", "utm"),
+          "empresa-eliminar": ("POST", "eliminar_empresa"), "papelera": ("GET", "papelera"),
+          "papelera-restaurar": ("POST", "restaurar_empresa"), "papelera-borrar": ("POST", "borrar_definitivo")}
 POR_EMPRESA = {
     "resumen": ("GET", "resumen"), "analizar": ("POST", "analizar"), "importar": ("POST", "importar"),
+    "boleta": ("POST", "boleta_manual"),
     "catalogo": ("GET", "catalogo"), "movimiento": ("POST", "movimiento"), "anular": ("POST", "anular"),
     "f29": ("GET", "f29"), "f29-confirmar": ("POST", "f29_confirmar"), "revision": ("GET", "revision"),
     "cerrar": ("POST", "cerrar"), "diario": ("GET", "diario"), "mayor": ("GET", "mayor"),
@@ -581,7 +737,7 @@ def crear_manejador(app: App, puerto_ref: list):
                                         {"Content-Disposition": f'attachment; filename="{nombre}"'})
                 return self._json(200, res)
             except (ErrorUsuario, ErrorContable, ParametroFaltante, rutmod.RutInvalido, sii_ws.ErrorSII,
-                    sii_portal.ErrorPortal, navegador.ErrorNavegador) as e:
+                    sii_portal.ErrorPortal, navegador.ErrorNavegador, tablas.ErrorTabla) as e:
                 return self._json(400, {"error": str(e)})
             except Exception as e:  # error inesperado: se informa sin detener el programa
                 traceback.print_exc()
