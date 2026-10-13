@@ -317,6 +317,13 @@ def parser():
 
 
 def main(argv=None):
+    # La consola de Windows (cp1252) no tiene caracteres como «→» o «≠» de las alertas: se reemplazan
+    # en vez de cortar el comando con un error de codificación.
+    for flujo in (sys.stdout, sys.stderr):
+        try:
+            flujo.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
     a = parser().parse_args(argv)
     lib = Libro(a.db)
     try:
