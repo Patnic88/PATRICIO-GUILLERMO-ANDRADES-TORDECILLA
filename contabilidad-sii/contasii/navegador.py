@@ -121,10 +121,30 @@ class VentanaPrograma:
             args += ["--headless=new", "--disable-gpu"]
         if sys.platform.startswith("linux") and os.geteuid() == 0:
             args.append("--no-sandbox")
+        self.t_lanz, self.t_reloj, self._t_fin = time.monotonic(), time.time(), None
         try:
             self.proc = subprocess.Popen(args, **_opciones_proceso())
         except OSError as e:
             raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
+        self.reabierta = 0.0
+
+    def _entrego(self) -> bool:
+        """True si este Chrome solo entregó la orden a otro Chrome que ya usaba el mismo perfil: terminó enseguida
+        sin dejar listo su propio control (DevToolsActivePort). La ventana vive entonces en ese otro proceso. El
+        código de salida no sirve para saberlo: en Linux con ventana fue 0 y sin ventana, 21."""
+        if self.proc.poll() is None:
+            return False
+        if self._t_fin is None:
+            self._t_fin = time.monotonic()
+        try:
+            propio = os.path.getmtime(os.path.join(self.perfil, "DevToolsActivePort")) >= self.t_reloj - 2
+        except OSError:
+            propio = False
+        return self._t_fin - self.t_lanz < 10 and not propio
+
+    def marcar_reapertura(self):
+        """Otro doble clic va a abrir una ventana nueva: mientras aparece, la ventana no se da por cerrada."""
+        self.reabierta = time.monotonic()
 
     def _devtools(self):
         try:
@@ -149,18 +169,40 @@ class VentanaPrograma:
         recargar). Mientras Chrome arranca (hasta `inicio` segundos) no se da por cerrada. Si Chrome no responde
         y nunca mostró páginas (por ejemplo, una política del equipo desactiva el control), espera a que termine
         el proceso de Chrome."""
-        visto, fallos, t0 = False, 0, time.monotonic()
+        visto, fallos, t0, marca = False, 0, time.monotonic(), self.reabierta
         while True:
+            if self.reabierta != marca:  # se está abriendo otra ventana: se cuenta de nuevo como arranque
+                visto, fallos, t0, marca = False, 0, time.monotonic(), self.reabierta
             hay = self.paginas()
             if hay:
                 visto, fallos = True, 0
             else:
                 fallos += 1
                 arrancando = not visto and time.monotonic() - t0 < inicio
-                responde = hay is not None or visto or self.proc.poll() is not None
+                # Si este Chrome solo entregó la orden a otro que no deja consultar sus páginas, su fin no dice
+                # nada de la ventana: no se da por cerrada (el programa sigue atendiendo).
+                termino = self.proc.poll() is not None and not self._entrego()
+                responde = hay is not None or visto or termino
                 if fallos >= 2 and not arrancando and responde:
                     return
             time.sleep(intervalo)
+
+    def cerrar_navegador(self):
+        """Cierra el Chrome del programa si quedó abierto sin ventanas (en Mac, Chrome sigue corriendo)."""
+        puerto = self._devtools()
+        if puerto and self.paginas() == []:
+            try:
+                with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/version", timeout=3) as r:
+                    destino = json.loads(r.read())["webSocketDebuggerUrl"]
+                ws = WebSocket("127.0.0.1", puerto, "/" + destino.split("/", 3)[3], timeout=5)
+                try:
+                    ws.enviar(json.dumps({"id": 1, "method": "Browser.close"}))
+                finally:
+                    ws.cerrar()
+            except (OSError, ValueError, KeyError, IndexError, ErrorNavegador):
+                pass
+        if self.proc.poll() is None:
+            self.cerrar()
 
     def traer_al_frente(self) -> bool:
         """Muestra la ventana del programa delante de las demás (al hacer doble clic con el programa abierto)."""

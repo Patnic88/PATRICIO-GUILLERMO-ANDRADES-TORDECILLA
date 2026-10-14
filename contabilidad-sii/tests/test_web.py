@@ -75,6 +75,23 @@ class TestWeb(unittest.TestCase):
         auto = {a["numero"]: a["automatico"] for a in r["asientos"]}
         self.assertFalse(auto.pop(cobro))
         self.assertTrue(auto and all(auto.values()))  # los de facturas y boletas importadas
+        # Un pago anulado no cuenta como pago del mes
+        st, r = self.req(e + "/movimiento", {"operacion": "retiro", "fecha": "2026-10-20", "monto": 1000, "medio": "banco"})
+        st, x = self.req(e + "/anular", {"numero": r["numero"], "motivo": "por error"})
+        self.assertEqual(st, 200, x)
+        st, r = self.req(e + "/resumen?periodo=2026-10")
+        self.assertEqual(r["pagos_mes"], 1)
+        # Un año escrito con 2 cifras (el navegador lo deja como 0026) se rechaza
+        st, r = self.req(e + "/movimiento", {"operacion": "retiro", "fecha": "0026-10-20", "monto": 1000, "medio": "banco"})
+        self.assertEqual(st, 400)
+        self.assertIn("4 cifras", r["error"])
+        # Un mes sin parámetros del año igual abre su inicio
+        st, r = self.req(e + "/resumen?periodo=2025-12")
+        self.assertEqual((st, r["utm"], r["retencion_honorarios"]), (200, None, None))
+        # Opciones del F29 fuera de rango
+        for k, v in (("factor_uso_comun", "605"), ("tasa_ppm", "-1"), ("impuesto_unico", "-5"), ("tasa_ppm", "x")):
+            st, r = self.req(e + f"/f29?periodo=2026-10&{k}={v}")
+            self.assertEqual(st, 400, (k, v, r))
         st, r = self.req(e + "/movimiento", {"operacion": "cobro_cliente", "fecha": "2026-10-28", "monto": 0})
         self.assertEqual(st, 400)
 

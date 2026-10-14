@@ -39,8 +39,9 @@ NOMBRE_DB = re.compile(r"^[0-9]{1,8}-[0-9K]\.db$")
 # En la papelera: <rut>__<AAAAMMDD-HHMMSS>[-N].db (fecha y hora en que se eliminó; N si se repite)
 PAPELERA = "Papelera"
 NOMBRE_PAPELERA = re.compile(r"^([0-9]{1,8}-[0-9K])__(\d{8}-\d{6})(?:-\d{1,3})?\.db$")
-PERIODO = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
-FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# Años 2000 a 2099: un año mal escrito en la fecha (por ejemplo «26», que el navegador deja como 0026) se rechaza.
+PERIODO = re.compile(r"^20\d{2}-(0[1-9]|1[0-2])$")
+FECHA = re.compile(r"^20\d{2}-\d{2}-\d{2}$")
 
 REGIMEN_SIMPLE = {
     "14D8": "Pro Pyme Transparente (14 D N°8): la mayoría de las pymes pequeñas",
@@ -155,8 +156,12 @@ class App:
         return {"carpeta": self.carpeta}
 
     def mostrar_ventana(self, q, b):
-        """Doble clic con el programa ya abierto: muestra su ventana delante de las demás."""
-        return {"mostrada": bool(self.ventana and self.ventana.traer_al_frente())}
+        """Doble clic con el programa ya abierto: muestra su ventana delante de las demás. Si ya no hay ventana
+        del programa, quien llamó abrirá otra: mientras tanto, este programa no se da por cerrado."""
+        mostrada = bool(self.ventana and self.ventana.traer_al_frente())
+        if self.ventana and not mostrada:
+            self.ventana.marcar_reapertura()
+        return {"mostrada": mostrada}
 
     # ---- empresas
     def empresas(self, q, b):
@@ -300,10 +305,14 @@ class App:
                 docs[r["libro"]] = {"n": r["n"], "total": r["t"]}
         periodos = [r[0] for r in lib.con.execute(
             "SELECT periodo FROM asiento UNION SELECT periodo FROM documento WHERE eliminado IS NULL ORDER BY 1 DESC")]
-        utm = None
+        utm = retencion = None
         if periodo:
+            # Sin los parámetros del año (por ejemplo, un mes de 2025) el inicio del mes igual se muestra;
+            # el F29 de ese mes informa lo que falta.
             try:
-                utm = self.params(periodo).utm(periodo)
+                par = self.params(periodo)
+                retencion = par.valor_opcional("retencion_honorarios")
+                utm = par.utm(periodo)
             except ParametroFaltante:
                 pass
         return {
@@ -315,10 +324,11 @@ class App:
             "asientos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=?", (periodo,)).fetchone()[0]
             if periodo else 0,
             # Pagos, cobros y asientos que registró la persona (no los de facturas, boletas ni el F29, ni anulaciones).
-            "pagos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=? AND origen IN ('operacion','manual') "
-                                         "AND anula_a IS NULL", (periodo,)).fetchone()[0] if periodo else 0,
+            "pagos_mes": sum(1 for (n,) in lib.con.execute(
+                "SELECT numero FROM asiento WHERE periodo=? AND origen IN ('operacion','manual') AND anula_a IS NULL",
+                (periodo,)) if not lib.anulado_por(n)) if periodo else 0,
             "utm": utm,
-            "retencion_honorarios": self.params(periodo).valor_opcional("retencion_honorarios") if periodo else None,
+            "retencion_honorarios": retencion,
             "f29_registrado": bool(periodo and documentos.f29_registrado(lib, periodo)),
         }
 
@@ -349,7 +359,7 @@ class App:
             raise ErrorUsuario("Escriba el número de la boleta, solo con dígitos (y distinto de cero).")
         fecha = b.get("fecha") or ""
         if not FECHA.match(fecha):
-            raise ErrorUsuario("Indique la fecha de la boleta.")
+            raise ErrorUsuario("Indique la fecha de la boleta, con el año de 4 cifras (por ejemplo, 15-10-2026).")
         try:
             date.fromisoformat(fecha)
         except ValueError:
@@ -414,7 +424,7 @@ class App:
     def movimiento(self, lib, q, b):
         fecha = b.get("fecha", "")
         if not FECHA.match(fecha):
-            raise ErrorUsuario("Indique la fecha.")
+            raise ErrorUsuario("Indique la fecha, con el año de 4 cifras (por ejemplo, 15-10-2026).")
         op = b.get("operacion")
         rut = (b.get("rut") or "").strip()
         if rut and not rutmod.es_valido(rut):
@@ -463,14 +473,26 @@ class App:
             raise ErrorUsuario("Elija el mes.")
         params = self.params(periodo)
 
-        def num(k, conv):
+        def num(k, conv, minimo=0, maximo=None, texto=""):
             v = q.get(k)
-            return conv(v) if v not in (None, "") else None
+            if v in (None, ""):
+                return None
+            try:
+                x = conv(v)
+            except (TypeError, ValueError):
+                raise ErrorUsuario(f"Revise {texto}: «{v}» no es un número.")
+            bruto = float(v)
+            if bruto < minimo or (maximo is not None and bruto > maximo):
+                raise ErrorUsuario(f"Revise {texto}: debe estar entre {minimo} y {maximo}." if maximo is not None
+                                   else f"Revise {texto}: no puede ser negativo.")
+            return x
 
-        p = impuestos.propuesta_f29(lib, params, periodo, impuesto_unico_mes=num("impuesto_unico", int) or 0,
-                                    tasa_ppm=num("tasa_ppm", lambda x: float(x) / 100),
-                                    factor_uso_comun=num("factor_uso_comun", lambda x: float(x) / 100),
-                                    remanente_anterior=num("remanente_anterior", int))
+        p = impuestos.propuesta_f29(lib, params, periodo,
+                                    impuesto_unico_mes=num("impuesto_unico", int, texto="el impuesto único") or 0,
+                                    tasa_ppm=num("tasa_ppm", lambda x: float(x) / 100, 0, 100, "la tasa de PPM (%)"),
+                                    factor_uso_comun=num("factor_uso_comun", lambda x: float(x) / 100, 0, 100,
+                                                         "la proporción de IVA de uso común (%)"),
+                                    remanente_anterior=num("remanente_anterior", int, texto="el IVA a favor del mes anterior"))
         venc, notas = impuestos.vencimiento_f29(params, periodo, electronico=q.get("papel") != "1")
         p.alertas += notas
         p.verificar = params.advertencias()
@@ -881,6 +903,14 @@ def aviso(texto: str):
 def mostrar_abierto(puerto: int) -> bool:
     """Pide al programa que ya está abierto que muestre su ventana. True si lo hizo."""
     import urllib.request
+    if sys.platform == "win32":
+        # Este proceso lo abrió el doble clic, así que puede pasar a primer plano; se cede ese permiso para que
+        # Chrome (otro proceso) pueda mostrar su ventana delante de las demás y no solo hacer parpadear su botón.
+        try:
+            import ctypes
+            ctypes.windll.user32.AllowSetForegroundWindow(-1)  # ASFW_ANY
+        except Exception:
+            pass
     pedido = urllib.request.Request(f"http://127.0.0.1:{puerto}/api/ventana", data=b"{}", method="POST",
                                     headers={"X-Contasii": "1", "Content-Type": "application/json"})
     try:
@@ -909,15 +939,19 @@ def main(argv=None):
                     help="no abrir la ventana: el programa queda atendiendo hasta que se detenga (pruebas)")
     a = ap.parse_args(argv)
     if ya_abierto(a.puerto):
-        # Doble clic con el programa ya abierto: se muestra su ventana; si no tiene (--no-abrir), se abre una.
-        if not a.no_abrir and not mostrar_abierto(a.puerto):
+        # Doble clic con el programa ya abierto: se muestra su ventana; si no tiene (se cerró hace un instante, o
+        # se abrió con --no-abrir), se abre otra. Si el programa abierto terminó justo ahora, se abre de nuevo.
+        if a.no_abrir or mostrar_abierto(a.puerto):
+            print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
+            return 0
+        if ya_abierto(a.puerto):
             try:
                 navegador.VentanaPrograma(f"http://127.0.0.1:{a.puerto}/")
             except navegador.ErrorNavegador as e:
                 aviso(str(e))
                 return 1
-        print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
-        return 0
+            print("Mi Contabilidad ya estaba abierta; se abrió otra ventana.")
+            return 0
     if not a.no_abrir:
         try:
             navegador.buscar_navegador()
@@ -942,6 +976,7 @@ def main(argv=None):
     try:
         srv.app.ventana = navegador.VentanaPrograma(url)
         srv.app.ventana.esperar_cierre()  # el programa termina cuando la persona cierra su ventana
+        srv.app.ventana.cerrar_navegador()
     except navegador.ErrorNavegador as e:
         aviso(str(e))
         return 1
