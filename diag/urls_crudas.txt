@@ -1,0 +1,6 @@
+# Simulador oficial del SII (código JS: regla de redondeo)
+https://www.sii.cl/destacados/boletas_honorarios/index.html
+# LeyChile (API XML): Ley 21.133 y DL 824 (Ley sobre Impuesto a la Renta)
+https://www.leychile.cl/Consulta/obtxml?opt=7&idNorma=1128420
+https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=1128420
+https://www.leychile.cl/Consulta/obtxml?opt=7&idNorma=6368
