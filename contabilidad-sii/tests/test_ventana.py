@@ -129,7 +129,7 @@ class TestVentanaReal(unittest.TestCase):
         url = f"http://127.0.0.1:{puerto}/"
         v = navegador.VentanaPrograma(url, perfil=perfil, headless=True)
         try:
-            limite = time.monotonic() + 20
+            limite = time.monotonic() + 60  # primera apertura de Chrome en frío
             while not v.paginas() and time.monotonic() < limite:
                 time.sleep(0.2)
             self.assertEqual([p["url"] for p in v.paginas()], [url])

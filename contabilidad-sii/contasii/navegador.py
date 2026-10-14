@@ -296,7 +296,9 @@ class WebSocket:
 class Navegador:
     """Una ventana de Google Chrome con un perfil temporal, controlada por el programa."""
 
-    def __init__(self, url: str, ruta: str | None = None, headless: bool = False, espera: float = 25):
+    # La primera apertura de Chrome en un equipo lento (o recién encendido, con el antivirus revisando) puede
+    # tardar más de 25 s en dejar listo su control (se vio 33 s en Windows de GitHub Actions): se espera hasta 60 s.
+    def __init__(self, url: str, ruta: str | None = None, headless: bool = False, espera: float = 60):
         self.ruta = ruta or buscar_navegador()
         self.perfil = tempfile.mkdtemp(prefix="micontabilidad-sii-")
         args = [self.ruta, "--remote-debugging-port=0", f"--user-data-dir={self.perfil}", "--no-first-run",
