@@ -515,29 +515,75 @@ class TestQuintaRonda(Base):
 
     NC_CERO = "1;61;Del Giro;76111111-6;PROVEEDOR UNO SPA (FICTICIO);56;20/10/2026;20/10/2026;;0;0;0;0;;0;0;0;0;0;0;;;"
 
-    def test_nota_sin_montos_se_importa_y_se_borra_sola(self):
-        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+    def test_nota_sin_montos_no_se_registra(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
         rcv.importar(self.lib, VENTAS, "venta", "2026-10")
-        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        impuestos.guardar_remanente(self.lib, "2026-10", 0)  # F29 confirmado
         with open(COMPRAS, encoding="utf-8") as f:
             filas = f.read().splitlines()[1:]
         rcv_nuevo = self._csv("rcv_nuevo.csv", COMPRAS, filas + [self.NC_CERO])
-        r2 = rcv.importar(self.lib, rcv_nuevo, "compra", "2026-10", modo="centralizado")  # antes: rechazado
-        self.assertEqual((r2.importados, r2.asientos), (1, []))
-        self.assertTrue(any("no tiene montos" in a for a in r2.alertas), r2.alertas)
+        for modo in ("centralizado", "documento"):  # antes: rechazado / «al menos dos líneas»
+            r = rcv.importar(self.lib, rcv_nuevo, "compra", "2026-10", modo=modo)
+            self.assertEqual((r.importados, r.asientos, r.duplicados), (0, [], 4))
+            self.assertTrue(any("no tiene montos" in a for a in r.alertas), r.alertas)
+            self.assertFalse(any("F29" in a and "cambia" in a for a in r.alertas), r.alertas)  # no hay aviso falso
+        self.assertIsNone(self.doc("compra", "56"))
+
+    def test_componentes_en_cero_con_total_se_rechaza(self):
+        fila = "1;33;Del Giro;76111111-6;PROVEEDOR UNO SPA (FICTICIO);9001;20/10/2026;20/10/2026;;0;0;0;0;;19000;0;0;0;0;19000;;;"
+        for modo in ("centralizado", "documento"):
+            with self.assertRaises(ErrorContable) as cm:
+                rcv.importar(self.lib, self._csv("tot.csv", COMPRAS, [fila]), "compra", "2026-10", modo=modo)
+            self.assertIn("Revise el archivo", str(cm.exception))
+        self.assertEqual(self.lib.con.execute("SELECT COUNT(*) FROM documento").fetchone()[0], 0)
+
+    def test_nota_sin_montos_de_una_version_anterior(self):
+        # Las versiones anteriores guardaban las notas sin montos dentro de una centralización.
+        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        impuestos.guardar_remanente(self.lib, "2026-11", 0)
+        self.lib.con.execute("INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, fecha, periodo, "
+                             "asiento_centralizacion) VALUES ('compra', 61, '76111111-6', '56', '2026-10-20', '2026-10', ?)",
+                             (r1.asientos[0],))
+        self.lib.con.commit()
         nc = self.doc("compra", "56")
         self.assertFalse(documentos.entro_en_f29(self.lib, nc))
         res = documentos.eliminar(self.lib, [nc["id"]], "nota de corrección de texto")  # sola, sin anular el F29
-        self.assertEqual((res["eliminados"], res["contra_asientos"]), (1, []))
+        self.assertEqual((res["eliminados"], res["contra_asientos"], res["alertas"]), (1, [], []))
         self.assertIsNone(self.lib.anulado_por(r1.asientos[0]))
-        # Las compras de la centralización se siguen borrando juntas, sin pedir la nota.
         self.assertTrue(documentos.entro_en_f29(self.lib, self.doc("compra", "1001")))
 
-    def test_nota_sin_montos_por_documento(self):
-        r = rcv.importar(self.lib, self._csv("nc.csv", COMPRAS, [self.NC_CERO]), "compra", "2026-10")  # antes: error
-        self.assertEqual((r.importados, r.asientos), (1, []))
-        self.assertEqual(documentos.eliminar(self.lib, r.documentos, "x")["contra_asientos"], [])
-        self.assertEqual(self.lib.verificar_integridad(), [])
+    def test_borrada_y_reimportada_por_documento_sale_de_la_centralizacion(self):
+        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        d = self.doc("compra", "1001")["id"]
+        self.lib.con.execute("UPDATE documento SET eliminado='2026-10-20', motivo_eliminado='x' WHERE id=?", (d,))
+        self.lib.con.commit()
+        with open(COMPRAS, encoding="utf-8") as f:
+            fila = f.read().splitlines()[1]
+        rcv.importar(self.lib, self._csv("una.csv", COMPRAS, [fila]), "compra", "2026-10")  # vuelve con asiento propio
+        self.assertIsNone(self.doc("compra", "1001")["asiento_centralizacion"])
+        otros = [x for x in r1.documentos if x != d]
+        self.assertEqual(documentos.eliminar(self.lib, otros, "x")["eliminados"], 3)
+
+    def test_mes_antiguo_con_centralizacion_anulada_y_otra_vigente(self):
+        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        f29 = impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        self.lib.anular(r1.asientos[0], "2026-11-05", "a mano, versión anterior")
+        tarde = self._csv("tarde.csv", COMPRAS, ["1;33;Del Giro;76444444-2;PROVEEDOR CUATRO SPA (FICTICIO);9001;"
+                                                 "20/10/2026;20/10/2026;;0;300000;57000;0;;357000;0;0;0;0;0;;;"])
+        r2 = rcv.importar(self.lib, tarde, "compra", "2026-10", modo="centralizado")
+        self.lib.con.execute("UPDATE documento SET asiento_centralizacion=NULL")  # base anterior a 0.4.0
+        self.lib.con.commit()
+        todos = r1.documentos + r2.documentos
+        self.assertTrue(documentos.entro_en_f29(self.lib, self.doc("compra", "9001")))  # la anulada es anterior
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, todos, "x")
+        self.lib.anular(f29, "2026-10-31", "corregir el F29")
+        res = documentos.eliminar(self.lib, todos, "x")
+        self.assertTrue(any("otro mes" in a for a in res["alertas"]), res["alertas"])
+        self.assertTrue(any("solo se anula la que sigue vigente" in a for a in res["alertas"]), res["alertas"])
 
     def test_centralizacion_antigua_anulada_en_otro_mes_avisa(self):
         r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")

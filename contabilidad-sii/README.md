@@ -135,8 +135,10 @@ importar en modo centralizado: se importa por documento. Si los documentos nuevo
 se compensan entre sí (por ejemplo, una factura y su nota de crédito por el total), la
 centralización no los registra: el programa pide importarlos por documento.
 
-Un documento con todos sus montos en cero (por ejemplo, una nota que solo corrige texto) se
-guarda sin asiento contable y se borra solo, sin contra-asiento.
+Un documento con todos sus montos en cero (por ejemplo, una nota que solo corrige texto) no se
+registra, porque no afecta la contabilidad ni el F29: la importación lo informa. Uno que trae
+«Monto Total» pero cuyos componentes (exento, neto, IVA, otros impuestos) suman cero detiene la
+importación para revisar el archivo.
 
 El programa avisa, sin impedir el borrado, cuando:
 

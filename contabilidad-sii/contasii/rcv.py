@@ -262,6 +262,26 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
             if existe and not existe["eliminado"]:
                 res.duplicados += 1
                 continue
+            alertas_doc = []
+            if libro_tipo == "compra":
+                lineas = _lineas_compra(lib, d, alertas_doc)
+            elif d["tipo_dte"] in FACTURAS_COMPRA:
+                lineas = _lineas_factura_compra(lib, d, alertas_doc)
+            else:
+                lineas = _lineas_venta(lib, d, alertas_doc)
+            lineas = _signo(lineas, d)
+            nombre = f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']}"
+            if not any(de or h for _, de, h in lineas):
+                if any(d.get(c) for c in ("exento", "neto", "iva", "iva_no_rec", "iva_uso_comun", "iva_retenido",
+                                          "otros_imp", "total")):
+                    raise ErrorContable(f"{nombre}: trae montos (total {d['total']}) pero sus componentes (exento, neto, "
+                                        f"IVA, otros impuestos) suman 0, así que no se puede contabilizar. Revise el "
+                                        f"archivo. No se registró nada.")
+                # Todos sus montos en cero (por ejemplo, una nota que solo corrige texto): no mueve ninguna cuenta.
+                res.alertas.append(f"{nombre}: no tiene montos (por ejemplo, una nota que solo corrige texto); no se "
+                                   f"registra porque no afecta la contabilidad ni el F29.")
+                continue
+            res.alertas += alertas_doc
             if existe and modo != "documento":
                 # Una centralización no deja asiento propio: el documento no se podría volver a borrar.
                 raise ErrorContable(f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']} "
@@ -274,7 +294,8 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                 lib.con.execute(
                     "UPDATE documento SET razon_social=?, fecha=?, periodo=?, exento=?, neto=?, iva=?, iva_no_rec=?,"
                     " iva_uso_comun=?, iva_retenido=?, otros_imp=?, total=?, fuente=?, estado=NULL, eliminado=NULL,"
-                    " motivo_eliminado=NULL, asiento_eliminado=NULL WHERE id=?", valores + (existe["id"],))
+                    " motivo_eliminado=NULL, asiento_eliminado=NULL, asiento_centralizacion=NULL WHERE id=?",
+                    valores + (existe["id"],))
                 doc_id = existe["id"]
                 # Las consultas de estado al SII eran de los datos anteriores: no deben mostrarse como actuales.
                 lib.con.execute("DELETE FROM estado_sii WHERE documento=?", (doc_id,))
@@ -290,19 +311,7 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
             res.importados += 1
             res.documentos.append(doc_id)
 
-            if libro_tipo == "compra":
-                lineas = _lineas_compra(lib, d, res.alertas)
-            elif d["tipo_dte"] in FACTURAS_COMPRA:
-                lineas = _lineas_factura_compra(lib, d, res.alertas)
-            else:
-                lineas = _lineas_venta(lib, d, res.alertas)
-            lineas = _signo(lineas, d)
-
-            if not any(de or h for _, de, h in lineas):
-                # Sin montos (por ejemplo, una nota que solo corrige texto): no hay nada que registrar.
-                res.alertas.append(f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']}: "
-                                   f"no tiene montos; se guardó sin asiento contable.")
-            elif modo == "documento":
+            if modo == "documento":
                 aux = d["rut_contraparte"] if d["rut_valido"] else ""
                 desc = TIPOS_DTE.get(d["tipo_dte"], f"DTE {d['tipo_dte']}")
                 a = Asiento(_fecha_contable(d["fecha"], periodo),
@@ -317,7 +326,7 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     acc[0] += de
                     acc[1] += h
 
-        if modo == "centralizado" and any(de or h for de, h in acumulado.values()):
+        if modo == "centralizado" and acumulado:
             y, m = map(int, periodo.split("-"))
             a = Asiento(f"{periodo}-{monthrange(y, m)[1]:02d}",
                         f"Centralización registro de {libro_tipo}s {periodo} ({res.importados} documentos)",
