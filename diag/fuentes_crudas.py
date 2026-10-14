@@ -1,6 +1,6 @@
 """Segunda lectura temporal: guarda el contenido CRUDO (HTML/JS/XML) de algunas fuentes oficiales,
 para revisar el código del simulador del SII y el texto legal en LeyChile. Sin credenciales."""
-import datetime, hashlib, os, re, urllib.error, urllib.parse, urllib.request
+import datetime, hashlib, os, re, time, urllib.error, urllib.parse, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"}
 os.makedirs("fuentes_crudas", exist_ok=True)
@@ -34,6 +34,12 @@ while pendientes:
         continue
     vistos.add(url)
     estado, final, crudo = bajar(url)
+    for espera in (30, 90):  # LeyChile responde 429 si se consulta seguido
+        if estado != 429:
+            break
+        time.sleep(espera)
+        estado, final, crudo = bajar(url)
+    time.sleep(15)
     ext = ".xml" if "obtxml" in url else (".js" if url.split("?")[0].endswith(".js") else ".html")
     guardar(url, estado, final, crudo, ext)
     # En las páginas del SII, seguir los <script src> del mismo sitio (código del simulador).
