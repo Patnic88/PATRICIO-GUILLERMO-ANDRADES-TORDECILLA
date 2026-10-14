@@ -1,6 +1,6 @@
 """Conexión con el portal del SII para traer el Registro de Compras y Ventas (RCV).
 
-La persona ingresa al SII en una ventana de Edge o Chrome que abre el programa, en la
+La persona ingresa al SII en una ventana de Google Chrome que abre el programa, en la
 página oficial de ingreso, con su RUT y clave tributaria o con su Clave Única. El
 programa no pide, no ve y no guarda la clave: usa la sesión que queda abierta en esa
 ventana y se borra al cerrarla.
@@ -55,7 +55,8 @@ TOKEN_RECAPTCHA_WEB = "t-o-k-e-n-web"  # valor que, según la fuente secundaria,
 # Páginas donde la persona está ingresando: no se le cambia la página mientras está en ellas.
 RUTAS_INGRESO = ("/AUT2000/", "/cgi_AUT2000/")
 DOMINIOS_INGRESO = ("claveunica.gob.cl",)
-# Pestañas propias del navegador (p. ej. Edge abre edge://downloads-hub/ al descargar): no son del SII.
+# Pestañas propias del navegador (p. ej. chrome://downloads/ o, con otro Chromium indicado en
+# CONTASII_NAVEGADOR, edge://downloads-hub/): no son del SII.
 ESQUEMAS_INTERNOS = ("devtools:", "edge:", "chrome:", "chrome-extension:", "about:")
 EXTENSIONES = (".csv", ".txt", ".xls", ".xlsx", ".htm", ".html")
 MAX_ARCHIVO = 30 * 1024 * 1024

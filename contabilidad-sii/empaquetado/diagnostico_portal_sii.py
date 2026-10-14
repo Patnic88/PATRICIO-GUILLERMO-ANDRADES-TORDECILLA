@@ -1,6 +1,6 @@
 """Diagnóstico informativo del ingreso al portal del SII (sin credenciales).
 
-Abre el SII real con el mismo módulo que usa el programa (Edge o Chrome sin ventana) y
+Abre el SII real con el mismo módulo que usa el programa (Google Chrome sin ventana) y
 comprueba que sigue vigente lo verificado el 13-10-2026: la página de ingreso con su
 formulario y el botón de Clave Única, la cookie RUT_NS como señal de ingreso en AutAll.js
 y la redirección del Registro de Compras y Ventas a la página de ingreso sin sesión.
@@ -40,7 +40,7 @@ def main():
                     campos = p.nav.evaluar(tid, "[document.readyState, location.href, "
                                                 "['#rutcntr','#clave','#bt_ingresar','#myHref']"
                                                 ".map(s => !!document.querySelector(s))]", timeout=10)
-                    # Edge informa la dirección nueva antes de reemplazar about:blank: se exige la página real.
+                    # El navegador puede informar la dirección nueva antes de reemplazar about:blank: se exige la página real.
                     if campos and campos[0] == "complete" and "/AUT2000/" in campos[1]:
                         break
                 except Exception as e:  # noqa: BLE001

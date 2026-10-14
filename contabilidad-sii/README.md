@@ -20,14 +20,20 @@ comandos para contadores.
 ### Windows: instalador, sin Python
 
 1. Descargue **`Instalar-MiContabilidad.exe`** desde la sección **Releases** del
-   repositorio, versión «Mi Contabilidad 0.4.0 (preliminar)».
+   repositorio, versión «Mi Contabilidad 0.5.0 (preliminar)».
 2. Haga doble clic en el archivo. El programa no está firmado digitalmente, así que
    Windows puede mostrar **«Windows protegió su PC»**: presione **«Más información»** y
    luego **«Ejecutar de todos modos»**.
 3. Siga el asistente. No pide permisos de administrador y crea el acceso directo
    **«Mi Contabilidad»** en el Escritorio y en el menú Inicio.
-4. Abra **Mi Contabilidad**. Aparece una ventana negra y, enseguida, el navegador con el
-   programa. **No cierre la ventana negra mientras trabaja**; al terminar, ciérrela.
+4. Abra **Mi Contabilidad**. El programa se abre en su propia ventana de **Google Chrome**,
+   sin pestañas ni barra de direcciones. Para salir, cierre esa ventana. Si hace doble
+   clic de nuevo con el programa abierto, se muestra la misma ventana.
+
+**Requiere Google Chrome.** El programa usa solo Chrome, aunque su navegador habitual sea
+otro. Si no lo encuentra, lo avisa con el enlace de descarga
+(<https://www.google.com/chrome/>). La ventana del programa usa un perfil de Chrome propio,
+separado del suyo: no ve sus marcadores, contraseñas ni pestañas.
 
 Los datos se guardan en **Documentos\Mi Contabilidad**. Por eso desinstalar o instalar
 una versión nueva no borra la contabilidad.
@@ -52,7 +58,8 @@ los datos de ejemplo.
 
 Si falta Python, el archivo de inicio lo avisa y abre la página de descarga. La primera
 vez también instala solo el complemento para Excel, lo que requiere internet. Con esta
-forma de uso, los datos quedan en la carpeta `mis_empresas/`, junto al programa.
+forma de uso, los datos quedan en la carpeta `mis_empresas/`, junto al programa. También
+se necesita Google Chrome; el programa se cierra al cerrar su ventana.
 
 ### Qué verá
 
@@ -161,7 +168,7 @@ abierto, para que ese mes quede corregido; si ya está cerrado, van con la fecha
 
 En el paso 1 del mes, el botón **«Ingresar al SII»** hace lo siguiente:
 
-1. Abre una ventana de Microsoft Edge o Google Chrome en la **página oficial de ingreso
+1. Abre una ventana de Google Chrome en la **página oficial de ingreso
    del SII** (`zeusr.sii.cl`). Usted ingresa ahí con su RUT y clave tributaria, o con el
    botón de Clave Única. La dirección se ve en la barra del navegador.
 2. Al ingresar, la ventana pasa al Registro de Compras y Ventas y el programa muestra
@@ -298,8 +305,8 @@ planilla de emitidas, cómo aparece el estado de una boleta con anulación pendi
 planilla incluye todas las páginas cuando el mes tiene más de 100 boletas. El Excel antiguo
 (`.xls` binario) no se puede leer: el programa pide guardarlo como `.xlsx` o `.csv`.
 
-Las pruebas automáticas (`tests/test_sii_portal.py`) recorren todo el flujo con Edge o
-Chrome reales contra un SII simulado en el mismo computador.
+Las pruebas automáticas (`tests/test_sii_portal.py`) recorren todo el flujo con Google
+Chrome real contra un SII simulado en el mismo computador.
 
 ## Probar la conexión con el SII y el certificado digital
 
@@ -527,7 +534,7 @@ contasii/
   sii_ws.py         autenticación con los servicios web del SII (semilla, firma, token)
   sii_dte.py        consulta del estado de facturas y notas en el SII (QueryEstDte)
   sii_portal.py     ingreso al portal del SII y descarga del Registro de Compras y Ventas
-  navegador.py      ventana de Edge o Chrome controlada por el programa (perfil temporal)
+  navegador.py      ventanas de Google Chrome: la del programa y la del SII (perfil temporal)
   tablas.py         convierte Excel (.xlsx), planillas HTML del SII y tablas pegadas a CSV
   datos/plan_cuentas.json   plan de cuentas sugerido (editable, no oficial)
   parametros/2026.json      parámetros tributarios 2026

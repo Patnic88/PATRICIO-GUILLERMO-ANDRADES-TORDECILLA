@@ -1,14 +1,17 @@
-"""Ventana del navegador del computador (Edge o Chrome) controlada por el programa.
+"""Ventanas de Google Chrome que abre el programa. Usa solo Chrome.
 
-Sirve para que la persona ingrese al SII en la página oficial, con su clave tributaria o
-su Clave Única, en una ventana normal donde ve la dirección sii.cl. El programa no lee
-lo que se escribe en esa ventana: solo pregunta qué página está abierta y pide datos al
-SII desde esa misma página, con la sesión que la persona abrió.
+1. La ventana del programa (VentanaPrograma): Chrome en modo aplicación, sin pestañas ni
+   barra de direcciones, con un perfil propio que se conserva entre aperturas. Al cerrarla
+   termina el programa.
+2. La ventana del SII (Navegador): para que la persona ingrese al SII en la página oficial,
+   con su clave tributaria o su Clave Única, en una ventana normal donde ve la dirección
+   sii.cl. El programa no lee lo que se escribe en esa ventana: solo pregunta qué página
+   está abierta y pide datos al SII desde esa misma página, con la sesión que la persona
+   abrió. Usa un perfil temporal, separado del navegador habitual, que se borra al cerrarla.
 
-La ventana usa un perfil temporal, separado del navegador habitual, que se borra al
-cerrarla. Se controla con el protocolo de herramientas de desarrollo de Chromium
-(Chrome DevTools Protocol), que escucha solo en 127.0.0.1. No requiere librerías
-externas: el cliente WebSocket mínimo está aquí mismo.
+Ambas se controlan con el protocolo de herramientas de desarrollo de Chromium (Chrome
+DevTools Protocol), que escucha solo en 127.0.0.1. No requiere librerías externas: el
+cliente WebSocket mínimo está aquí mismo.
 """
 
 import base64
@@ -24,6 +27,7 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.request
 
 
 class ErrorNavegador(Exception):
@@ -31,22 +35,43 @@ class ErrorNavegador(Exception):
 
 
 # ------------------------------------------------------------------ buscar el navegador
+SIN_CHROME = ("Mi Contabilidad funciona con Google Chrome y no lo encontré en este computador. Instálelo desde "
+              "https://www.google.com/chrome/ y vuelva a abrir el programa.")
+
+
+def _chrome_en_registro() -> list:
+    """Ruta de chrome.exe que Windows registra al instalarlo (por usuario o para todo el equipo)."""
+    try:
+        import winreg
+    except ImportError:
+        return []
+    out = []
+    for raiz in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        try:
+            with winreg.OpenKey(raiz, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe") as k:
+                valor, _ = winreg.QueryValueEx(k, "")
+                if valor:
+                    out.append(valor.strip('"'))
+        except OSError:
+            continue
+    return out
+
+
 def candidatos() -> list:
-    """Rutas posibles de Edge o Chrome, en orden de preferencia."""
+    """Rutas posibles de Google Chrome, en orden de preferencia. CONTASII_NAVEGADOR permite indicar otra."""
     rutas = []
     propio = os.environ.get("CONTASII_NAVEGADOR")
     if propio:
         rutas.append(propio)
     if sys.platform == "win32":
-        bases = [os.environ.get(v) for v in ("PROGRAMFILES(X86)", "PROGRAMFILES", "LOCALAPPDATA")]
-        for rel in (("Microsoft", "Edge", "Application", "msedge.exe"), ("Google", "Chrome", "Application", "chrome.exe")):
-            rutas += [os.path.join(b, *rel) for b in bases if b]
+        rutas += _chrome_en_registro()
+        bases = [os.environ.get(v) for v in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA")]
+        rutas += [os.path.join(b, "Google", "Chrome", "Application", "chrome.exe") for b in bases if b]
     elif sys.platform == "darwin":
         rutas += ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                  "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-                  "/Applications/Chromium.app/Contents/MacOS/Chromium"]
+                  os.path.expanduser("~/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")]
     else:
-        for nombre in ("google-chrome", "google-chrome-stable", "microsoft-edge", "chromium", "chromium-browser"):
+        for nombre in ("google-chrome", "google-chrome-stable"):
             r = shutil.which(nombre)
             if r:
                 rutas.append(r)
@@ -54,11 +79,106 @@ def candidatos() -> list:
 
 
 def buscar_navegador() -> str:
+    """Ruta de Google Chrome. Si no está instalado, ErrorNavegador con las instrucciones."""
     for r in candidatos():
         if r and os.path.isfile(r):
             return r
-    raise ErrorNavegador("No encontré Microsoft Edge ni Google Chrome en este computador. Instale uno de los dos "
-                         "y vuelva a intentarlo.")
+    raise ErrorNavegador(SIN_CHROME)
+
+
+def _opciones_proceso() -> dict:
+    opciones = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+    if sys.platform == "win32":
+        opciones["creationflags"] = 0x08000000  # CREATE_NO_WINDOW: sin consola extra
+    return opciones
+
+
+def carpeta_perfil_ventana() -> str:
+    """Perfil de Chrome de la ventana del programa: separado del Chrome habitual y conservado entre aperturas."""
+    if sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    else:
+        base = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
+    return os.path.join(base, "MiContabilidad", "ventana-chrome")
+
+
+class VentanaPrograma:
+    """La ventana del programa: Chrome en modo aplicación con un perfil propio.
+
+    Como el perfil es solo del programa, cualquier página abierta en él es del programa (o un enlace que se
+    abrió desde él). Cuando ya no queda ninguna, la persona cerró la ventana.
+    """
+
+    def __init__(self, url: str, ruta: str | None = None, perfil: str | None = None, headless: bool = False):
+        self.url = url
+        self.ruta = ruta or buscar_navegador()
+        self.perfil = perfil or carpeta_perfil_ventana()
+        os.makedirs(self.perfil, exist_ok=True)
+        args = [self.ruta, f"--app={url}", f"--user-data-dir={self.perfil}", "--remote-debugging-port=0",
+                "--no-first-run", "--no-default-browser-check", "--disable-default-apps", "--window-size=1280,860"]
+        if headless:
+            args += ["--headless=new", "--disable-gpu"]
+        if sys.platform.startswith("linux") and os.geteuid() == 0:
+            args.append("--no-sandbox")
+        try:
+            self.proc = subprocess.Popen(args, **_opciones_proceso())
+        except OSError as e:
+            raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
+
+    def _devtools(self):
+        try:
+            with open(os.path.join(self.perfil, "DevToolsActivePort"), encoding="utf-8") as f:
+                return int(f.read().split()[0])
+        except (OSError, ValueError, IndexError):
+            return None
+
+    def paginas(self):
+        """Páginas abiertas en el perfil del programa, o None si Chrome no responde."""
+        puerto = self._devtools()
+        if not puerto:
+            return None
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/list", timeout=3) as r:
+                return [t for t in json.loads(r.read()) if t.get("type") == "page"]
+        except (OSError, ValueError):
+            return None
+
+    def esperar_cierre(self, intervalo: float = 1.5, inicio: float = 60):
+        """Vuelve cuando la persona cerró la ventana: dos consultas seguidas sin páginas (no un parpadeo al
+        recargar). Mientras Chrome arranca (hasta `inicio` segundos) no se da por cerrada. Si Chrome no responde
+        y nunca mostró páginas (por ejemplo, una política del equipo desactiva el control), espera a que termine
+        el proceso de Chrome."""
+        visto, fallos, t0 = False, 0, time.monotonic()
+        while True:
+            hay = self.paginas()
+            if hay:
+                visto, fallos = True, 0
+            else:
+                fallos += 1
+                arrancando = not visto and time.monotonic() - t0 < inicio
+                responde = hay is not None or visto or self.proc.poll() is not None
+                if fallos >= 2 and not arrancando and responde:
+                    return
+            time.sleep(intervalo)
+
+    def traer_al_frente(self) -> bool:
+        """Muestra la ventana del programa delante de las demás (al hacer doble clic con el programa abierto)."""
+        puerto, hay = self._devtools(), self.paginas() or []
+        destino = next((t for t in hay if t.get("url", "").startswith(self.url)), None)
+        if not puerto or not destino:  # sin la página del programa: quien llama abre otra ventana
+            return False
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/activate/{destino['id']}", timeout=3):
+                return True
+        except OSError:
+            return False
+
+    def cerrar(self):
+        try:
+            self.proc.terminate()
+            self.proc.wait(timeout=8)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
 
 
 # ------------------------------------------------------------------ WebSocket mínimo (RFC 6455)
@@ -173,7 +293,7 @@ class WebSocket:
 
 # ------------------------------------------------------------------ navegador controlado
 class Navegador:
-    """Una ventana de Edge o Chrome con un perfil temporal, controlada por el programa."""
+    """Una ventana de Google Chrome con un perfil temporal, controlada por el programa."""
 
     def __init__(self, url: str, ruta: str | None = None, headless: bool = False, espera: float = 25):
         self.ruta = ruta or buscar_navegador()
@@ -185,14 +305,11 @@ class Navegador:
         if sys.platform.startswith("linux") and os.geteuid() == 0:
             args.append("--no-sandbox")
         args.append(url)
-        opciones = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
-        if sys.platform == "win32":
-            opciones["creationflags"] = 0x08000000  # CREATE_NO_WINDOW: sin consola extra
         try:
-            self.proc = subprocess.Popen(args, **opciones)
+            self.proc = subprocess.Popen(args, **_opciones_proceso())
         except OSError as e:
             shutil.rmtree(self.perfil, ignore_errors=True)
-            raise ErrorNavegador(f"No se pudo abrir el navegador ({self.ruta}): {e}")
+            raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
         self.ids = itertools.count(1)
         self.lock = threading.RLock()
         self.sesiones = {}

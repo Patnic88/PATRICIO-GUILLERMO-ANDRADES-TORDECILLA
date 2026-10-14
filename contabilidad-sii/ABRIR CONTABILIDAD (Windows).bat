@@ -19,7 +19,7 @@ if errorlevel 1 (
   %PY% -m pip install --user --quiet openpyxl cryptography
 )
 
-echo Abriendo la contabilidad en su navegador...
+echo Abriendo Mi Contabilidad en Google Chrome. Esta ventana se cierra sola al cerrar el programa...
 %PY% -m contasii.web
 if errorlevel 1 pause
 exit /b

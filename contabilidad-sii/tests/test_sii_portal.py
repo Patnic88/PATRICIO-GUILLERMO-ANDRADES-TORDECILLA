@@ -1,10 +1,10 @@
 """Ingreso al portal del SII y descarga del RCV.
 
-Las pruebas con navegador usan Edge o Chrome reales (sin ventana) contra un SII simulado
+Las pruebas con navegador usan Google Chrome real (sin ventana) contra un SII simulado
 en 127.0.0.1 que reproduce lo verificado del SII real: la página de ingreso con la
 dirección de retorno después de «?», las cookies RUT_NS/DV_NS tras ingresar y la
 redirección del RCV a la página de ingreso cuando no hay sesión. Si el computador no
-tiene Edge ni Chrome, esas pruebas se omiten.
+tiene Chrome, esas pruebas se omiten (CONTASII_NAVEGADOR permite indicar otro Chromium).
 """
 
 import base64
@@ -178,7 +178,7 @@ def hay_navegador():
         return False
 
 
-@unittest.skipUnless(hay_navegador(), "no hay Edge ni Chrome en este computador")
+@unittest.skipUnless(hay_navegador(), "no hay Google Chrome en este computador")
 class TestPortalConNavegador(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -269,7 +269,7 @@ class TestPortalConNavegador(unittest.TestCase):
         for _ in range(3):
             self.assertEqual(p.estado()["estado"], "conectado")
             time.sleep(0.3)
-        # (Edge abre además su pestaña interna de descargas, que el programa ignora)
+        # (las pestañas internas del navegador, como la de descargas, no cuentan)
         self.assertEqual([x["url"] for x in p._pestanas()], [f"{self.base}/misii"])
         self.assertIsNotNone(p.descargar("76111111-6", "2026-10", "compra"))
         self.assertEqual(len(p._pestanas()), 2)

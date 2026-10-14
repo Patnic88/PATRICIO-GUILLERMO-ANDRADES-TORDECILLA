@@ -23,7 +23,6 @@ import sys
 import tempfile
 import threading
 import traceback
-import webbrowser
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -128,6 +127,7 @@ class App:
         self.lock = threading.Lock()
         self._portal = portal
         self._lock_portal = threading.Lock()
+        self.ventana = None  # navegador.VentanaPrograma, si el programa abrió su ventana
 
     @property
     def portal(self):
@@ -153,6 +153,10 @@ class App:
 
     def info_carpeta(self, q, b):
         return {"carpeta": self.carpeta}
+
+    def mostrar_ventana(self, q, b):
+        """Doble clic con el programa ya abierto: muestra su ventana delante de las demás."""
+        return {"mostrada": bool(self.ventana and self.ventana.traer_al_frente())}
 
     # ---- empresas
     def empresas(self, q, b):
@@ -754,6 +758,8 @@ def crear_manejador(app: App, puerto_ref: list):
                     return self._json(400, {"error": "Solicitud inválida."})
             partes = url.path.strip("/").split("/")[1:]  # sin 'api'
             try:
+                if partes == ["ventana"] and metodo == "POST":
+                    return self._json(200, app.mostrar_ventana(q, b))
                 if len(partes) == 1 and partes[0] in SII and metodo == "POST":
                     # Las consultas al SII no tocan la contabilidad: no bloquean el resto del programa.
                     return self._json(200, getattr(app, SII[partes[0]])(q, b))
@@ -842,39 +848,89 @@ def ya_abierto(puerto: int) -> bool:
         return False
 
 
+def aviso(texto: str):
+    """Mensaje para la persona: en Windows, un cuadro de diálogo (el programa no tiene consola)."""
+    print(texto)
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, texto, "Mi Contabilidad", 0x40)  # MB_ICONINFORMATION
+        except Exception:
+            pass
+
+
+def mostrar_abierto(puerto: int) -> bool:
+    """Pide al programa que ya está abierto que muestre su ventana. True si lo hizo."""
+    import urllib.request
+    pedido = urllib.request.Request(f"http://127.0.0.1:{puerto}/api/ventana", data=b"{}", method="POST",
+                                    headers={"X-Contasii": "1", "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(pedido, timeout=5) as r:
+            return bool(json.loads(r.read()).get("mostrada"))
+    except Exception:
+        return False
+
+
 def main(argv=None):
     import argparse
+    # El .exe no tiene consola (--windowed): sin salida estándar, lo impreso se descarta.
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
     for flujo in (sys.stdout, sys.stderr):
         try:
             flujo.reconfigure(errors="replace")
         except (AttributeError, ValueError):
             pass
-    ap = argparse.ArgumentParser(description="Abre la contabilidad en el navegador")
+    ap = argparse.ArgumentParser(description="Abre Mi Contabilidad en una ventana de Google Chrome")
     ap.add_argument("--carpeta", default=carpeta_por_defecto(), help="carpeta donde se guardan las empresas")
     ap.add_argument("--puerto", type=int, default=8765)
-    ap.add_argument("--no-abrir", action="store_true", help="no abrir el navegador automáticamente")
+    ap.add_argument("--no-abrir", action="store_true",
+                    help="no abrir la ventana: el programa queda atendiendo hasta que se detenga (pruebas)")
     a = ap.parse_args(argv)
     if ya_abierto(a.puerto):
-        # Doble clic con el programa ya abierto: solo se muestra de nuevo en el navegador.
-        if not a.no_abrir:
-            webbrowser.open(f"http://127.0.0.1:{a.puerto}/")
-        print("La contabilidad ya estaba abierta; se mostró en su navegador.")
+        # Doble clic con el programa ya abierto: se muestra su ventana; si no tiene (--no-abrir), se abre una.
+        if not a.no_abrir and not mostrar_abierto(a.puerto):
+            try:
+                navegador.VentanaPrograma(f"http://127.0.0.1:{a.puerto}/")
+            except navegador.ErrorNavegador as e:
+                aviso(str(e))
+                return 1
+        print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
         return 0
-    srv, p = servidor(a.carpeta, a.puerto)
+    if not a.no_abrir:
+        try:
+            navegador.buscar_navegador()
+        except navegador.ErrorNavegador as e:
+            aviso(str(e))
+            return 1
+    try:
+        srv, p = servidor(a.carpeta, a.puerto)
+    except OSError as e:
+        aviso(f"No se pudo abrir Mi Contabilidad: {e}")
+        return 1
     atexit.register(srv.app.cerrar_portal)  # al salir se cierra la ventana del SII, si quedó abierta
     url = f"http://127.0.0.1:{p}/"
-    print("=" * 60)
-    print(" MI CONTABILIDAD - abierta en su navegador")
-    print(f" Si no se abrio sola, copie esta direccion en el navegador: {url}")
-    print(f" Sus datos se guardan en: {os.path.abspath(a.carpeta)}")
-    print(" NO CIERRE esta ventana mientras trabaja. Para salir, cierrela.")
-    print("=" * 60)
-    if not a.no_abrir:
-        threading.Timer(0.8, lambda: webbrowser.open(url)).start()
+    print(f"Mi Contabilidad atendiendo en {url}. Datos en: {os.path.abspath(a.carpeta)}")
+    if a.no_abrir:
+        try:
+            srv.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        return 0
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
     try:
-        srv.serve_forever()
+        srv.app.ventana = navegador.VentanaPrograma(url)
+        srv.app.ventana.esperar_cierre()  # el programa termina cuando la persona cierra su ventana
+    except navegador.ErrorNavegador as e:
+        aviso(str(e))
+        return 1
     except KeyboardInterrupt:
         pass
+    finally:
+        srv.shutdown()
+        srv.server_close()
     return 0
 
 

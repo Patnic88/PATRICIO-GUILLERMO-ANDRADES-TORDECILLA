@@ -16,8 +16,8 @@ permissions:
   contents: write
 
 env:
-  VERSION: "0.4.0"
-  ETIQUETA: "mi-contabilidad-v0.4.0"
+  VERSION: "0.5.0"
+  ETIQUETA: "mi-contabilidad-v0.5.0"
 
 jobs:
   windows:
@@ -53,13 +53,13 @@ jobs:
         continue-on-error: true
         run: python empaquetado/diagnostico_estado_dte.py
 
-      - name: Diagnóstico del ingreso al portal del SII con Edge (informativo)
+      - name: Diagnóstico del ingreso al portal del SII con Chrome (informativo)
         continue-on-error: true
         run: python empaquetado/diagnostico_portal_sii.py
 
       - name: Construir MiContabilidad.exe
         run: |
-          pyinstaller --noconfirm --clean --console `
+          pyinstaller --noconfirm --clean --windowed `
             --name MiContabilidad `
             --icon empaquetado/icono.ico `
             --paths . `
@@ -119,6 +119,8 @@ jobs:
           - Instalar-MiContabilidad.exe: instalador; no requiere Python ni permisos de administrador.
           - MiContabilidad-portable.zip: versión sin instalar; descomprima y abra MiContabilidad.exe.
           - SHA256.txt: huellas para verificar la descarga.
+
+          Requiere Google Chrome: el programa se abre en su propia ventana de Chrome y se cierra al cerrarla.
 
           El programa no está firmado digitalmente: Windows puede mostrar «Windows protegió su PC».
           Presione «Más información» y luego «Ejecutar de todos modos».
