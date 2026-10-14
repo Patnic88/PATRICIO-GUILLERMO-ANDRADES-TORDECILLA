@@ -169,13 +169,54 @@ class TestEliminar(Base):
         self.assertTrue(any("ya está registrado" in a for a in r.alertas))
         self.assertEqual(documentos.eliminar(self.lib, r.documentos, "otra vez")["eliminados"], 4)
 
+    def test_indices_para_las_consultas_de_borrado(self):
+        plan = " ".join(str(tuple(r)) for r in self.lib.con.execute(
+            "EXPLAIN QUERY PLAN SELECT asiento FROM linea WHERE documento=?", (1,)))
+        self.assertIn("ix_linea_documento", plan)
+        plan = " ".join(str(tuple(r)) for r in self.lib.con.execute(
+            "EXPLAIN QUERY PLAN SELECT numero FROM asiento WHERE anula_a=?", (1,)))
+        self.assertIn("ix_asiento_anula", plan)
+
+    def test_dos_centralizaciones_del_mismo_mes(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        otro = os.path.join(self.tmp.name, "tardias.csv")
+        with open(COMPRAS, encoding="utf-8") as f:
+            lineas = f.read().splitlines()
+        with open(otro, "w", encoding="utf-8") as f:
+            f.write("\n".join([lineas[0], lineas[1].replace(";1001;", ";9001;")]))
+        r2 = rcv.importar(self.lib, otro, "compra", "2026-10", modo="centralizado")
+        self.assertTrue(any("todos juntos" in a for a in r2.alertas), r2.alertas)
+        tardia = self.doc("compra", "9001")
+        self.assertFalse(documentos.entro_en_f29(self.lib, tardia))
+        self.assertTrue(documentos.entro_en_f29(self.lib, self.doc("compra", "1001")))
+        res = documentos.eliminar(self.lib, r2.documentos, "compra tardía de otra empresa")
+        self.assertEqual(res["contra_asientos"], [r2.asientos[0] + 1])  # solo su centralización
+        self.assertIsNone(self.lib.anulado_por(r1.asientos[0]))
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, r1.documentos, "x")  # esas sí entraron en el F29
+        self.assertTrue(self.controles_ok()["IVA de compras"])
+
+    def test_aviso_de_pago_solo_si_pago_retenciones(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        compras = rcv.importar(self.lib, COMPRAS, "compra", "2026-10").documentos
+        operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"iva_por_pagar": 1000})
+        self.assertEqual(documentos.eliminar(self.lib, compras, "x")["alertas"], [])  # compras: nada que avisar
+        bol = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)["documentos"]
+        # Pago de otro período (noviembre) que tomó la retención del saldo de la cuenta
+        operaciones.registrar_pago_f29(self.lib, "2026-12-12", "2026-11", {"retencion_honorarios": 122000})
+        res = documentos.eliminar(self.lib, bol, "x")
+        self.assertTrue(any("pago de F29" in a for a in res["alertas"]), res["alertas"])
+
     def test_pago_del_f29_posterior_avisa(self):
         rcv.importar(self.lib, VENTAS, "venta", "2026-10")
         impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
         r = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
         operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"retencion_honorarios": 122000})
         res = documentos.eliminar(self.lib, r["documentos"], "x")
-        self.assertTrue(any("pago del F29" in a for a in res["alertas"]), res["alertas"])
+        self.assertTrue(any("pago de F29" in a for a in res["alertas"]), res["alertas"])
 
     def test_legado_con_centralizacion_no_salta_el_f29(self):
         rcv.importar(self.lib, COMPRAS, "compra", "2026-10")

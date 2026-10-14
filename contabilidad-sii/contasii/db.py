@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS documento (
     eliminado       TEXT,                    -- fecha y hora en que se borró (NULL = vigente)
     motivo_eliminado TEXT,
     asiento_eliminado INTEGER,               -- contra-asiento que anuló su registro
+    asiento_centralizacion INTEGER,          -- asiento que lo registró si se importó centralizado
     UNIQUE (libro, tipo_dte, rut_contraparte, folio)
 );
 
@@ -106,6 +107,13 @@ CREATE TABLE IF NOT EXISTS estado_sii (
     num_atencion TEXT
 );
 
+-- Índices de las consultas que recorren asientos y documentos (anulaciones, F29, borrado).
+CREATE INDEX IF NOT EXISTS ix_linea_documento ON linea(documento);
+CREATE INDEX IF NOT EXISTS ix_linea_asiento ON linea(asiento);
+CREATE INDEX IF NOT EXISTS ix_asiento_anula ON asiento(anula_a);
+CREATE INDEX IF NOT EXISTS ix_asiento_origen ON asiento(origen, periodo);
+CREATE INDEX IF NOT EXISTS ix_documento_periodo ON documento(periodo);
+
 CREATE TABLE IF NOT EXISTS bitacora (
     id      INTEGER PRIMARY KEY,
     cuando  TEXT NOT NULL DEFAULT (datetime('now')),
@@ -116,7 +124,8 @@ CREATE TABLE IF NOT EXISTS bitacora (
 
 
 # Columnas agregadas después de la primera versión: se añaden a las bases existentes al abrirlas.
-COLUMNAS_NUEVAS = {"documento": [("eliminado", "TEXT"), ("motivo_eliminado", "TEXT"), ("asiento_eliminado", "INTEGER")]}
+COLUMNAS_NUEVAS = {"documento": [("eliminado", "TEXT"), ("motivo_eliminado", "TEXT"), ("asiento_eliminado", "INTEGER"),
+                                  ("asiento_centralizacion", "INTEGER")]}
 
 
 def conectar(ruta: str) -> sqlite3.Connection:

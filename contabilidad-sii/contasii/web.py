@@ -552,7 +552,7 @@ class App:
                   "bruto", "retencion", "total")
         rows = lib.con.execute("SELECT * FROM documento WHERE periodo=? ORDER BY libro, fecha, folio", (periodo,)).fetchall()
         f29 = documentos.f29_registrado(lib, periodo) if PERIODO.match(periodo) else None
-        return {"documentos": [{**{k: r[k] for k in campos}, "en_f29": bool(f29) and documentos.entro_en_f29(lib, r)}
+        return {"documentos": [{**{k: r[k] for k in campos}, "en_f29": bool(f29) and documentos.entro_en_f29(lib, r, f29)}
                                for r in rows if not r["eliminado"]],
                 "eliminados": [{**{k: r[k] for k in campos}, "eliminado": r["eliminado"], "motivo": r["motivo_eliminado"],
                                 "asiento": r["asiento_eliminado"]} for r in rows if r["eliminado"]],

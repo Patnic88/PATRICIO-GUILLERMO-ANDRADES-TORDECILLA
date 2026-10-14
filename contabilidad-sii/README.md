@@ -129,8 +129,8 @@ No se puede borrar:
   estaba registrado.
 
 Los documentos importados con la opción de **centralización mensual** (solo por la línea de
-comandos) comparten un solo registro contable: se borran **todos juntos** (los de ese libro y
-mes), y el programa anula esa centralización. Un documento borrado no se puede volver a
+comandos) comparten un solo registro contable: se borran **todos juntos** (los que entraron en
+esa centralización), y el programa la anula. Un documento borrado no se puede volver a
 importar en modo centralizado: se importa por documento.
 
 El programa avisa, sin impedir el borrado, cuando:

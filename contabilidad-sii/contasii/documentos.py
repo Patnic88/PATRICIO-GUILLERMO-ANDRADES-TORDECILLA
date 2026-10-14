@@ -63,10 +63,21 @@ def _periodo(lib: Libro, numero: int) -> str:
     return lib.con.execute("SELECT periodo FROM asiento WHERE numero=?", (numero,)).fetchone()[0]
 
 
-def _centralizacion_de(lib: Libro, libro: str, periodo: str) -> list:
+def _clave_centralizacion(d):
+    """Grupo de un documento centralizado: su asiento de centralización o, en bases anteriores a la versión
+    0.4.0 (sin ese dato), todas las centralizaciones de su libro y mes."""
+    n = d["asiento_centralizacion"] if "asiento_centralizacion" in d.keys() else None
+    return ("asiento", n) if n else ("mes", d["libro"], d["periodo"])
+
+
+def _centralizacion_de(lib: Libro, clave) -> list:
+    if clave[0] == "asiento":
+        return [clave[1]] if lib.anulado_por(clave[1]) is None else []
+    _, libro, periodo = clave
     origen = "honorarios" if libro.startswith("honorario") else f"rcv-{libro}"
     return _vigentes(lib, "SELECT numero FROM asiento a WHERE origen=? AND periodo=? AND anula_a IS NULL AND "
-                          "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL)",
+                          "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL) "
+                          "AND NOT EXISTS (SELECT 1 FROM documento d WHERE d.asiento_centralizacion=a.numero)",
                      (origen, periodo))
 
 
@@ -76,12 +87,16 @@ def asientos_de(lib: Libro, d) -> list:
     propios = _asientos_propios(lib, d["id"])
     if propios:
         return [n for n in propios if lib.anulado_por(n) is None]
-    return _centralizacion_de(lib, d["libro"], d["periodo"])
+    return _centralizacion_de(lib, _clave_centralizacion(d))
 
 
-def entro_en_f29(lib: Libro, d) -> bool:
-    """True si el F29 registrado del mes se calculó con este documento (su registro es anterior)."""
-    n = f29_registrado(lib, d["periodo"])
+_SIN_CALCULAR = object()
+
+
+def entro_en_f29(lib: Libro, d, f29=_SIN_CALCULAR) -> bool:
+    """True si el F29 registrado del mes se calculó con este documento (su registro es anterior).
+    f29: número del F29 del mes si ya se calculó (para no recalcularlo por cada documento)."""
+    n = f29_registrado(lib, d["periodo"]) if f29 is _SIN_CALCULAR else f29
     ref = asientos_de(lib, d)
     return bool(n and (not ref or min(ref) < n))
 
@@ -194,7 +209,7 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
             elif _asientos_propios(lib, d["id"]):
                 anulado_por = max(lib.anulado_por(n) for n in _asientos_propios(lib, d["id"]))
             else:  # centralizado: lo anuló el contra-asiento de su centralización
-                anulado_por = max(contra[n] for n in centralizaciones[(d["libro"], d["periodo"])])
+                anulado_por = max(contra[n] for n in centralizaciones[_clave_centralizacion(d)])
             lib.con.execute("UPDATE documento SET eliminado=datetime('now','localtime'), motivo_eliminado=?, "
                             "asiento_eliminado=? WHERE id=?", (motivo, anulado_por, d["id"]))
             db.registrar_bitacora(
@@ -203,7 +218,7 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 f"período {d['periodo']} total {d['total']} (asiento N° {anulado_por}): {motivo}")
 
     alertas += _avisos_f29(lib, docs, {d["id"]: min(vigentes_doc[d["id"]] or
-                                                     centralizaciones.get((d["libro"], d["periodo"]), [0]))
+                                                     centralizaciones.get(_clave_centralizacion(d), [0]))
                                        for d in docs})
     for rut in sorted({d["rut_contraparte"] for d in docs if d["rut_contraparte"]}):
         pagos = len(_vigentes(lib, "SELECT DISTINCT l.asiento FROM linea l JOIN asiento a ON a.numero=l.asiento "
@@ -222,12 +237,9 @@ def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
     for per in sorted({d["periodo"] for d in docs}):
         if f29_registrado(lib, per):
             # Se borraron documentos importados después de ese F29: el mes vuelve a lo registrado. Pero un
-            # pago del F29 posterior a ellos pudo incluir su retención (la toma del saldo de la cuenta).
-            pago = _pago_f29(lib, per)
-            desde = min(primer_asiento[d["id"]] for d in docs if d["periodo"] == per)
-            if pago and pago > desde:
-                out.append(f"El pago del F29 de {per} (N° {pago}) se registró después de importar estos documentos y "
-                           f"pudo incluir su retención o IVA retenido: revise ese pago.")
+            # pago de F29 posterior (de este mes o de otro) pudo incluir su retención o IVA retenido: el
+            # formulario de pago los toma del saldo de esas cuentas.
+            out += _aviso_pagos_posteriores(lib, [d for d in docs if d["periodo"] == per], primer_asiento)
             continue
         rem = lib.con.execute("SELECT monto FROM remanente_iva WHERE periodo=?", (per,)).fetchone()
         pago = _pago_f29(lib, per)
@@ -246,36 +258,62 @@ def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
     return out
 
 
-def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
-    """{(libro, período): [asientos de centralización vigentes]} de los documentos sin asiento propio.
+def _aviso_pagos_posteriores(lib: Libro, docs, primer_asiento: dict) -> list:
+    """Pagos de F29 registrados después de estos documentos que pagaron retención o IVA retenido."""
+    from .rcv import FACTURAS_COMPRA
+    afecta = [d for d in docs if (d["libro"] == "honorario_recibido" and d["retencion"] > 0) or d["iva_retenido"] > 0
+              or (d["libro"] == "venta" and d["tipo_dte"] in FACTURAS_COMPRA)]
+    if not afecta:
+        return []
+    desde = min(primer_asiento[d["id"]] for d in afecta)
+    cuentas = (lib.cuenta_auto("retencion_honorarios"), lib.cuenta_auto("iva_retenido_pagar"))
+    pagos = _vigentes(lib, "SELECT DISTINCT a.numero FROM asiento a JOIN linea l ON l.asiento=a.numero "
+                           "WHERE a.origen='operacion' AND a.glosa LIKE 'Pago F29 período %' AND a.numero>? "
+                           "AND l.cuenta IN (?,?) ORDER BY a.numero", (desde,) + cuentas)
+    if not pagos:
+        return []
+    return [f"El pago de F29 N° {', '.join(map(str, pagos))} se registró después de importar estos documentos y pagó "
+            f"retención o IVA retenido, que pudo incluir los de los documentos borrados: revise ese pago."]
 
-    Una centralización mensual registra en un solo asiento todos los documentos del libro y el mes que
-    se importaron así: no se sabe qué parte es de cada uno, por lo que se borran todos juntos.
+
+def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
+    """{grupo: [asientos de centralización vigentes]} de los documentos sin asiento propio.
+
+    Una centralización mensual registra en un solo asiento los documentos importados juntos: no se sabe
+    qué parte es de cada uno, por lo que se borran todos juntos y se anula esa centralización.
     """
     out = {}
-    for libro, per in sorted({(d["libro"], d["periodo"]) for d in centralizados}):
-        todos = {r[0] for r in lib.con.execute(
-            "SELECT d.id FROM documento d WHERE d.libro=? AND d.periodo=? AND d.eliminado IS NULL AND NOT EXISTS "
-            "(SELECT 1 FROM linea l JOIN asiento a ON a.numero=l.asiento WHERE l.documento=d.id AND a.anula_a IS NULL)",
-            (libro, per))}
+    for clave in sorted({_clave_centralizacion(d) for d in centralizados}, key=str):
+        if clave[0] == "asiento":
+            todos = {r[0] for r in lib.con.execute(
+                "SELECT id FROM documento WHERE asiento_centralizacion=? AND eliminado IS NULL", (clave[1],))}
+            libro, per = lib.con.execute("SELECT libro, periodo FROM documento WHERE asiento_centralizacion=? LIMIT 1",
+                                         (clave[1],)).fetchone()
+        else:
+            _, libro, per = clave
+            todos = {r[0] for r in lib.con.execute(
+                "SELECT d.id FROM documento d WHERE d.libro=? AND d.periodo=? AND d.eliminado IS NULL "
+                "AND d.asiento_centralizacion IS NULL AND NOT EXISTS (SELECT 1 FROM linea l JOIN asiento a "
+                "ON a.numero=l.asiento WHERE l.documento=d.id AND a.anula_a IS NULL)", (libro, per))}
         nombre = {"compra": "compras", "venta": "ventas"}.get(libro, "boletas")
         if not todos <= elegidos:
-            raise ErrorContable(f"Las {nombre} de {per} que se registraron en una centralización mensual "
+            raise ErrorContable(f"Las {nombre} de {per} que se registraron juntas en una centralización mensual "
                                 f"({len(todos)} documentos) se borran todas juntas: elíjalas todas.")
-        asientos = _centralizacion_de(lib, libro, per)
+        asientos = _centralizacion_de(lib, clave)
         if not asientos:
             raise ErrorContable(f"No encuentro la centralización de {nombre} de {per}: revísela con su contador.")
-        out[(libro, per)] = asientos
+        out[clave] = asientos
     return out
 
 
-def avisos_importacion(lib: Libro, periodo: str) -> list:
+def avisos_importacion(lib: Libro, periodo: str, centralizado: bool = False) -> list:
     """Al importar documentos en un mes cuyo F29 ya se registró o confirmó: cambian su propuesta."""
     n = f29_registrado(lib, periodo)
     if n:
+        juntos = " todos juntos" if centralizado else ""
         return [f"El F29 de {periodo} ya está registrado (N° {n}) y no incluye estos documentos: su propuesta cambia. "
-                f"Si fue un error, bórrelos (no entraron en ese F29, así que se pueden borrar sin anularlo); si no, "
-                f"corrija el F29."]
+                f"Si fue un error, bórrelos{juntos} (no entraron en ese F29, así que se pueden borrar sin anularlo); "
+                f"si no, corrija el F29."]
     pago = _pago_f29(lib, periodo)
     if pago or lib.con.execute("SELECT 1 FROM remanente_iva WHERE periodo=?", (periodo,)).fetchone():
         return [f"El F29 de {periodo} ya se había confirmado: estos documentos cambian su propuesta. Vuelva a "

@@ -313,9 +313,6 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     acc[0] += de
                     acc[1] += h
 
-        if res.importados:
-            from . import documentos
-            res.alertas += documentos.avisos_importacion(lib, periodo)
         if modo == "centralizado" and acumulado:
             y, m = map(int, periodo.split("-"))
             a = Asiento(f"{periodo}-{monthrange(y, m)[1]:02d}",
@@ -328,7 +325,14 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                 elif neto < 0:
                     a.lineas.append(_linea(c, 0, -neto))
             if len(a.lineas) >= 2:
-                res.asientos.append(lib.registrar(a, _transaccion=False))
+                n = lib.registrar(a, _transaccion=False)
+                res.asientos.append(n)
+                # Cada documento queda ligado a su centralización: se borran juntos y se sabe si entraron en el F29.
+                lib.con.executemany("UPDATE documento SET asiento_centralizacion=? WHERE id=?",
+                                    [(n, i) for i in res.documentos])
+        if res.importados:
+            from . import documentos
+            res.alertas += documentos.avisos_importacion(lib, periodo, centralizado=(modo != "documento"))
     return res
 
 
