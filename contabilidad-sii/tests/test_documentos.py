@@ -562,9 +562,29 @@ class TestQuintaRonda(Base):
         with open(COMPRAS, encoding="utf-8") as f:
             fila = f.read().splitlines()[1]
         rcv.importar(self.lib, self._csv("una.csv", COMPRAS, [fila]), "compra", "2026-10")  # vuelve con asiento propio
-        self.assertIsNone(self.doc("compra", "1001")["asiento_centralizacion"])
         otros = [x for x in r1.documentos if x != d]
         self.assertEqual(documentos.eliminar(self.lib, otros, "x")["eliminados"], 3)
+
+    def test_centralizacion_reimportada_no_se_confunde_con_una_antigua(self):
+        for folio, tipo in (("100", 33), ("101", 61)):  # versión anterior: par que se compensaba, sin asiento
+            self.lib.con.execute("INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, fecha, periodo, neto, "
+                                 "iva, total) VALUES ('compra', ?, '76444444-2', ?, '2026-10-05', '2026-10', 500000, "
+                                 "95000, 595000)", (tipo, folio))
+        self.lib.con.commit()
+        with open(COMPRAS, encoding="utf-8") as f:
+            fila = f.read().splitlines()[1]
+        una = self._csv("una.csv", COMPRAS, [fila])
+        r = rcv.importar(self.lib, una, "compra", "2026-10", modo="centralizado")
+        documentos.eliminar(self.lib, r.documentos, "corregir")
+        rcv.importar(self.lib, una, "compra", "2026-10")  # se reimporta por documento
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        par = [self.doc("compra", "100")["id"], self.doc("compra", "101")["id"]]
+        self.assertFalse(documentos.entro_en_f29(self.lib, self.doc("compra", "100")))
+        res = documentos.eliminar(self.lib, par, "x")
+        self.assertTrue(any("nunca tuvieron registro" in a for a in res["alertas"]), res["alertas"])
+        self.assertFalse(any("ya estaba anulada" in a for a in res["alertas"]), res["alertas"])
+        self.assertIsNone(self.doc("compra", "100")["asiento_eliminado"])
 
     def test_mes_antiguo_con_centralizacion_anulada_y_otra_vigente(self):
         r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")

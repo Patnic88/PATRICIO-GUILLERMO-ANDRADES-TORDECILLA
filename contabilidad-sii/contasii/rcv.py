@@ -294,8 +294,9 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                 lib.con.execute(
                     "UPDATE documento SET razon_social=?, fecha=?, periodo=?, exento=?, neto=?, iva=?, iva_no_rec=?,"
                     " iva_uso_comun=?, iva_retenido=?, otros_imp=?, total=?, fuente=?, estado=NULL, eliminado=NULL,"
-                    " motivo_eliminado=NULL, asiento_eliminado=NULL, asiento_centralizacion=NULL WHERE id=?",
-                    valores + (existe["id"],))
+                    " motivo_eliminado=NULL, asiento_eliminado=NULL WHERE id=?", valores + (existe["id"],))
+                # asiento_centralizacion se mantiene: marca esa centralización como de la versión 0.4.0 (si no, se
+                # confundiría con una de una versión anterior). Su nuevo asiento propio la saca del grupo.
                 doc_id = existe["id"]
                 # Las consultas de estado al SII eran de los datos anteriores: no deben mostrarse como actuales.
                 lib.con.execute("DELETE FROM estado_sii WHERE documento=?", (doc_id,))
