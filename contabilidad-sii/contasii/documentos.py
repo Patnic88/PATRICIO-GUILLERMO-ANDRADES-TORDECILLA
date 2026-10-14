@@ -63,22 +63,54 @@ def _periodo(lib: Libro, numero: int) -> str:
     return lib.con.execute("SELECT periodo FROM asiento WHERE numero=?", (numero,)).fetchone()[0]
 
 
+CAMPOS_MONTO = ("exento", "neto", "iva", "iva_no_rec", "iva_uso_comun", "iva_retenido", "otros_imp", "bruto", "retencion",
+                "total")
+SIN_MONTOS = "(" + " AND ".join(f"COALESCE({c},0)=0" for c in CAMPOS_MONTO) + ")"
+
+
+def sin_montos(d) -> bool:
+    """Documento con todos sus montos en cero (por ejemplo, una nota que solo corrige texto): no mueve ninguna
+    cuenta, así que no tiene registro contable ni entra en el F29."""
+    return all(not d[c] for c in CAMPOS_MONTO)
+
+
 def _clave_centralizacion(d):
-    """Grupo de un documento centralizado: su asiento de centralización o, en bases anteriores a la versión
-    0.4.0 (sin ese dato), todas las centralizaciones de su libro y mes."""
+    """Grupo de un documento sin asiento propio: él solo si no tiene montos; si se importó centralizado, su
+    asiento de centralización o, en bases anteriores a la versión 0.4.0 (sin ese dato), todas las
+    centralizaciones de su libro y mes."""
+    if sin_montos(d):
+        return ("cero", d["id"])
     n = d["asiento_centralizacion"] if "asiento_centralizacion" in d.keys() else None
     return ("asiento", n) if n else ("mes", d["libro"], d["periodo"])
 
 
+def _centralizaciones_del_mes(lib: Libro, libro: str, periodo: str) -> list:
+    """Centralizaciones (vigentes o anuladas) del libro y mes que no tienen documentos ligados: las de bases
+    anteriores a la versión 0.4.0."""
+    origen = "honorarios" if libro.startswith("honorario") else f"rcv-{libro}"
+    return [r[0] for r in lib.con.execute(
+        "SELECT numero FROM asiento a WHERE origen=? AND periodo=? AND anula_a IS NULL AND "
+        "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL) "
+        "AND NOT EXISTS (SELECT 1 FROM documento d WHERE d.asiento_centralizacion=a.numero) ORDER BY numero",
+        (origen, periodo))]
+
+
 def _centralizacion_de(lib: Libro, clave) -> list:
+    if clave[0] == "cero":
+        return []
     if clave[0] == "asiento":
         return [clave[1]] if lib.anulado_por(clave[1]) is None else []
-    _, libro, periodo = clave
-    origen = "honorarios" if libro.startswith("honorario") else f"rcv-{libro}"
-    return _vigentes(lib, "SELECT numero FROM asiento a WHERE origen=? AND periodo=? AND anula_a IS NULL AND "
-                          "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL) "
-                          "AND NOT EXISTS (SELECT 1 FROM documento d WHERE d.asiento_centralizacion=a.numero)",
-                     (origen, periodo))
+    return [n for n in _centralizaciones_del_mes(lib, clave[1], clave[2]) if lib.anulado_por(n) is None]
+
+
+def _nunca_registrado(lib: Libro, d) -> bool:
+    """True si el documento nunca tuvo registro contable: no tiene montos, o se importó centralizado junto con
+    otros que se compensaban y en su libro y mes no hay ninguna centralización sin documentos ligados (ni
+    vigente ni anulada). No entró en ningún F29."""
+    if _asientos_propios(lib, d["id"]):
+        return False
+    clave = _clave_centralizacion(d)
+    return clave[0] == "cero" or (clave[0] == "mes" and not _centralizaciones_del_mes(lib, clave[1], clave[2]))
 
 
 def asientos_de(lib: Libro, d) -> list:
@@ -97,8 +129,13 @@ def entro_en_f29(lib: Libro, d, f29=_SIN_CALCULAR) -> bool:
     """True si el F29 registrado del mes se calculó con este documento (su registro es anterior).
     f29: número del F29 del mes si ya se calculó (para no recalcularlo por cada documento)."""
     n = f29_registrado(lib, d["periodo"]) if f29 is _SIN_CALCULAR else f29
+    if not n:
+        return False
     ref = asientos_de(lib, d)
-    return bool(n and (not ref or min(ref) < n))
+    if ref:
+        return min(ref) < n
+    # Sin registro vigente: si alguna vez lo tuvo (y se anuló), no se sabe si el F29 lo incluyó.
+    return not _nunca_registrado(lib, d)
 
 
 def motivo_no_anulable(lib: Libro, numero: int):
@@ -178,10 +215,23 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
             por_asiento.setdefault(n, set()).add(d["id"])
     centralizados = [d for d in docs if not _asientos_propios(lib, d["id"])]
     centralizaciones = _centralizaciones(lib, centralizados, {d["id"] for d in docs})
+    anuladas = {}  # clave → centralizaciones anuladas antes (bases anteriores a la versión 0.4.0)
     for clave, ns in centralizaciones.items():
-        if not ns:
-            alertas.append(f"Las {({'compra': 'compras', 'venta': 'ventas'}).get(clave[1], 'boletas')} de {clave[2]} "
-                           f"elegidas no tenían un registro contable vigente: se marcan borradas sin contra-asiento.")
+        if ns or clave[0] != "mes":
+            continue
+        nombre = {"compra": "compras", "venta": "ventas"}.get(clave[1], "boletas")
+        anuladas[clave] = [n for n in _centralizaciones_del_mes(lib, clave[1], clave[2]) if lib.anulado_por(n)]
+        if not anuladas[clave]:
+            alertas.append(f"Las {nombre} de {clave[2]} elegidas se compensaban entre sí y nunca tuvieron registro "
+                           f"contable: se marcan borradas sin contra-asiento.")
+        for n in anuladas[clave]:
+            r = lib.anulado_por(n)
+            alertas.append(f"La centralización de {nombre} de {clave[2]} (N° {n}) ya estaba anulada (N° {r}): las "
+                           f"{nombre} se marcan borradas sin otro contra-asiento.")
+            if _periodo(lib, r) != _periodo(lib, n):
+                alertas.append(f"La centralización N° {n} ({_periodo(lib, n)}) se había anulado en otro mes "
+                               f"({_periodo(lib, r)}, N° {r}): los controles de esos dos meses pueden quedar "
+                               f"descuadrados. Revíselo con su contador.")
     for d in docs:
         # El F29 registrado del mes se calculó con los documentos que ya estaban: esos no se borran sin
         # anularlo primero. Uno importado después (su asiento es posterior) no entró en él.
@@ -212,9 +262,11 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 anulado_por = max(contra[n] for n in vigentes_doc[d["id"]])
             elif _asientos_propios(lib, d["id"]):
                 anulado_por = max(lib.anulado_por(n) for n in _asientos_propios(lib, d["id"]))
-            else:  # centralizado: lo anuló el contra-asiento de su centralización (None si no tenía registro vigente)
-                ns = centralizaciones[_clave_centralizacion(d)]
-                anulado_por = max(contra[n] for n in ns) if ns else None
+            else:  # sin asiento propio: lo anula el contra-asiento de su centralización, si tenía una vigente
+                clave = _clave_centralizacion(d)
+                ns = centralizaciones[clave]
+                antes = [lib.anulado_por(n) for n in anuladas.get(clave, [])]
+                anulado_por = max(contra[n] for n in ns) if ns else (max(antes) if antes else None)
             lib.con.execute("UPDATE documento SET eliminado=datetime('now','localtime'), motivo_eliminado=?, "
                             "asiento_eliminado=? WHERE id=?", (motivo, anulado_por, d["id"]))
             db.registrar_bitacora(
@@ -294,9 +346,13 @@ def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
     """
     out = {}
     for clave in sorted({_clave_centralizacion(d) for d in centralizados}, key=str):
+        if clave[0] == "cero":
+            out[clave] = []
+            continue
         if clave[0] == "asiento":
             todos = {r[0] for r in lib.con.execute(
-                "SELECT id FROM documento WHERE asiento_centralizacion=? AND eliminado IS NULL", (clave[1],))}
+                f"SELECT id FROM documento WHERE asiento_centralizacion=? AND eliminado IS NULL AND NOT {SIN_MONTOS}",
+                (clave[1],))}
             libro, per = lib.con.execute("SELECT libro, periodo FROM documento WHERE asiento_centralizacion=? LIMIT 1",
                                          (clave[1],)).fetchone()
         else:
@@ -304,7 +360,8 @@ def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
             todos = {r[0] for r in lib.con.execute(
                 "SELECT d.id FROM documento d WHERE d.libro=? AND d.periodo=? AND d.eliminado IS NULL "
                 "AND d.asiento_centralizacion IS NULL AND NOT EXISTS (SELECT 1 FROM linea l JOIN asiento a "
-                "ON a.numero=l.asiento WHERE l.documento=d.id AND a.anula_a IS NULL)", (libro, per))}
+                f"ON a.numero=l.asiento WHERE l.documento=d.id AND a.anula_a IS NULL) AND NOT {SIN_MONTOS}",
+                (libro, per))}
         nombre = {"compra": "compras", "venta": "ventas"}.get(libro, "boletas")
         if not todos <= elegidos:
             raise ErrorContable(f"Las {nombre} de {per} que se registraron juntas en una centralización mensual "
@@ -314,6 +371,7 @@ def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
             raise ErrorContable(f"No encuentro la centralización de {nombre} de {per}: revísela con su contador.")
         # Sin centralización vigente (se anuló a mano en una versión anterior, o los documentos se compensaban
         # y no generaron asiento): no tienen registro contable que anular; se marcan borrados todos juntos.
+        # eliminar() avisa cuál de los dos casos es.
         out[clave] = asientos
     return out
 

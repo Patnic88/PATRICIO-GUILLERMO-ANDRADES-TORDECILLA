@@ -513,6 +513,57 @@ class TestQuintaRonda(Base):
         self.assertIsNone(self.lib.anulado_por(r.asientos[0]))  # la centralización de las otras sigue vigente
         self.assertIsNone(self.doc("compra", "7001")["asiento_eliminado"])
 
+    NC_CERO = "1;61;Del Giro;76111111-6;PROVEEDOR UNO SPA (FICTICIO);56;20/10/2026;20/10/2026;;0;0;0;0;;0;0;0;0;0;0;;;"
+
+    def test_nota_sin_montos_se_importa_y_se_borra_sola(self):
+        r1 = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        with open(COMPRAS, encoding="utf-8") as f:
+            filas = f.read().splitlines()[1:]
+        rcv_nuevo = self._csv("rcv_nuevo.csv", COMPRAS, filas + [self.NC_CERO])
+        r2 = rcv.importar(self.lib, rcv_nuevo, "compra", "2026-10", modo="centralizado")  # antes: rechazado
+        self.assertEqual((r2.importados, r2.asientos), (1, []))
+        self.assertTrue(any("no tiene montos" in a for a in r2.alertas), r2.alertas)
+        nc = self.doc("compra", "56")
+        self.assertFalse(documentos.entro_en_f29(self.lib, nc))
+        res = documentos.eliminar(self.lib, [nc["id"]], "nota de corrección de texto")  # sola, sin anular el F29
+        self.assertEqual((res["eliminados"], res["contra_asientos"]), (1, []))
+        self.assertIsNone(self.lib.anulado_por(r1.asientos[0]))
+        # Las compras de la centralización se siguen borrando juntas, sin pedir la nota.
+        self.assertTrue(documentos.entro_en_f29(self.lib, self.doc("compra", "1001")))
+
+    def test_nota_sin_montos_por_documento(self):
+        r = rcv.importar(self.lib, self._csv("nc.csv", COMPRAS, [self.NC_CERO]), "compra", "2026-10")  # antes: error
+        self.assertEqual((r.importados, r.asientos), (1, []))
+        self.assertEqual(documentos.eliminar(self.lib, r.documentos, "x")["contra_asientos"], [])
+        self.assertEqual(self.lib.verificar_integridad(), [])
+
+    def test_centralizacion_antigua_anulada_en_otro_mes_avisa(self):
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        self.lib.con.execute("UPDATE documento SET asiento_centralizacion=NULL")  # base anterior a 0.4.0
+        self.lib.con.commit()
+        contra = self.lib.anular(r.asientos[0], "2026-11-05", "a mano, versión anterior")
+        res = documentos.eliminar(self.lib, r.documentos, "x")
+        self.assertEqual(res["contra_asientos"], [])
+        self.assertTrue(any("otro mes" in a and "descuadrados" in a for a in res["alertas"]), res["alertas"])
+        self.assertFalse(any("nunca tuvieron registro" in a for a in res["alertas"]), res["alertas"])
+        self.assertEqual(self.doc("compra", "1001")["asiento_eliminado"], contra)
+
+    def test_grupo_sin_registro_importado_despues_del_f29(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        for folio, tipo in (("7001", 33), ("7002", 61)):  # versión preliminar: par que se compensaba, sin asiento
+            self.lib.con.execute("INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, fecha, periodo, neto, "
+                                 "iva, total) VALUES ('compra', ?, '76444444-2', ?, '2026-10-12', '2026-10', 500000, "
+                                 "95000, 595000)", (tipo, folio))
+        self.lib.con.commit()
+        par = [self.doc("compra", "7001")["id"], self.doc("compra", "7002")["id"]]
+        self.assertFalse(documentos.entro_en_f29(self.lib, self.doc("compra", "7001")))
+        res = documentos.eliminar(self.lib, par, "x")
+        self.assertEqual(res["eliminados"], 2)
+        self.assertTrue(any("nunca tuvieron registro" in a for a in res["alertas"]), res["alertas"])
+
     def test_base_antigua_tiene_indice_de_centralizacion(self):
         with tempfile.TemporaryDirectory() as tmp:
             ruta = os.path.join(tmp, "vieja.db")

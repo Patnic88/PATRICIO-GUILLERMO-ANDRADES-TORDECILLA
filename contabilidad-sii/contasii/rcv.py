@@ -298,7 +298,11 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                 lineas = _lineas_venta(lib, d, res.alertas)
             lineas = _signo(lineas, d)
 
-            if modo == "documento":
+            if not any(de or h for _, de, h in lineas):
+                # Sin montos (por ejemplo, una nota que solo corrige texto): no hay nada que registrar.
+                res.alertas.append(f"{libro_tipo.capitalize()} {d['tipo_dte']}-{d['folio']} de {d['rut_contraparte']}: "
+                                   f"no tiene montos; se guardó sin asiento contable.")
+            elif modo == "documento":
                 aux = d["rut_contraparte"] if d["rut_valido"] else ""
                 desc = TIPOS_DTE.get(d["tipo_dte"], f"DTE {d['tipo_dte']}")
                 a = Asiento(_fecha_contable(d["fecha"], periodo),
@@ -313,7 +317,7 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     acc[0] += de
                     acc[1] += h
 
-        if modo == "centralizado" and acumulado:
+        if modo == "centralizado" and any(de or h for de, h in acumulado.values()):
             y, m = map(int, periodo.split("-"))
             a = Asiento(f"{periodo}-{monthrange(y, m)[1]:02d}",
                         f"Centralización registro de {libro_tipo}s {periodo} ({res.importados} documentos)",

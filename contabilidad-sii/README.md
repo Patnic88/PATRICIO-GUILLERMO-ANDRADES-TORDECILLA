@@ -131,7 +131,12 @@ No se puede borrar:
 Los documentos importados con la opción de **centralización mensual** (solo por la línea de
 comandos) comparten un solo registro contable: se borran **todos juntos** (los que entraron en
 esa centralización), y el programa la anula. Un documento borrado no se puede volver a
-importar en modo centralizado: se importa por documento.
+importar en modo centralizado: se importa por documento. Si los documentos nuevos de un archivo
+se compensan entre sí (por ejemplo, una factura y su nota de crédito por el total), la
+centralización no los registra: el programa pide importarlos por documento.
+
+Un documento con todos sus montos en cero (por ejemplo, una nota que solo corrige texto) se
+guarda sin asiento contable y se borra solo, sin contra-asiento.
 
 El programa avisa, sin impedir el borrado, cuando:
 

@@ -477,7 +477,7 @@ function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alLi
     try {
       const r = await api(`e/${encodeURIComponent(emp)}/documentos-eliminar`, { ids, motivo: $(".bMot", cont).value });
       cont.innerHTML = `<div class="msg ok" role="status" tabindex="-1"><b>Listo: ${r.eliminados} documento(s) borrado(s).</b>
-        <span>${r.contra_asientos.length ? `Su registro contable quedó anulado (N° ${r.contra_asientos.join(", ")}).` : "Su registro contable ya estaba anulado."}</span>
+        <span>${r.contra_asientos.length ? `Su registro contable quedó anulado (N° ${r.contra_asientos.join(", ")}).` : "No había un registro contable vigente que anular."}</span>
         ${r.ya_borrados ? `<span>${r.ya_borrados} ya estaban borrados.</span>` : ""}</div>`
         + (r.alertas.length ? `<div class="msg warn"><ul>${r.alertas.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : "");
       toast("Documentos borrados");
