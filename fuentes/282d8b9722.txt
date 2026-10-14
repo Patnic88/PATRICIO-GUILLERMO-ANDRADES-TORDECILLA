@@ -1,0 +1,25 @@
+URL: https://www.sii.cl/servicios_online/1040-1287.html
+URL final: https://www.sii.cl/servicios_online/1040-1287.html
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+SII | Servicio de Impuestos Internos
+Servicios online
+de script que contiene mostrar() -->
+de script que contiene mostrar() -->
+×
+A ti, que emites Boletas de
+Honorarios
+Desde el 1 de enero de 2023 , cada vez que emitas una boleta de honorarios,
+la retención será de 13% (12,25% vigente hasta el 31 de diciembre de 2022) .
+Te explicamos con un ejemplo el nuevo cálculo , el que se realizará
+automáticamente cada vez que emitas este documento:
+Tú cobraste
+$ 100.000
+Cálculo de retención 13 %
+$ 13.000 (sobre lo que cobraste)
+Recibirás la suma final de
+$ 87.000
+Recuerde que desde el 1 de enero de 2021 , todas las Boletas de Honorarios se deben emitir
+electrónicamente.
+Cerrar

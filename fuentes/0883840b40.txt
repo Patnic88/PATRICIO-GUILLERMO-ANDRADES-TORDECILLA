@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2196.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2196.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cuáles son los plazos para la emisión de una boleta de honorarios electrónica
+¿Es posible emitir Boletas de Honorarios Electrónicas en 2023 por servicios prestados en 2022?
+ID: 001.120.2196.012
+Fecha de creación: 12/01/2005
+Fecha de actualización: 23/05/2025
+Sí, es posible emitir Boletas de honorarios electrónicas en 2023 por servicios prestados en 2022. El documento puede tener fecha de 2022, o bien su vigencia debe estar dentro del rango que va desde los tres meses antes y tres meses después de su emisión.
+Si se emite una Boleta de honorarios electrónica de un período tributario en que ya se efectúo la respectiva declaración de impuestos u otro tipo de declaraciones, es necesario ver si es pertinente rectificar o no las declaraciones efectuadas, producto de la emisión de estos documentos tributarios.
+Puede obtener más información relativa a este tema en el sitio web del SII, sección Servicios online, Boletas de honorarios electrónicas, Emisor de boleta de honorarios, opción Ayudas.
+Ver más

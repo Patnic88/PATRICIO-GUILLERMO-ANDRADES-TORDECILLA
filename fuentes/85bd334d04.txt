@@ -1,0 +1,10 @@
+URL: https://www.sii.cl/servicios_online/1040-.html
+URL final: https://www.sii.cl/servicios_online/1040-.html
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+SII | Servicio de Impuestos Internos
+Servicios online
+Selecciona la opción a la cual deseas ingresar:
+de script que contiene mostrar() -->
+de script que contiene mostrar() -->

@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3305.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3305.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Qué se debe hacer el emitir una boleta de honorarios electrónica con error?
+¿Puedo modificar una Boleta de Honorarios Electrónica que emití con error?
+ID: 001.120.3305.005
+Fecha de creación: 05/08/2005
+Fecha de actualización: 23/05/2025
+No, el procedimiento es anular la Boleta de Honorarios Electrónica emitida con error y emitir una correctamente.
+Puede obtener más información relativa a este tema en el sitio Web del SII, sección Servicios online, Boletas de Honorarios Electrónicas, Emisor de boleta de honorarios, opción Ayudas.
+Ver más

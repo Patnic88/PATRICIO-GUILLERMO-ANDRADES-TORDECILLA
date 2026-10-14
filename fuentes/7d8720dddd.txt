@@ -1,0 +1,25 @@
+URL: https://www.sii.cl/boleta_honorarios/consultas.htm
+URL final: https://www.sii.cl/boleta_honorarios/consultas.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+CONSULTAS SOBRE BOLETAS
+CONSULTAS SOBRE BOLETAS DE HONORARIOS ELECTRONICAS
+En esta página encontrará las opciones necesarias para consultar y
+revisar el contenido de boletas de honorarios electrónicas emitidas por usted,
+como también, para consultar por boletas emitidas por otros contribuyentes.
+Consultar
+boletas emitidas
+En esta
+opción los contribuyentes podrán consultar el contenido y el
+resumen de todas sus boletas de honorarios emitidas electrónicamente.
+Consultar
+boletas recibidas
+En esta opción
+podrá consultar el contenido de las boletas de honorarios que otros contribuyentes
+le han emitido a usted a través de Internet.
+Consulta
+de boletas por Terceros
+En esta opción
+podrá verificar el contenido de las boletas de honorarios que otros contribuyentes
+le han emitido a terceros.

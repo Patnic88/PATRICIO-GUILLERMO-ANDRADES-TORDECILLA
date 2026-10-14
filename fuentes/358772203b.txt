@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3748.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3748.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / Emisión de boleta de honorarios electrónica a extranjeros
+¿Se pueden emitir Boletas de Honorarios Electrónicas por prestaciones de servicios a clientes extranjeros?
+ID: 001.120.3748.009
+Fecha de creación: 05/12/2005
+Fecha de actualización: 23/05/2025
+Sí, es factible emitir una Boleta de Honorarios Electrónica para extranjeros desde el sitio Web del SII, Servicios Online, Boleta de Honorarios electrónicas. Hay que tener en cuenta que la boleta emitida a extranjeros, se encuentra sujeta al Pago Provisional Mensual (PPM) por parte del emisor de la boleta, por lo tanto, no estará afecta a retención por parte del receptor.
+Respecto al campo donde se debe indicar el RUT, (independientemente de si es persona natural o jurídica), se debe utilizar el RUT 44.444.446-0 además del nombre del extranjero, sin domicilio ni residencia en Chile. Si lo señalado es mal utilizado, es decir, si se usa el RUT para rentas de honorarios para personas con domicilio y residencia en Chile, será sancionado de acuerdo a las normas del Código Tributario.
+Puede obtener más información relativa a este tema en el sitio Web del SII, Servicios Online, Boletas de honorarios electrónicas, Emisor de boleta honorario, opción Ayudas.
+Ver más

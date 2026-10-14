@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_2773.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_2773.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Declaración de renta / Propuesta de Declaración de Renta por Internet
+¿Por qué en mi propuesta de la Declaración de Impuesto a la Renta podrían aparecer menos Pagos Provisionales Mensuales (PPM) a los efectivamente declarados y pagados?
+ID: 001.140.2773.018
+Fecha de creación: 14/04/2005
+Fecha de actualización: 14/04/2025
+Uno de los posibles motivos por los que en la propuesta de Declaración de Impuesto Anual a la Renta aparecen menos PPM, es que los montos hayan sido registrados en el Formulario 29 de la Declaración Mensual y Pago Simultáneo en la línea 61, bajo el código 151; lo que constituye una retención y no un PPM.
+Frente a esto, es necesario rectificar los Formularios 29 y registrar los PPM en la línea 76, con el código 152; eliminando el registro de la línea 61, correspondiente a retenciones rentas de Segunda Categoría.
+Puede obtener más información de este tema y/o modificar el formulario, en el sitio web del SII, en la sección Servicios online, menú Impuestos mensuales, Impuestos mensuales, opción Declaración mensual (F29),Corregir o rectificar declaración.
+Ver más

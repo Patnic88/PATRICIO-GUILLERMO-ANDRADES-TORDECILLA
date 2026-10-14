@@ -1,0 +1,18 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1838.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1838.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Anulación de boletas de honorarios electrónicas emitidas
+¿Qué se debe hacer para anular una Boleta de Honorarios Electrónica por Internet?
+ID: 001.120.1838.006
+Fecha de creación: 22/09/2004
+Fecha de actualización: 27/03/2025
+Para anular una Boleta de Honorarios Electrónica por Internet, hasta el primero de marzo del año siguiente a la emisión, es necesario ingresar al sitio Web del SII, menú Boleta de Honorarios Electrónica, opción Anular boletas emitidas. Al usar este procedimiento hasta el día 10 del mes siguiente a la fecha en que fue emitida la o las boletas, el documento quedará registrado como anulado inmediatamente y se le enviará, automáticamente, un email al receptor, avisando de dicha anulación.
+Al anular boletas entre el día 11 del mes siguiente y hasta el primero de marzo del año siguiente a la emisión, el emisor puede solicitar la anulación siguiendo el mismo procedimiento mencionado en párrafo anterior, pero ésta quedará sujeta a confirmación por parte del receptor. Durante el período señalado, las boletas permanecerán en estado "vigentes con solicitud de anulación pendiente" (VCA), por ende, deben ser declaradas y pagadas las retenciones o PPM en el período correspondiente si es que no es informada la confirmación de la anulación por parte del receptor. Por lo anteriormente expuesto, el emisor que desee anular una boleta debe contactarse con el receptor para que ingrese la confirmación.
+Si el receptor no está de acuerdo con la anulación de la boleta, podrá rechazarla y ésta continuará vigente. Tanto para ingresar la confirmación como el rechazo el receptor debe contar con su Clave Secreta.
+Si el receptor no confirma la anulación dentro del plazo establecido en el párrafo primero, ésta pasará automáticamente a estado "vigente", por lo tanto no podrá completarse el proceso de anulación con la confirmación.
+Normativa Relacionada
+Ver más

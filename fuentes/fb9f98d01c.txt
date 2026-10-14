@@ -1,0 +1,17 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1811.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1811.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / Emisión de boleta de honorarios electrónica que genera un PPM
+¿Es posible emitir una Boleta de Honorarios Electrónica y pagar el Pago Provisional Mensual (PPM), vía F29 en formulario en papel?
+ID: 001.120.1811.011
+Fecha de creación: 08/09/2004
+Fecha de actualización: 08/01/2026
+No, no es posible emitir una Boleta de Honorarios Electrónica y pagar el PPM por formulario en papel, puesto que la Resolución N° 19, de 2020, establece la obligación de declarar el Formulario 29 únicamente a través de Internet en la página web del Servicio de Impuestos Internos.
+El SII recuerda que se deben enterar y pagar al fisco los PPM cuando los receptores de las Boletas de Honorarios no hayan retenido el 15.25% de los honorarios.
+Para declarar y pagar los PPM debe ingresar al sitio Web del SII, Sección "Servicios online", "Impuestos mensuales", menú "Declaración mensual (F29), opción Declarar IVA (F29), la que permitirá ingresar al formulario electrónico de IVA y declarar y pagar simultáneamente los PPM.
+Normativa Relacionada
+Ver más

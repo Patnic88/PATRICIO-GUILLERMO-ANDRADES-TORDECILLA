@@ -1,0 +1,14 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1766.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1766.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Anulación de boletas de honorarios electrónicas emitidas
+¿Quién puede anular una Boleta de Honorarios Electrónica emitida por un usuario autorizado?
+ID: 001.120.1766.004
+Fecha de creación: 02/09/2004
+Fecha de actualización: 27/03/2025
+El único que puede anular una Boleta de Honorarios Electrónica emitida por un usuario autorizado es el propio contribuyente que dio esta autorización especial, para lo cual es necesario que se autentifique mediante su Rut y su Clave Secreta en el sitio Web del SII. Se recuerda que cuando un contribuyente autoriza a una tercera persona a emitir Boletas de Honorarios Electrónicas, a través del sitio Web del SII, lo hace sólo para este fin.
+Ver más

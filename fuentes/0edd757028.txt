@@ -1,0 +1,19 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0609.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0609.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Delegar emisión a un usuario autorizado / Autorizar emisión de boletas de honorarios electrónicas a terceros
+¿Qué requisitos debe tener un tercero para que un contribuyente lo autorice a emitir Boletas de Honorarios Electrónicas a su nombre por Internet?
+ID: 001.120.0609.007
+Fecha de creación: 24/10/2003
+Fecha de actualización: 11/12/2024
+Los requisitos son los siguientes:
+- Tener Clave Tributaria para operar en el sitio Web del SII.
+- Estar autorizado por el contribuyente emisor.
+El período de vigencia de los usuarios autorizados para realización de estas operaciones será de un año, contado a partir de la fecha en que fue autorizado, la que quedará registrada en un comprobante de autorización de usuario emitido al contribuyente por el sistema y en las bases de datos del SII.
+El contribuyente emisor que ha autorizado a terceros a emitir Boletas de Honorarios Electrónicas en su nombre, podrá, a través de la mencionada aplicación computacional, eliminar a los usuarios autorizados que anteriormente han sido ingresados.
+Normativa Relacionada
+Ver más

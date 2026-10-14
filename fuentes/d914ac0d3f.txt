@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0610.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0610.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Consultas sobre boletas de honorarios electrónicas / Consultar boletas de honorarios electrónicas emitidas
+¿Cómo se puede revisar o consultar una Boleta de Honorarios Electrónica emitida?
+ID: 001.120.0610.007
+Fecha de creación: 24/10/2003
+Fecha de actualización: 11/12/2024
+La forma de revisar o consultar una Boleta de Honorarios Electrónica emitida es a través del sitio Web del SII, sección Servicios online, Boletas de Honorarios Electrónicas, Emisor de boleta de honorarios, opción Consultas sobre boletas de honorarios electrónicas, desde donde podrá obtener información acerca de boletas emitidas (resumen diario, mensual o anual).
+Dentro del rango de boletas mensuales, el contribuyente encontrará toda la información relacionada con las boletas emitidas durante el mes, mientras que los montos con los honorarios brutos y retención de terceros de carácter anual aparecerán resumidos y totalizados en el mes del año escogido.
+Normativa Relacionada
+Ver más

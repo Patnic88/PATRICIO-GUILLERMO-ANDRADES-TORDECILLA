@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3086.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3086.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Confirmar o rechazar anulación por receptor de boletas de honorarios electrónicas
+¿Qué pasa con una Boleta de Honorarios Electrónica si el receptor no confirma la anulación dentro de los plazos establecidos para hacerlo?
+ID: 001.120.3086.005
+Fecha de creación: 30/05/2005
+Fecha de actualización: 02/07/2025
+Si el receptor no confirma la anulación dentro del mismo año de la emisión hasta el primero de marzo del año siguiente a la emisión, la Boleta de Honorarios Electrónica vuelve a su estado "vigente", por lo tanto, después de ese plazo, no podrá confirmarse su anulación.
+Normativa Relacionada
+Ver más

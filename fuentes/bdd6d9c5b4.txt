@@ -1,0 +1,35 @@
+URL: https://www.bcn.cl/api-leyfacil/servicio/ObtenerGuiaPublicadaHTML?uri=incorporacion-de-trabajadores-y-trabajadoras-independientes-al-sistema-de-prevision-y-proteccion-social
+URL final: https://www.bcn.cl/api-leyfacil/servicio/ObtenerGuiaPublicadaHTML?uri=incorporacion-de-trabajadores-y-trabajadoras-independientes-al-sistema-de-prevision-y-proteccion-social
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Incorporación de trabajadores y trabajadoras independientes al sistema de previsión y protección social
+¿Desde cuándo deben cotizar obligatoriamente los trabajadores independientes?
+Desde abril de 2019 se debe cotizar en forma obligatoria en el sistema de seguridad social para las siguientes prestaciones: Seguro de Invalidez y Sobrevivencia (SIS), Seguro de Accidentes Laborales y Enfermedades Profesionales (ATEP), Seguro de Acompañamiento de Niños y Niñas (Ley SANNA), Salud y Pensiones.
+¿Quiénes están obligados a cotizar?
+Todos los trabajadores y trabajadoras independientes que emitan boletas de honorarios, siempre que el monto bruto anual de sus ingresos sea igual o mayor a cinco ingresos mínimos mensuales, en el año calendario ($1.505.000 al año).
+También están obligados a cotizar los socios de sociedades profesionales que tributen como honorarios.
+¿Quiénes están excluidos de la obligación de cotizar?
+Las mujeres de 50 años o más y los hombres con 55 años o más, al 1 de enero de 2018.
+También se encuentran excluidos los trabajadores independientes afiliados a algunas de las instituciones de previsión del régimen antiguo administrado por el Instituto de Previsión Social (IPS) o estén afiliados a la Dirección de Previsión de Carabineros de Chile (DIPRECA) o a la Caja de Previsión de la Defensa Nacional (CAPREDENA).
+¿Cuál es la base imponible sobre la cual se calcula las cotizaciones?
+La renta imponible que se considera corresponde al 80% del conjunto de las rentas anuales brutas gravadas en el año anterior a la declaración de impuesto a la renta respectiva.
+¿Cómo se pagaran las cotizaciones de los trabajadores independientes?
+El pago de las cotizaciones será anual y se realizará en la Declaración Anual de Impuesto a la Renta de abril de cada año, con cargo a la devolución de impuestos del año anterior.
+Esta obligación se inicia en la Declaración Anual de Impuestos del 2019 por las rentas del 2018 dando cobertura para las prestaciones desde julio de 2019 hasta junio de 2020.
+¿Aumenta el porcentaje de retención que afecta a las boletas de honorarios?
+Si, la ley 21.133 aumenta gradualmente la retención del 10% que afecta a las Boletas de Honorarios en 0,75% por año, partiendo en 2020 y hasta el año 2028. El noveno año subirá en un 1%, hasta llegar a 17% en 2028.
+¿Existe un orden de prelación para el pago de las cotizaciones previsionales?
+Si, la Ley 21.133 establece que se pagará, en primer lugar, el Seguro de Invalidez y Sobrevivencia; en segundo lugar, el Seguro Social contra Riesgos de Accidentes del Trabajo y Enfermedades Profesionales; en tercer lugar, el Seguro para el Acompañamiento de Niños y Niñas; en cuarto lugar, las cotizaciones de salud; en quinto lugar, las cotizaciones a la cuenta de capitalización individual y la comisión a la que tienen derecho las Administradoras de Fondos de Pensiones; y, en sexto lugar, los saldos insolutos pendientes de cotizaciones de pensiones de años anteriores.
+¿Cómo funcionara la cobertura anual de las distintas prestaciones de los regímenes de prestación social?
+El trabajador independiente pagará sus cotizaciones previsionales en el proceso de Operación Renta, lo que le otorgará derecho a la cobertura anual de los distintos regímenes de Seguridad Social, desde el 1 de julio del año de la Operación Renta, hasta el 30 de junio del año siguiente.
+¿Tiene el trabajador o trabajadora independiente la posibilidad de cotizar por menos de su renta imponible?
+Si, por un periodo determinado que va entre los años 2019 hasta 2028 se establecieron dos opciones de cotización con distintas cobertura en la seguridad social : i) Cotizar por el total de la renta imponible, con derecho a una Cobertura Completa, y ii) cotizar por una base imponible inferior, siendo su cobertura parcial.
+¿Cuál es la diferencia entre la opción de Cobertura completa y la parcial en la seguridad social?
+Cobertura Completa: los trabajadores (as) están cubiertos en un 100% desde el primer día, destinando desde el primer año (operación renta 2019) la retención del 10% de impuestos al pago de las cotizaciones para todos los regímenes de Seguridad Social. El porcentaje de retención que afecta a las boletas de honorarios se irá incrementando gradualmente cada año hasta llegar hasta 17% en 2028.
+Cobertura parcial: el trabajador(a) opta por cotizar por una renta imponible inferior para salud y pensiones, con el objeto de obtener parte de la devolución de impuestos.
+Este porcentaje menor también ira aumentando gradualmente desde el año 2019 hasta el 2028, comenzando con cotizaciones sobre el 5% de la renta imponible el primer año para salud y pensiones , 17% el segundo, hasta llegar al 100% el décimo año, contados desde la publicación de la ley.
+¿Qué pasa si un trabajador (a) independiente tiene más de una renta?
+Se sumarán las rentas para aplicar el límite máximo anual. Las instituciones previsionales deberán reliquidar y devolver los excesos, si el monto total supera el límite.
+¿Los que estén bajo el monto mínimo pueden cotizar voluntariamente?
+Sí, podrán cotizar como afiliados voluntarios. También podrán cotizar voluntariamente los trabajadores durante los meses en que no estén cubiertos por no haber tenido rentas como honorario durante el año calendario inmediatamente anterior. También lo podrán hacer si sus ingresos mensuales durante el año cubierto fueran superiores a sus ingresos mensuales del año inmediatamente anterior, sobre cuya base se calculó la cotización.

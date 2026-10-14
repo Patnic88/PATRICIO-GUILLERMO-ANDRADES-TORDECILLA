@@ -1,0 +1,19 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3522.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3522.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Consultas sobre boletas de honorarios electrónicas / Consultar boletas de honorarios electrónicas emitidas
+¿Cómo se reenvía una Boleta de Honorarios Electrónica ya emitida a una empresa vía correo electrónico?
+ID: 001.120.3522.004
+Fecha de creación: 13/10/2005
+Fecha de actualización: 26/05/2025
+Para reenviar una Boleta de Honorarios Electrónica ya emitida, debe seguir el procedimiento que se indica a continuación:
+Ingresar al sitio Web del SII, menú Boleta de Honorarios Electrónica, opción Consultar boletas emitidas.
+Ingresar su Rut y Clave Tributaria.
+Seleccionar el mes y año de emisión del documento emitido.
+Seleccionar la boleta que desea reenviar y proceder a enviar la boleta por correo electrónico.
+Puede obtener más información relativa a este tema en el sitio Web del SII, menú Boleta de Honorario Electrónica, Emisor de boleta de honorarios, opción Ayudas.
+Ver más

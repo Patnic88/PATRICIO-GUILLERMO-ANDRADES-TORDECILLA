@@ -1,0 +1,19 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3583.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3583.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cómo puedo emitir una boleta de honorarios electrónica?
+¿Cómo puedo obtener una copia de una Boleta de Honorarios Electrónica, emitida con anterioridad?
+ID: 001.120.3583.006
+Fecha de creación: 02/11/2005
+Fecha de actualización: 02/07/2025
+Para obtener una copia de una Boleta de Honorarios Electrónica, debe ingresar al sitio Web del SII, sección Servicios online, menú Boletas de Honorarios Electrónicas, y seguir los siguientes pasos:
+Seleccione la opción "Emisor de boleta de honorarios", luego seleccione "consultas sobre boletas de honorarios electrónicas" y posteriormente "consultar boletas emitidas".
+Ingrese su Rut y Clave Secreta.
+Seleccione Informe Mensual de Boletas de Honorarios Electrónicas emitidas, mes y año, y luego la opción Consultar.
+Seleccione la boleta y obtenga la copia respectiva.
+Puede obtener más información relativa a este tema en el sitio Web del SII, menú Boletas de Honorarios Electrónicas, Emisor de boleta de honorarios, opción Ayudas.
+Ver más

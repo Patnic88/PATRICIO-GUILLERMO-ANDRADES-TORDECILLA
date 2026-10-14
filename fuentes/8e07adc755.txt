@@ -1,0 +1,54 @@
+URL: https://www.sii.cl/destacados/boletas_honorarios/
+URL final: https://www.sii.cl/destacados/boletas_honorarios/
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Boleta de Honorarios 2026: Nueva Retención del 15.25% | SII Chile
+La ley 21.133 establece que a partir del 1 de enero de 2026 el porcentaje de retención pasa de 14,5% a 15,25% llegando a 17% en 2028.
+Retención durante 2026 : 15,25%
+¿Para quiénes aplica el cambio?
+Para todos los emisores de boletas electrónicas
+Si emites o emiten tus boletas en sii.cl, de manera automática la aplicación calculará la nueva retención.
+Revisa aquí cómo varia la retención de tu boleta de honorarios desde el 1 de enero, de acuerdo a tus honorarios mensuales:
+Revisa estos ejemplos
+Un aumento gradual
+Por ley, tu retención sube escalonadamente. Hoy corresponde el 15,25% y la meta final es llegar al 17% en el año 2028.
+14.5%
+2025
+15.25%
+2026
+16%
+2027
+Conoce más
+🧾 Simulador para Calcular tu Boleta de Honorarios
+Utiliza este asistente para simular los valores de tu Boleta de Honorarios, aplicando la retención de 15,25%
+vigente desde el 1 de enero de 2026.
+1. Año de emisión:
+2025 (Retención 14.5%) -->
+2026 (Retención 15.25%)
+2. ¿Con qué monto quieres simular tu boleta?
+El monto bruto
+El valor total de tus servicios, antes de descontar la retención correspondiente.
+El monto líquido
+Es lo que efectivamente recibes después de descontar la retención
+3. Ingresa el monto:
+$
+Presiona Enter para calcular ---->
+Simular mi Boleta
+Aquí aparecerá el detalle de tu boleta
+📝 Total Honorarios
+$0
+(Monto Bruto)
+🔻Retención ( %):
+✅ Total
+$0
+(Monto Líquido a recibir)
+Copiar datos
+Importante:
+Recuerda que el cálculo se realiza automáticamente al emitir tu Boleta de Honorarios, una vez que ingreses el valor bruto de la prestación.
+Preguntas Frecuentes
+Te ayudamos con las respuestas a todo lo que necesitas saber sobre la emisión de tu boleta de honorarios.
+Conoce más
+Guías de ayuda
+Accede a guías paso a paso que te orientarán para la correcta emisión de tus boletas de honorarios.
+Infórmate

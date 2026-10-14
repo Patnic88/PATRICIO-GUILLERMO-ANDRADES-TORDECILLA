@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_6019.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_6019.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Observar Boletas de Honorarios Electrónicas
+¿Cuál es el plazo para anular una Boleta de Honorarios Electrónica por Internet, sin necesidad de contar con la confirmación del receptor?
+ID: 001.120.6019.005
+Fecha de creación: 16/12/2009
+Fecha de actualización: 27/03/2025
+El plazo para anular una BHE por Internet, sin necesidad de confirmación por parte del receptor, es hasta el día 10 del mes siguiente a la fecha de la boleta.
+Normativa Relacionada
+Ver más

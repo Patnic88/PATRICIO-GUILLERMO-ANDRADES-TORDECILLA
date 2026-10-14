@@ -1,0 +1,37 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2135.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2135.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Boleta de Prestación de Servicios de Terceros Electrónica / Requisitos de emisión de boleta de prestación de servicios de terceros electrónica
+¿Qué características de emisión debe reunir una Boleta de Prestación de Servicios de Terceros Electrónica?
+ID: 001.120.2135.004
+Fecha de creación: 27/12/2004
+Fecha de actualización: 26/05/2025
+Las características de emisión que debe reunir una Boleta de Prestación de Servicios de Terceros Electrónica se indican a continuación:
+La emisión de este tipo de boletas se podrá efectuar a través de dos medios, los que deberán utilizarse de acuerdo con las necesidades y volúmenes de emisión de los contribuyentes. Para ello, se distinguirán dos tipos de emisores:
+a) Emisor individual: Emitirá documentos, uno a uno, a través de la aplicación computacional puesta a disposición de los contribuyentes en el sitio Web del SII durante el transcurso de 2005.
+b) Emisor masivo: Operará, previa autorización otorgada por el SII mediante resolución.
+Esta forma de emisión está indicada para aquellos contribuyentes que, mensualmente, reciben servicios de una gran cantidad de personas diferentes, cuya remuneración se documenta con boletas de prestación de servicios de terceros.
+Para acceder a este tipo de emisión, los interesados que cumplan los requisitos deberán hacer su solicitud a través de la aplicación dispuesta para tales afectos en el sitio web del SII. En caso de que ésta no se encuentre disponible, podrá realizar esta operación a través de la presentación del Formulario 2117 de Solicitudes, el que deberá ser presentado en la oficina del SII correspondiente al domicilio del contribuyente emisor.
+Una Boleta de Prestación de Servicios de Terceros Electrónica debe emitirse a personas naturales que realizan actividades gravadas por el artículo 42°, N° 2, de la Ley sobre Impuesto a la Renta.
+Numerarse en forma correlativa, desde el uno al infinito.
+Indicar los siguientes datos del emisor: nombre completo o razón social, actividades o giros, número de Rut, domicilio de la casa matriz, indicando la comuna correspondiente, domicilio de la sucursal que emita el documento con la comuna respectiva, números de teléfonos y/o fax de la casa matriz y sucursal, respectivamente. Los emisores masivos podrán incorporar email y/o sitio web si lo desean, y los emisores individuales podrán hacerlo si existe la información en las bases del SII.
+Los datos que deben ser ingresados obligatoriamente para poder emitir una Boleta de Prestación de Servicios de Terceros Electrónica son:
+a) Datos del receptor de la boleta: Nombre completo, N° de RUT y domicilio con la comuna correspondiente.
+b) Fecha de la Boleta: Corresponde a la fecha en que se paga, se abona en cuenta o se pone a disposición del interesado, cualquiera sea el hecho que ocurra.
+c) Texto que detalla la naturaleza de la prestación o servicio y valor de la prestación.
+d) Porcentaje de retención.
+e) Monto retenido.
+f) Total líquido a pagar.
+Cada boleta tendrá un código de barra único e irrepetible que contiene los principales datos del documento.
+En cada boleta deberá ir indicada la fecha y hora de emisión del documento.
+Para el prestador del servicio deberá emitirse una copia en papel de la boleta o bien como comprobante, enviar o poner a disposición del prestador del servicio una copia en formato electrónico para que éste lo almacene o imprima. El prestador del servicio no deberá firmar el ejemplar de la boleta entregado por el emisor.
+El emisor masivo de Boletas de Prestación de Terceros Electrónicas deberá conservar en formato electrónico la información de la boleta para su posterior revisión.
+Deberán indicar en forma destacada su calidad de "Boleta de Prestación de Servicios de Terceros Electrónica".
+La representación impresa y electrónica de las Boletas de Prestación de Servicios de Terceros Electrónica deberá cumplir con los requisitos de formato señalados en el anexo 1 de la Resolución Exenta N° 112, de 2004.
+Puede obtener más información relativa a este tema en el sitio Web del SII, menú Normativa y legislación, Resoluciones.
+Normativa Relacionada
+Ver más

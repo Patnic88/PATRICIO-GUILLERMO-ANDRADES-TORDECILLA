@@ -1,0 +1,34 @@
+URL: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_7297.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_7297.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Declaración de renta / Rentas de Segunda Categoría por Honorarios / Retenciones
+¿Cuáles son las tasas de retenciones de honorarios y desde cuándo se aplican?
+ID: 001.140.7297.004
+Fecha de creación: 07/02/2019
+Fecha de actualización: 01/04/2026
+Las tasas de retenciones de honorarios, de acuerdo con cada año comercial, son las siguientes:
+%
+AÑO COMERCIAL
+10,75%
+2020
+11,50%
+2021
+12,25%
+2022
+13,00%
+2023
+13,75%
+2024
+14,50%
+2025
+15,25%
+2026
+16,00%
+2027
+17,00%
+2028
+Ver más

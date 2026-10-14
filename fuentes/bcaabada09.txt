@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2136.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2136.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Boleta de Prestación de Servicios de Terceros Electrónica / Requisitos de emisión de boleta de prestación de servicios de terceros electrónica
+¿Las Boletas de Prestación de Servicios de Terceros Electrónicas también tienen número correlativo de folio?
+ID: 001.120.2136.004
+Fecha de creación: 27/12/2004
+Fecha de actualización: 13/08/2025
+Sí, las Boletas de Prestación de Servicios de Terceros Electrónicas también tienen un número correlativo de folio, el que será independiente del número de folio de los documentos no electrónicos del mismo tipo, por lo que es factible que un contribuyente emita documentos electrónicos y en papel con números idénticos.
+Puede obtener más información relativa a este tema en el sitio Web del SII, menú Normativa y legislación, Resoluciones.
+Normativa Relacionada
+Ver más

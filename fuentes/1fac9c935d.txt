@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1940.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1940.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cuáles son los plazos para la emisión de una boleta de honorarios electrónica
+¿Es posible emitir una Boleta de Honorarios Electrónica con fecha del mes anterior?
+ID: 001.120.1940.008
+Fecha de creación: 11/11/2004
+Fecha de actualización: 23/05/2025
+Sí, es posible emitir una Boleta de Honorarios Electrónica con fecha del mes anterior, puesto que la aplicación dispuesta en el sitio Web del SII, sección Servicios online, Boleta de Honorarios Electrónica, Emisor de boletas de honorarios, Emitir boletas de honorarios, así lo permite. En esta misma situación, si la remuneración fue percibida en el mes anterior, el emisor debe considerar la situación del Formulario 29 de Declaración Mensual y Pago Simultáneo, el cual debe ser rectificado según corresponda al tipo de emisión del documento, con retención o sin retención, y que afectará a la institución o empresa retenedora y al propio profesional.
+Puede obtener más información relativa a este tema en el sitio Web del SII, sección Servicios online, Boletas de honorarios electrónicas, Emisor de boletas de honorarios, Ayudas, Preguntas frecuentes, opción Preguntas Frecuentes de Boletas de Honorarios Electrónicas.
+Ver más

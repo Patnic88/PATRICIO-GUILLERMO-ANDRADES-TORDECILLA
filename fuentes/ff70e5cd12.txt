@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3474.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3474.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cómo puedo emitir una boleta de honorarios electrónica?
+¿Las Sociedades de Profesionales que tributan de acuerdo con las normas de primera categoría, pueden emitir Boletas de Honorarios Electrónicas?
+ID: 001.120.3474.006
+Fecha de creación: 27/09/2005
+Fecha de actualización: 23/05/2025
+Sí, para ello debe ingresar al sitio Web del SII, menú Boleta de Honorarios Electrónicas, opción Emitir boletas. El sistema le presentará un formato de boleta para emitir por el total, sin retención. Además, se consignará en el documento la leyenda "Sociedad de Profesionales Sujeta a las Normas de Primera Categoría, conforme el inciso tercero, N° 2, del artículo 42 de la Ley de la Renta.
+Si la aplicación disponible en el sitio Web no le muestra la leyenda señalada precedentemente, el contribuyente deberá concurrir a la oficina del SII correspondiente a su domicilio comercial, para que se incorpore al sistema la marca que le permita emitir boletas con dichas características, partiendo de la base que no le sea permitido hacerlo online.
+Normativa Relacionada
+Ver más

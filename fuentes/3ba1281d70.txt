@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_6017.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_6017.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Observar Boletas de Honorarios Electrónicas
+¿Qué se debe hacer para realizar una observación por Internet a una Boleta de Honorarios Electrónica (BHE)?
+ID: 001.120.6017.007
+Fecha de creación: 16/12/2009
+Fecha de actualización: 23/04/2025
+Para observar una Boleta de Honorarios Electrónica por Internet, hasta el primero de marzo del año siguiente a la emisión, es necesario ingresar al sitio Web del SII, sección Servicios online, menú Boletas de honorarios electrónicas, Emisor de boleta de honorarios, Anulación y observación de boletas emitidas, opción Observar boletas recibidas. Al usar este procedimiento, el documento quedará registrado como observado e inmediatamente se enviará, de manera automática, un correo electrónico al emisor, informando dicha situación.
+Al observar una BHE, entre el día 11 del mes siguiente y hasta el primero de marzo del año siguiente a la emisión, el receptor observa la boleta, siguiendo el mismo procedimiento mencionado en el párrafo anterior. Durante el período señalado, las boletas permanecerán en estado vigentes con solicitud de anulación pendiente (VCA). Por lo anterior, el receptor que observe una boleta, debe contactarse con el emisor de la misma, si correspondiese.
+Normativa Relacionada
+Ver más

@@ -1,0 +1,470 @@
+URL: https://www.sii.cl/documentos/resoluciones/2004/reso83.htm
+URL final: https://www.sii.cl/documentos/resoluciones/2004/reso83.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Resolución Exenta SII N°83 del 30 de Agosto del 2004
+Home | Resoluciones 2004
+RESOLUCION EXENTA SII N°83 DEL 30 DE AGOSTO DEL 2004
+MATERIA : ESTABLECE INSTRUCCIONES SOBRE LA EMISIÓN Y USO DE BOLETAS DE HONORARIOS ELECTRÓNICAS.
+Hoy
+se ha resuelto lo que sigue:
+VISTOS:
+Lo
+dispuesto en el Art. 6°, letra A), N° 1, y Art. 88°, incisos 3° y 4°,
+del Código Tributario, contenido en el D.L. N° 830, de 1974; y la
+Resolución Ex. N° 1414, de 1978, del Servicio de Impuestos Internos,
+mediante la cual se mantiene obligación de emitir boletas por
+honorarios profesionales, y
+C ONSIDERANDO:
+1°
+Que, dado que han incorporado nuevas funcionalidades al sistema
+establecido para la emisión y uso de boletas de honorarios electrónicas,
+se ha estimado conveniente fijar en un texto coordinado y actualizado
+las instrucciones sobre esta materia.
+2°
+Que,
+los profesionales, sociedades de profesionales y personas que
+desarrollan actividades lucrativas, sujetas a las normas de la segunda
+categoría según lo dispuesto en el N° 2 del Art. 42° de la Ley de
+Impuesto a la Renta, contenida en el D.L. N° 824, de 1974, así como
+las sociedades de profesionales que en virtud del inciso 3°, del N° 2,
+del mismo artículo, hayan optado por tributar de acuerdo a las normas
+de la Primera Categoría, están obligados a emitir boletas por los
+honorarios o ingresos que perciban por la prestación de servicios
+personales.
+3° Que,
+los incisos 3° y 4°, del Art. 88° del Código Tributario, disponen
+que:
+La
+Dirección podrá exigir el otorgamiento de facturas o boletas respecto
+de cualquier ingreso, operación o transferencia que directa o
+indirectamente sirva de base para el cálculo de un impuesto y que
+aquella determine a su juicio exclusivo, estableciendo los requisitos
+que estos documentos deban reunir...
+La
+Dirección determinará en todos los casos, el monto mínimo por el cual
+deban emitirse las boletas. Estos documentos deberán emitirse en el
+momento mismo en que se celebre el acto o se perciba el ingreso que
+motiva su emisión y estarán exentos de los impuestos establecidos en
+la Ley sobre Impuestos de Timbres, Estampillas y Papel Sellado.
+4°
+Que, de acuerdo a la norma
+citada precedentemente, el Director del SII puede establecer los
+requisitos que deben reunir los documentos tributarios, exigiendo las
+condiciones necesarias para resguardar debidamente el interés fiscal.
+5°
+Que, por Resolución Ex. N° 62 de 24.10.2003, se impartieron
+instrucciones sobre emisión y uso de boletas de honorarios emitidas vía
+Internet y, además, se formalizó la aplicación computacional en el sitio web de este Servicio, www.sii.cl ,
+que permitiría emitir Boletas de Honorarios Electrónicas a aquellos
+contribuyentes sujetos a las normas de Segunda Categoría, según lo
+dispuesto en el Art. 42° N° 2 de la Ley sobre Impuesto a la Renta,
+como también de las sociedades de profesionales que en virtud al inciso
+3°, del N° 2, del mismo artículo, hayan optado por tributar de
+acuerdo a las normas de la Primera Categoría.
+6°
+Que, a la fecha de emisión de la presente resolución, la
+aplicación computacional para emitir Boletas de Honorarios Electrónicas
+mencionada en considerando anterior, ha incorporado nuevas
+funcionalidades respecto a su versión inicial, razón por la que
+resulta necesario instruir en tal sentido.
+7°
+Que, es deber del Servicio de Impuestos Internos facilitar
+permanentemente el cumplimiento tributario de los contribuyentes.
+SE
+RESUELVE :
+1°)
+El Servicio de Impuestos Internos, a través de su página web, www.sii.cl ,
+mantendrá permanentemente a disposición de los contribuyentes, una
+aplicación computacional para emitir Boletas de Honorarios Electrónicas
+y realizar otras funciones afines a dicha emisión.
+2°)
+Para los efectos de la presente resolución y las que se dicten en
+virtud de ella, se definen los términos que a continuación se indican:
+Boleta
+de Honorarios Electrónica:
+Boleta de honorarios generada electrónicamente, que produce los mismos
+efectos legales y reglamentarios de una boleta de honorarios emitida
+manualmente en papel.
+Fecha
+de Boleta de Honorarios Electrónica:
+Fecha en que se devenga el impuesto generado por el pago de los
+honorarios.
+Código
+de barra: Código
+de barra generado por el sistema computacional que incorpora en forma
+encriptada los datos más relevantes de la Boleta de Honorarios Electrónica
+emitida. Este código es único para cada boleta emitida.
+Contribuyente
+emisor:
+Contribuyente que emite sus boletas de honorarios a través de aplicación
+computacional dispuesta para dicho fin en la página web del SII.
+Usuario
+autorizado:
+Persona debidamente individualizada con su nombre y RUT, que está
+autorizada por un contribuyente emisor determinado, para generar Boletas
+de Honorarios Electrónicas a su nombre.
+Receptor:
+Persona natural o jurídica que recibe la boleta de honorarios por
+concepto del pago de los servicios prestados por el contribuyente
+emisor.
+3°)
+Los requisitos que debe cumplir un contribuyente para poder optar por la
+emisión de Boletas de Honorarios Electrónicas son:
+-
+Haber dado aviso de Inicio de Actividades.
+-
+Realizar actividades gravadas por el Art. 42° N° 2 de la Ley
+sobre Impuesto a la Renta.
+-
+No registrar anotaciones negativas en el sistema del SII que
+restrinjan el timbraje de boletas de honorarios.
+-
+Debe tener clave para ingresar al sitio
+web del SII.
+4°)
+Las personas naturales o jurídicas
+sujetas a las normas de la Segunda Categoría, según lo dispuesto en el
+Art. 42 N° 2 de la Ley sobre Impuesto a la Renta, contenida en el D.L.
+N° 824, de 1974, así como las sociedades de profesionales que en
+virtud del inciso 3°, del N° 2, del mismo artículo, hayan optado por
+tributar de acuerdo a las normas de la Primera Categoría, podrán optar
+por emitir Boletas de
+Honorarios Electrónicas por las operaciones que realicen, en tanto
+cumplan los requisitos enunciados en resolutivo anterior.
+5°)
+Las Boletas de Honorarios Electrónicas deberán reunir las características
+que para su emisión establece la Resolución Ex. N° 1414, de 1978, en
+lo que no se encuentre modificado por la presente resolución. En
+consecuencia, las Boletas de Honorarios Electrónicas deberán cumplir
+lo siguiente:
+a)
+Su creación y generación operará a través de una aplicación
+destinada a tal efecto en el sitio web del Servicio, www.sii.cl .
+b)
+Al dar inicio al proceso de emisión de Boletas de Honorarios
+Electrónicas, el emisor deberá seleccionar en la aplicación
+computacional, una de las dos opciones que indican quién registrará y
+pagará el 10% de impuesto correspondiente a la boleta que se emitirá,
+ya sea retenido por el receptor de la boleta o por el propio emisor.
+c)
+Cada boleta tendrá un código de barra único e irrepetible que
+contiene los principales datos del documento en cuestión.
+d)
+Son numeradas en forma correlativa, desde el uno al infinito.
+e)
+Llevará impreso el nombre completo del profesional o
+contribuyente que la otorga, su número de RUT, dirección, comuna,
+profesión o actividad y, cuando proceda, número de teléfono y fax.
+f)
+En el caso de las Sociedades de Profesionales que de conformidad
+con el inciso 3°, del N° 2, del Art. 42° de la LIR, hayan optado por
+tributar de acuerdo con las normas de Primera Categoría, las Boletas de
+Honorarios Electrónicas consignarán la siguiente leyenda: Sociedad
+de Profesionales sujeta a las normas de la Primera Categoría conforme
+al inciso 3° del N° 2, del artículo 42°, de la Ley de la Renta.
+g)
+Calculará en forma automática el total de los honorarios, y en
+los casos en que existe retención por parte del receptor de la boleta,
+el 10% de impuesto retenido y el valor total a pagar.
+h)
+Los datos que deben ser ingresados obligatoriamente para poder
+emitir una Boleta de Honorarios Electrónica son:
+-
+Datos del receptor de
+la boleta: Nombre completo o Razón Social, N° de RUT y domicilio, sin
+distinción del hecho si se encuentra obligado o no a retener el
+Impuesto a la Renta. Para ello, se deberá ingresar el N° de RUT y, en
+el caso de personas o contribuyentes registrados en las bases de datos
+del SII, el nombre se desplegará automáticamente. En caso contrario,
+se deberá digitar el nombre del receptor de la boleta respectiva.
+-
+Fecha de la Boleta de
+Honorarios Electrónica: Se debe tener presente que las boletas deben
+ser emitidas en el mismo momento en que se devenga el impuesto, esto es,
+cuando el honorario o remuneración se paga, se abona en cuenta o se
+pone a disposición del interesado, cualquiera sea el primero de los
+hechos que ocurra.
+-
+Texto que detalla
+la naturaleza de la prestación o servicio y valor de los
+honorarios respectivos.
+i)
+Por
+cada Boleta de Honorarios Electrónica emitida, el contribuyente obtendrá
+como resultado de la operación, una pantalla con la boleta generada
+exitosamente, en la cual se mostrarán las opciones de imprimir y de
+enviar la boleta vía correo electrónico. A partir de la opción
+enviar, el sistema generará un correo electrónico dirigido al
+destinatario o receptor de la boleta, al cual se adjuntará como archivo
+atachado en formato pdf, la Boleta emitida.
+Para
+fines ilustrativos, se incluyen en el Anexo de la presente resolución
+algunos ejemplos de representaciones impresas de Boletas de Honorarios
+Electrónicas.
+6°)
+El contribuyente emisor que cumple los requisitos enunciados en el
+resolutivo 3° de la presente Resolución, podrá a través de la
+aplicación computacional destinada a la emisión de Boletas de
+Honorarios Electrónicas, autorizar a uno o más usuarios para que
+emitan tales documentos por cuenta de dicho emisor. Los requisitos que
+deberán cumplir las personas para poder ser usuarios autorizados y
+emitir los documentos en cuestión, son los siguientes:
+-
+Tener clave para ingresar al sitio web del SII
+-
+Estar autorizado por el contribuyente
+emisor
+El
+período de vigencia de los usuarios autorizados para proceder en este
+sentido será de un año, contado a partir de la fecha en que fue
+autorizado, la que quedará registrada en comprobante de autorización
+de usuario emitido al contribuyente por el sistema y, en las bases de
+datos del Servicio.
+7°)
+El contribuyente emisor que ha autorizado a terceros a emitir Boletas de
+Honorarios Electrónicas en su nombre, podrá, a través de la
+mencionada aplicación computacional, eliminar a los usuarios
+autorizados que anteriormente han sido ingresados.
+8°)
+Los contribuyentes emisores de Boletas de Honorarios Electrónicas podrán
+obtener desde la referida aplicación computacional, informes mensuales
+y anuales de dichos documentos emitidos, que servirán de respaldo al
+contribuyente como prueba de la emisión de los mismos.
+Además, el contribuyente tendrá la opción de guardar dichos
+informes en un archivo computacional con formato de planilla electrónica.
+Asimismo,
+a través de este tipo de informe, los contribuyentes podrán tener a la
+vista el original de las boletas emitidas, en una página con formato
+html con similares características que la página generada al momento
+de la emisión, donde tendrán las opciones de imprimir y de enviar por
+primera vez o reenviar por correo electrónico el documento en un
+archivo atachado con formato pdf dirigido al destinatario de la Boleta.
+El
+informe mensual aludido anteriormente registrará las siguientes
+columnas:
+a)
+Ver
+boleta: muestra ícono para acceder a ver
+la Boleta de Honorario Electrónica emitida en página con formato html.
+b)
+N° Boleta:
+Corresponde al número de boleta que se asigna al documento emitido por
+el contribuyente.
+c)
+Estado: Indica si la boleta está vigente (VIG) o anulada
+(ANUL). Si el estado es anulada, al poner el cursor del mouse sobre la
+palabra ANUL , aparecerá la fecha en que se efectuó la anulación
+de esa boleta.
+d)
+Fecha de boleta: Es la fecha que ingresa el emisor al
+momento de generar la boleta y que va impresa en dicho documento
+elaborado por el contribuyente o usuario autorizado. Esta fecha puede
+ser distinta a la fecha de emisión de la boleta, de conformidad a lo señalado
+en el resolutivo 5° de la presente Resolución, y puede ser anterior o
+posterior a la fecha de emisión de la boleta.
+e)
+Usuario emisor: Corresponde al nombre completo o razón
+social del usuario que emitió la Boleta de Honorarios Electrónica.
+Podrá corresponder al contribuyente emisor o alguno de sus usuarios
+autorizados.
+f)
+Fecha de emisión: Corresponde a la fecha en que se generó
+el documento en el sitio oficial del SII.
+g)
+Sociedad de Profesionales (Soc. Prof): Indica si el
+contribuyente emisor corresponde a una Sociedad de Profesionales o no.
+h)
+RUT receptor: Corresponde al N° de RUT de la persona
+natural o jurídica que obtuvo la boleta como comprobante de pago de los
+servicios profesionales recibidos.
+i)
+Nombre o Razón Social del Receptor:
+Corresponde al nombre completo o razón social de la persona natural o
+jurídica que obtuvo la boleta como comprobante de pago de los servicios
+profesionales recibidos.
+j)
+Honorarios Brutos: Corresponde a la suma de todos los
+valores de prestaciones en virtud de las cuales se ha generado la
+boleta.
+k)
+R etención
+emisor: Corresponde al 10% del Total
+honorarios, en caso que el contribuyente emisor se encargue
+del pago provisional de los impuestos.
+l)
+Retención receptor:
+Corresponde al 10% del Total honorarios, en caso que el receptor
+de la boleta se encargue de la retención de los impuestos.
+m)
+Honorarios líquidos: Corresponde
+a la diferencia existente entre el Total honorarios y el 10%
+retención de emisor o de receptor, según corresponda.
+El
+informe anual registrará los siguientes campos:
+n)
+Período: Corresponde a cada mes del año en consulta.
+o)
+Honorario Bruto: Corresponde a la suma de los honorarios
+brutos del período.
+p)
+Retención de Terceros: Corresponde al 10 % de los
+honorarios brutos del período retenidos por terceros.
+q)
+PPM de Contribuyente: Corresponde al 10% de los honorarios
+brutos del período correspondientes al PPM del contribuyente.
+En
+Anexo que integra la presente resolución se adjuntan formatos de
+informes de Boletas emitidas.
+9°)
+El contribuyente podrá anular Boletas de Honorarios Electrónicas bajo
+ciertas restricciones de antigüedad y monto total de la boleta de
+honorarios, determinados según políticas internas del Servicio. En
+caso de no cumplir las restricciones, el contribuyente deberá dirigirse
+a al área de Peticiones Administrativas de la Unidad del SII
+correspondiente a su jurisdicción para anular el documento y presentar
+la solicitud a través de un Formulario 2117.
+Al informar la anulación de la boleta, en la
+Unidad del SII se exigirán los siguientes antecedentes, según sea el
+caso:
+Formulario
+2117 con los antecedentes de identificación del contribuyente y de
+la boleta que se desea anular (N°, Nombre y RUT de destinatario,
+fecha de boleta, fecha de emisión, total honorarios).
+En
+caso que en el Formulario 2117 no se especifique en forma clara los
+datos de la boleta a anular, quien realiza el trámite debe
+presentar una impresión en papel de la boleta que se anulará, o en
+su defecto, una impresión del informe mensual del contribuyente
+donde se encuentra registrada la boleta que desea anular.
+Identificación
+completa del contribuyente emisor de la boleta.
+Si
+quien presenta la solicitud de nulidad no es el propio contribuyente
+emisor, además de los antecedentes ya señalados, la persona que
+efectúa el trámite deberá exhibir su Cédula de Identidad y un
+poder simple autorizado ante Notario, conferido por el emisor.
+10)
+Los receptores de Boletas de Honorarios Electrónicas podrán obtener
+desde la aplicación computacional, informes mensuales con la información
+de dichos documentos emitidos a su nombre. Estos informes servirán de
+respaldo al contribuyente para llevar el control de pagos de honorarios
+y retenciones mensuales, los que además podrán ser guardados en
+archivo computacional con formato de planilla electrónica.
+Las
+columnas que contiene este informe son las siguientes:
+a)
+Ver/Guardar: muestra ícono para acceder a ver la Boleta de
+Honorario Electrónica en página con formato html, y también un ícono
+para ver y guardar la boleta en formato pdf.
+b)
+N° Boleta:
+Corresponde al número de boleta que se asigna al documento emitido por
+el contribuyente.
+c)
+Estado:
+Indica si la boleta está vigente (VIG) o anulada (ANUL). Si el estado
+es anulada, al poner el cursor del mouse sobre la palabra ANUL ,
+aparecerá la fecha en que se efectuó la anulación de esa boleta.
+d)
+Fecha de boleta: Es la que ingresa el emisor y corresponde
+a fecha en que se paga el honorario. Esta fecha puede ser distinta a la
+fecha de emisión de la boleta, de conformidad a lo señalado en la
+letra h) del resolutivo 5° de la presente Resolución, y puede ser
+anterior o posterior a la fecha de emisión de la boleta.
+e)
+RUT emisor:
+Corresponde al N° de RUT de la persona natural o jurídica que emitió
+la Boleta producto de los servicios prestados.
+f)
+Nombre o Razón Social del Emisor:
+Corresponde al nombre completo o razón social de la persona natural o
+jurídica que emitió la Boleta producto de los servicios prestados.
+g)
+Sociedad de Profesionales (Soc. Prof): Indica si el
+contribuyente emisor corresponde a una Sociedad de Profesionales o no.
+h)
+Honorarios Brutos:
+Corresponde a la suma de todos los valores de prestaciones por las
+cuales se generó la boleta.
+i)
+Impuesto Retenido:
+Corresponde al 10% del los Honorarios Brutos.
+j)
+Honorarios pagados:
+Corresponde a la diferencia existente entre Honorarios Brutos y
+el Impuesto retenido de emisor o de receptor, según corresponda.
+En
+Anexo que integra la presente resolución se adjuntan formatos de
+informes de Boletas emitidas.
+11)
+Terceras personas podrán verificar la validez de Boletas de Honorarios
+Electrónicas a través de la aplicación computacional. Para hacer uso
+de esta opción, quien realiza la consulta deberá conocer e ingresar
+datos relevantes de la boleta. El resultado de esta consulta será la
+emisión de una copia simple de la Boleta de Honorarios Electrónica,
+que no podrá hacerse valer como original.
+12)
+Los receptores de Boletas de Honorarios Electrónicas estarán obligados
+a registrar separadamente en sus libros y registros contables, los
+documentos tributarios electrónicos de los documentos tributarios no
+electrónicos recibidos, sin perjuicio de las medidas que dichos
+contribuyentes deberán adoptar para evitar que se produzcan errores en
+sus sistemas de control ante eventuales duplicaciones de números. Ahora
+bien, el Servicio de Impuestos Internos determinará oportunamente la
+obligación de implementar un registro separado de los documentos antes
+mencionados.
+13)
+El SII establece que la representación electrónica de la Boleta de
+Honorarios emitida a través del sitio web, www.sii.cl ,
+ya sea en su forma de página html, o como archivo en formato
+pdf, tienen la misma validez que la representación impresa de dicha
+boleta, tanto para el emisor, el receptor, y también respecto de
+terceros. En consecuencia, no existe obligación de entregar copia
+impresa al receptor de la Boleta.
+14)
+Los emisores de Boletas de Honorarios Electrónicas, así como los
+receptores de este tipo de documento, no estarán obligados a guardar
+los ejemplares de Boletas emitidas y recibidas respectivamente, ya sea
+impresas en papel o en forma de archivo electrónico, pues dispondrán
+de ellos en el sitio web del Servicio de Impuestos Internos.
+15)
+Ahora bien, dado que la emisión de Boletas de Honorarios y la consulta
+sobre boletas emitidas y recibidas, obliga a la persona que ingresa al
+sistema a pasar por un proceso de autenticación con Clave Secreta, desarrollado
+por el SII en forma confiable para resguardar debidamente los datos que
+se trasmiten a través de su sitio en Internet, de acuerdo a la
+normativa vigente para la emisión de Boletas de Honorarios, los
+emisores de tales documentos no estarán sujetos a estampar su firma en
+los ejemplares impresos.
+16)
+El tratamiento jurídico que rige la no emisión de la Boleta de
+Honorarios Electrónica, será el aplicable respecto del mismo documento
+en papel; es decir, el Art. 97 N° 10 del Código Tributario, contenido
+en el D.L. N° 830, de 1974.
+17)
+El número correlativo de las Boletas de Honorarios electrónicas será
+independiente del número con que se folien los documentos no electrónicos
+del mismo tipo, por lo que es posible que un contribuyente emita
+documentos electrónicos y normales con números idénticos.
+18)
+Derógase la Resolución Ex. N° 62,
+de fecha 24.10.2003.
+Las
+presentes instrucciones entrarán en vigencia a partir de su publicación
+en el Diario Oficial.
+ANÓTESE,
+COMUNÍQUESE Y PUBLÍQUESE EN EXTRACTO.
+(FDO.) JUAN TORO RIVERA
+DIRECTOR
+Lo que transcribo a Ud.,
+para su conocimiento y demás fines.
+DISTRIBUCIÓN
+-
+Al Diario Oficial (en extracto)
+-
+Internet
+- Boletín
+ANEXOS
+- Anexo 1

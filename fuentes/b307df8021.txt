@@ -1,0 +1,58 @@
+URL: https://www.sii.cl/servicios_online/guia-paso_paso-bhe_sin_datos_del_receptor.pdf
+URL final: https://www.sii.cl/servicios_online/guia-paso_paso-bhe_sin_datos_del_receptor.pdf
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+¿A quién va dirigido?
+- Contribuyentes con inicio de ac�vidades de Segunda Categoría, es decir con ingresos por 
+sueldos, honorarios, gra�ﬁcaciones u otros, que estén autorizados por el SII para emi�r 
+boletas de honorarios. 
+ 
+Desde enero de 2021, todas las boletas de honorarios deben ser emi�das en formato 
+electrónico. 
+¿Cuándo se hace el trámite?
+- La emisión de una boleta de honorario electrónica debe realizarse en el mismo 
+momento en que es pagado el servicio profesional, y hasta un máximo de 90 días 
+posterior a dicho pago. 
+SII.CL
+GUÍA PASO A PASO PARA    
+      EMITIR BOLETA DE   
+                HONORARIOS ELECTRÓNICA
+  SIN DATOS DEL RECEPTOR
+Si eliges la segunda opción del paso 4:
+ 
+Selecciona tu dirección, e ingresa los datos de la boleta: fecha, 
+destinatario, detalle y valores de los servicios prestados.
+Luego, presiona “Conﬁrmar emisión”.
+Ingresa a sii.cl, menú Servicios Online, opción 
+“Boletas de Honorarios Electrónicas”. Selecciona “Emisor de boleta de honorarios”.
+En “Emisor boleta de honorarios electrónicas” 
+selecciona la opción “Por contribuyente”.
+Luego, ingresa tu RUT y Clave Tributaria o Clave 
+Única.
+Elige una de las 2 opciones, según tu caso:
+1. “El receptor de la boleta actuará reteniendo el 
+porcentaje vigente de Pago Provisional Mensual”, 
+cuando quien recibe el servicio es el que paga el 
+impuesto.  
+2. “El contribuyente emisor será quien se encargue 
+de la retención del porcentaje vigente de Pago 
+Provisional Mensual”, cuando tu emites la boleta, y 
+pagas el impuesto en el Formulario 29.
+Revisa el borrador de la Boleta. 
+Si los datos son correctos, presiona “Emitir boleta de 
+honorarios electrónica”.
+Se desplegará un mensaje indicando que debes revisar 
+los datos ingresados. 
+Luego, presiona “Aceptar”.
+1
+ 2
+3
+7
+4
+5
+ 6
+Descarga la boleta emi�da en “Ver boleta”. 
+También puedes “Emitir nueva boleta” o “Emitir boleta con 
+prellenado”. 
+8

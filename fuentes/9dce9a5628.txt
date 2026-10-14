@@ -1,0 +1,643 @@
+URL: https://www.sii.cl/ayudas/nuevos_contribuyentes/boleta-honorarios.html
+URL final: https://www.sii.cl/ayudas/nuevos_contribuyentes/boleta-honorarios.html
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+SII | Servicio de Impuestos Internos
+-->
+-->
+-->
+Persona
+Boleta de Honorarios
+Infórmate de todas las etapas que necesitas conocer para emitir
+una
+Persona
+Boleta de Honorarios
+Infórmate de todas las etapas que necesitas conocer para emitir
+una
+-->
+C -->
+Emitir
+Boleta de Honorarios -->
+Características y
+Requisitos
+¿A quién esta dirigido?
+Requisitos
+¿Cuándo se debe entregar una boleta de honorarios?
+¿Cuál es el % de retención en boleta de honorarios?
+×
+¿A quién esta dirigido?
+Contribuyentes con inicio de actividades de Segunda Categoría, es decir con ingresos por sueldos, honorarios, gratificaciones u otros, que estén autorizados por el SII para emitir boletas de honorarios.
+'> ¿A quién esta dirigido?
+×
+Requisitos:
+Contar con Clave Tributaria SII o Clave Única .
+Contribuyentes deben contar con Inicio de Actividades de segunda categoría.
+Ser mayor de 18 años.
+Si eres menor de edad debes tener un representante legal, ya sea el padre o la madre, acreditado con poder notarial, el Inicio de Actividades debe ser realizado por su representante legal.
+Ser persona natural chilena o extranjero con residencia en Chile.
+Siendo extranjero debe tener una cedula de identidad de extranjero y una visa que le faculte para realizar actividades.
+'> Requisitos
+×
+¿Cuándo se debe entregar una boleta de honorarios?
+La emisión de una boleta de honorario electrónica debe realizarse en el mismo momento en que es pagado el servicio profesional.
+'> ¿Cuándo se debe entregar una boleta de honorarios?
+×
+¿Cuál es el % de retención en boleta de honorarios?
+Año
+Aumento Retención
+Total Retención Boleta
+2020
+0,75%
+10,75%
+2021
+0,75%
+11,50%
+2022
+0,75%
+12.25%
+2023
+0,75%
+13%
+2024
+0,75%
+13.75%
+2025
+0,75%
+14.5%
+2026
+0,75%
+15.25%
+2027
+0,75%
+16%
+2028
+1%
+17%
+Más Información
+'> ¿Cuál es el % de retención en boleta de honorarios?
+1
+-->
+Obtención de RUT
+Rol único Tributario (RUT)
+-->
+No necesitas realizar este trámite.
+Para emitir Boleta de Honorarios Electrónica solo necesitas tu cédula de identidad.
+2
+Inicio de Actividades
+Antes de Emitir Boleta de Honorarios Electrónica debes Iniciar Actividades.
+¿Qué es el Inicio de Actividades?
+¿Dónde se hace?
+Información Requerida
+Profesionales
+Extranjeros
+Código de actividad económica
+Capital (No necesita declarar un capital)
+Domicilio
+Datos de Contacto
+Plazo
+×
+¿Qué es el Inicio de Actividades?
+Es el aviso al SII de una entidad que comenzará o comenzó a realizar actividades remuneradas en el país que tiene como objetivo formalizarse ante el SII, obligación señalada en el Código Tributario art. 68
+'> ¿Qué es el Inicio de Actividades?
+×
+¿Dónde se hace?
+El
+Inicio de Actividad
+es una declaración jurada que se formaliza ante el SII y
+se puede realizar 100% por internet, en sii.cl., menú
+Servicios online.
+'> ¿Dónde se hace?
+Información Requerida
+×
+Profesionales:
+Debe contar con el título profesional (o certificado de
+título). Si la profesión aparece en la Cédula de
+Identidad, basta con su presentación.
+Los médicos, veterinarios y odontólogos , independientes,
+esta obligados a presentar su título.
+'> Profesionales
+×
+Extranjeros:
+Además del RUT debe presentar un tipo de Visa que
+lo faculte a realizar Inicio de Actividades como por
+ejemplo, Visa Temporaria.
+'> Extranjeros
+×
+¿Qué es el código de actividad económica?
+Es un sistema numérico que permite agrupar y clasificar las Actividades Económicas que desarrollan las personas y empresas, ejemplo: el código 812100 corresponde a la actividad Limpieza general de edificios.
+¿Cómo saber mi código de actividad económica?
+Puedes revisar el listado de Códigos de Actividad Económica que ejercerás, en el sitio web del SII. Es importante que tengas identificado este código al momento de iniciar actividades.
+Para aquellos contribuyentes que desarrollen su actividad económica en un lugar geográfico sin cobertura de datos móviles o fijos de operadores de telecomunicaciones pueden hacerlo en la unidad.
+'> Código de actividad económica
+Capital (No necesita declarar un capital)
+×
+Domicilio
+Si eres el propietario, se desplegará la(s) propiedades asociadas a su Rut.
+Si no eres el propietario del domicilio, podrás buscar o ingresar el rol de la propiedad e indicar la Calidad de Ocupación, RUT de Propietario y Monto de arriendo si es que es arrendado.
+'> Domicilio
+×
+Datos de Contacto
+Informar correo electrónico
+Teléfono fijo y móvil
+Dirección postal y urbana (Opcional)
+'>Datos de Contacto
+×
+Plazo
+El plazo para dar aviso de inicio de actividades debe ser
+dentro de los dos meses siguientes de su primer acto de
+comercio. Ejemplo: Inicio 12 de enero 2021, el plazo final
+es al 31 de marzo 2021.
+'> Plazo
+3
+Obligaciones Tributarias
+Recuerda mantener actualizados tus datos personales (correo electrónico y teléfono móvil).
+Modificar y Actualizar Información
+¿Cuándo se hace el trámite?
+¿Dónde se hace?
+¿Qué informar?
+Plazo
+Verificación de Actividad
+No necesita realizar este trámite
+Emitir Boleta de Honorarios Electrónica
+Entregar copia impresa o
+digital de
+la boleta al consumidor final o cliente.
+¿Dónde se hace?
+Tipos de Boletas de Honorarios
+Declaración Anual de Impuestos
+Declaración de
+Renta - Formulario 22 (F22)
+¿Dónde se hace?
+Plazo
+Declaración Mensual de Impuestos
+Declaración de
+IVA - Formulario 29 (F29)
+¿Dónde se hace?
+Plazo
+Modificar y Actualizar Información
+×
+Modificar y Actualizar Información
+¿Cuándo se hace el trámite?
+Cuando efectúe alguna modificación a los datos informados
+en el Inicio de Actividades.
+'> ¿Cuándo se hace el trámite?
+×
+Modificar y Actualizar Información
+¿Dónde se hace?
+El trámite se puede realizar por internet, en
+sii.cl., menú Servicios Online, opción
+Actualización de información
+'> ¿Dónde se hace?
+×
+Modificar y Actualizar Información
+¿Qué informar?
+Se debe informar modificaciones relacionadas con cambio de domicilio, agregar actividades económicas, datos de identificación, entre otros.
+'> ¿Qué informar?
+×
+Modificar y Actualizar Información
+Plazo
+El plazo para informar es de dos meses contados desde que
+se efectué la modificación.
+'> Plazo
+Verificación de Actividad
+No necesita realizar este trámite
+Emitir Boleta de Honorarios Electrónica
+Entregar copia impresa o
+digital de
+la boleta al consumidor final o cliente.
+×
+Emitir Boleta de Honorarios Electrónica
+¿Dónde se hace?
+El trámite se debe realizar por internet, en sii.cl, Servicios Online, menú Boleta de Honorarios Electrónica, opción “ Emisor de boleta de honorarios ”, o a través de App “e-honorarios”, disponible para dispositivos Android, Huawei e IOS.
+'> ¿Dónde se hace?
+×
+Emitir Boleta de Honorarios Electrónica
+Tipos de Boletas de Honorarios
+Con Retención:
+El receptor de la boleta, principalmente una empresa, retiene el pago provisional mensual y lo declara y paga a través del Formulario 29. Por ejemplo:
+El año 2022 la retención es de un 12,25% del valor total, es decir, si la prestación es de $10.000, la retención es de $1.225 y el valor liquido que le pagarán es de $8.775".
+Las tasas de retención aumentarán gradualmente cada año hasta llegar a 17% el año 2028.
+Sin Retención:
+El emisor de la boleta, es decir la persona que presta el servicio, es quien debe declarar y pagar a través del Formulario 29 su pago provisional mensual, ya que el receptor no es una empresa. Por ejemplo:
+El año 2022 la retención es de un 12,25% del valor total, es decir, si la prestación es de $10.000, el valor liquido que le pagarán es de $10.000, pero los $1.225 los deberá declarar y pagar en el formulario 29 en sii.cl". Las tasas de retención aumentarán gradualmente cada año hasta llegar a 17% el año 2028.
+Más información
+'> Tipos de Boletas de Honorarios
+Declaración Anual de Impuestos
+Declaración de
+Renta - Formulario 22 (F22)
+×
+Declaración de Renta - Formulario 22 (F22)
+¿Dónde se hace?
+El trámite se debe realizar por internet en sii.cl, Servicios Online, menú Declaración de Renta, opción Declarar Renta (F22) , o a través de la Apps e- Renta, disponible para App Store, Android y App Gallery.
+'> ¿Dónde se hace?
+×
+Declaración Anual de Impuestos
+Plazo
+Del 01 al 30 de abril de cada año y se declaran las rentas obtenidas durante el año anterior
+Ejemplo, en abril del año 2021 se declaran las rentas correspondientes al período enero/diciembre 2020.
+'> Plazo
+Declaración Mensual de Impuestos
+Declaración de
+IVA - Formulario 29 (F29)
+×
+Declaración de IVA - Formulario 29 (F29)
+¿Dónde se hace?
+Declare sus Impuestos mensuales F29 por internet en sii.cl, menú Servicios online.
+Además podrá corregir o rectificar la declaración y realizar consultas integrales de fiscalización.
+'> ¿Dónde se hace?
+×
+Declaración de IVA - Formulario 29 (F29)
+Plazo
+El 20 del mes siguiente al periodo tributario que se desea declarar.
+Sin movimiento y sin pago, el día 28 del mes siguiente al período tributario que se desea declarar.
+'> Plazo
+4
+Solicitud y Avisos Varios
+Realizar y consultar peticiones
+administrativas y
+condonación de intereses y multas.
+Peticiones Administrativas y otras Solicitudes
+¿Qué es una petición administrativa?
+¿Quién la puede presentar?
+¿Dónde se hace?
+Condonación de Intereses y Multas
+¿Qué es este trámite?
+¿Cuándo se hace?
+¿Dónde se hace?
+Peticiones Administrativas y otras Solicitudes
+×
+Peticiones Administrativas y otras Solicitudes
+¿Qué es una petición administrativa?
+Son todas aquellas solicitudes o comunicaciones de los contribuyentes o mandatarios, que requieren por parte del SII una respuesta o acción.
+'> ¿Qué es una petición administrativa?
+×
+Peticiones Administrativas y otras Solicitudes
+¿Quién la puede presentar?
+La petición administrativa puede ser presentada por un contribuyente persona natural, jurídica y/o un representante legal.
+'> ¿Quién la puede presentar?
+×
+Peticiones Administrativas y otras Solicitudes
+¿Dónde se hace?
+Puede realizar una petición administrativa, solicitud o
+consulta 100% por internet, en sii.cl., opción " Ingresar petición administrativa y otras solicitudes ".
+'> ¿Dónde se hace?
+Condonación de Intereses y Multas
+×
+Condonación de Intereses y Multas
+¿Qué es este trámite?
+Es un derecho que tiene todo contribuyente, el que
+consiste en solicitar a la Autoridad Competente la
+condonación de intereses y multas, originadas por
+infracciones tributarias, diferencias de impuestos no
+declarados y/o no pagados por los contribuyentes.
+'> ¿Qué es este trámite?
+×
+Condonación de Intereses y Multas
+¿Cuándo se hace?
+La condonación operará al momento de emitirse el giro,
+siempre que exista una solicitud de parte del
+contribuyente.
+'> ¿Cuándo se hace?
+×
+Condonación de Intereses y Multas
+¿Dónde se hace?
+Para realizar este trámite y acceder a condonaciones automáticas, puede presentar esta solicitud a
+través de nuestra página web, Menú Servicios Online, opción Impuestos Mensuales,
+seleccionar Consulta y Pagar Giros , ingresar Rut y Clave.
+Luego, ingresar el periodo y folio del giro emitido. El giro respectivo se visualizará con la
+condonación asignada sobre las multas e intereses, debiendo optar por pagar giro en línea.
+En caso que no pueda acceder a internet, puede dirigirse a la oficina del SII más cercana a su domicilio,
+presentar Formulario N°2667 y solicitar al Director Regional, Director de Grandes Contribuyentes o Subdirector
+de Fiscalización, la condonación de intereses y multas
+'> ¿Dónde se hace?
+5
+Término de Giro
+Para realizar el cese o término de
+su
+actividad económica.
+¿Qué es el Término de Giro?
+¿Dónde se hace?
+×
+Término de Giro
+¿Qué es el Término de Giro?
+El Término de Giro lo deben realizar todas aquellas personas naturales que realicen cualquier oficio, profesión u ocupación lucrativa en forma independiente entregando Boleta de Honorarios electrónicas y que necesitan finalizar su actividad.
+Corresponde al aviso que deben efectuar al SII, por el término de sus actividades.
+'> ¿Qué es el Término de Giro?
+×
+Término de Giro
+¿Dónde se hace?**
+Si requiere formalizar el Término de Giro lo debe realizar por internet, en sii.cl, menú Servicios Online.
+'> ¿Dónde se hace?
+×
+¿A quién esta dirigido?
+Contribuyentes con inicio de actividades de Segunda Categoría, es decir con ingresos
+por
+sueldos, honorarios, gratificaciones u otros, que estén autorizados por el SII para
+emitir
+boletas de honorarios.
+×
+Requisitos:
+Contar con Clave Tributaria SII o Clave Única .
+Contribuyentes deben contar con Inicio de Actividades de segunda categoría.
+Ser mayor de 18 años.
+Si eres menor de edad debes tener un representante legal, ya sea el padre o la
+madre,
+acreditado con poder notarial, el Inicio de Actividades debe ser realizado por
+su
+representante legal.
+Ser persona natural chilena o extranjero con residencia en Chile.
+Siendo extranjero debe tener una cedula de identidad de extranjero y una visa
+que le
+faculte para realizar actividades.
+×
+¿Cuándo se debe entregar una boleta de
+honorarios?
+La emisión de una boleta de honorario electrónica debe realizarse en el mismo
+momento en que
+es pagado el servicio profesional, y hasta un máximo de 90 días posterior a dicho
+pago.
+×
+¿Cuál es el % de retención en boleta de
+honorarios?
+Año
+Aumento Retención
+Total Retención Boleta
+2020
+0,75%
+10,75%
+2021
+0,75%
+11,50%
+2022
+0,75%
+12.25%
+2023
+0,75%
+13%
+2024
+0,75%
+13.75%
+2025
+0,75%
+14.5%
+2026
+0,75%
+15.25%
+2027
+0,75%
+16%
+2028
+1%
+17%
+Más Información
+×
+Rol único Tributario (RUT)
+No necesitas realizar este trámite.
+Para emitir Boleta de Honorarios Electrónica solo necesitas tu cédula de identidad.
+×
+¿Dónde se hace?
+El Inicio de Actividad es una declaración
+jurada que se
+formaliza ante el SII y
+se puede realizar 100% por internet, en sii.cl., menú
+Servicios online.
+×
+¿Qué es el código de actividad económica?
+Es un sistema numérico que permite agrupar y clasificar las Actividades Económicas que
+desarrollan las personas y empresas, ejemplo: el código 812100 corresponde a la
+actividad
+Limpieza general de edificios.
+¿Cómo saber mi código de actividad económica?
+Puedes revisar el listado de Códigos de Actividad
+Económica que
+ejercerás, en el sitio web del SII. Es importante que tengas identificado este
+código al
+momento de iniciar actividades.
+Para aquellos contribuyentes que desarrollen su actividad económica en un lugar
+geográfico
+sin cobertura de datos móviles o fijos de operadores de telecomunicaciones pueden
+hacerlo en
+la unidad.
+×
+Profesionales:
+Debe contar con el título profesional (o certificado de
+título). Si la profesión aparece en la Cédula de
+Identidad, basta con su presentación.
+Los médicos, veterinarios y odontólogos , independientes,
+esta obligados a presentar su título.
+×
+Extranjeros:
+Además del RUT debe presentar un tipo de Visa que
+lo faculte a realizar Inicio de Actividades como por
+ejemplo, Visa Temporaria.
+×
+Datos de Contacto
+Informar correo electrónico
+Teléfono fijo y móvil
+Dirección postal y urbana (Opcional)
+×
+Domicilio
+Si eres el propietario, se desplegará la(s) propiedades asociadas a su Rut.
+Si no eres el propietario del domicilio, podrás buscar o ingresar el rol de la
+propiedad
+e indicar la Calidad de Ocupación, RUT de Propietario y Monto de arriendo si es
+que es
+arrendado.
+×
+Plazo
+El plazo para dar aviso de inicio de actividades debe ser
+dentro de los dos meses siguientes de su primer acto de
+comercio. Ejemplo: primer acto comercial el 12 de enero 2021, el plazo final es al
+31 de
+marzo 2021.
+×
+¿Qué es el Inicio de Actividades?
+Es el aviso al SII de una entidad que comenzará o comenzó a realizar actividades
+remuneradas
+en el país que tiene como objetivo formalizarse ante el SII, obligación señalada en
+el Código
+Tributario art. 68
+×
+Modificar y Actualizar
+Información
+¿Cuándo se hace el trámite?
+Cuando efectúe alguna modificación a los datos informados
+en el Inicio de Actividades.
+×
+Modificar y Actualizar
+Información
+¿Dónde se hace?
+El trámite se puede realizar por internet, en
+sii.cl., menú Servicios Online, opción Actualización de
+información
+×
+Modificar y Actualizar
+Información
+¿Qué informar?
+Se debe informar modificaciones relacionadas con cambio de domicilio, agregar
+actividades
+económicas, datos de identificación, entre otros.
+×
+Modificar y Actualizar
+Información
+Plazo
+El plazo para informar es de dos meses contados desde que
+se efectué la modificación.
+×
+Emitir Boleta de Honorarios
+Electrónica
+¿Dónde se hace?
+El trámite se debe realizar por internet, en sii.cl, Servicios Online, menú Boleta de
+Honorarios Electrónica, opción “ Emisor
+de boleta de honorarios ”, o a través de App “e-honorarios”,
+disponible para dispositivos Android, Huawei e IOS.
+×
+Emitir Boleta de Honorarios
+Electrónica
+Tipos de Boletas de Honorarios
+Con Retención:
+El receptor de la boleta, principalmente una empresa, retiene el pago provisional
+mensual y
+lo declara y paga a través del Formulario 29. Por ejemplo:
+El año 2022 la retención es de un 12,25% del valor total, es decir, si la prestación
+es de
+$10.000, la retención es de $1.225 y el valor liquido que le pagarán es de
+$8.775".
+Las tasas de retención aumentarán gradualmente cada año hasta llegar a 17% el año
+2028.
+Sin Retención:
+El emisor de la boleta, es decir la persona que presta el servicio, es quien debe
+declarar y
+pagar a través del Formulario 29 su pago provisional mensual, ya que el receptor no
+es una
+empresa. Por ejemplo:
+El año 2022 la retención es de un 12,25% del valor total, es decir, si la prestación
+es de
+$10.000, el valor liquido que le pagarán es de $10.000, pero los $1.225 los deberá
+declarar y
+pagar en el formulario 29 en sii.cl". Las tasas de retención aumentarán gradualmente
+cada año
+hasta llegar a 17% el año 2028.
+Más
+información
+×
+Declaración de Renta -
+Formulario 22
+(F22)
+¿Dónde se hace?
+El trámite se debe realizar por internet en sii.cl, Servicios Online, menú
+Declaración de
+Renta, opción Declarar Renta (F22) , o a través de la Apps e- Renta,
+disponible para
+App Store, Android y App Gallery.
+×
+Declaración de Renta -
+Formulario 22
+(F22)
+Plazo
+Del 01 al 30 de abril de cada año y se declaran las rentas obtenidas durante el
+año
+anterior
+Ejemplo, en abril del año 2021 se declaran las rentas correspondientes al
+período
+enero/diciembre 2020.
+×
+Declaración de IVA -
+Formulario 29
+(F29)
+¿Dónde se hace?
+Declare sus Impuestos mensuales F29 por internet en sii.cl,
+menú
+Servicios online.
+Además podrá corregir o rectificar la declaración y
+realizar
+consultas integrales de fiscalización.
+×
+Declaración de IVA -
+Formulario 29
+(F29)
+Plazo
+El 20 del mes siguiente al periodo tributario que se desea
+declarar.
+Sin movimiento y sin pago, el día 28 del mes siguiente al
+período
+tributario que se desea declarar.
+×
+Peticiones Administrativas y
+otras
+Solicitudes
+¿Qué es una petición administrativa?
+Son todas aquellas solicitudes o comunicaciones de los contribuyentes o mandatarios,
+que
+requieren por
+parte del SII una respuesta o acción.
+×
+Peticiones Administrativas y
+otras
+Solicitudes
+¿Dónde se hace?
+Puede realizar una petición administrativa, solicitud o
+consulta 100% por internet, en sii.cl., opción " Ingresar petición
+administrativa y otras solicitudes ".
+×
+Peticiones Administrativas y
+otras
+Solicitudes
+¿Quién la puede presentar?
+La petición administrativa puede ser presentada por un contribuyente persona natural,
+jurídica y/o un representante legal.
+×
+Condonación de Intereses y
+Multas
+¿Qué es este trámite?
+Es un derecho que tiene todo contribuyente, el que
+consiste en solicitar a la Autoridad Competente la
+condonación de intereses y multas, originadas por
+infracciones tributarias, diferencias de impuestos no
+declarados y/o no pagados por los contribuyentes.
+×
+Condonación de Intereses y
+Multas
+¿Cuándo se hace?
+La condonación operará al momento de emitirse el giro,
+siempre que exista una solicitud de parte del
+contribuyente.
+×
+Condonación de Intereses y
+Multas
+¿Dónde se hace?
+Para realizar este trámite y acceder a condonaciones automáticas,
+puede presentar esta solicitud a
+través de nuestra página web, Menú Servicios Online,
+opción Impuestos Mensuales,
+seleccionar Consulta y Pagar Giros , ingresar Rut y Clave.
+Luego, ingresar el periodo y folio del giro emitido. El giro respectivo se
+visualizará con la
+condonación asignada sobre las multas e intereses, debiendo optar por
+pagar giro en línea.
+En caso que no pueda acceder a internet, puede dirigirse a la oficina del SII
+más cercana a su domicilio,
+presentar Formulario N°2667 y solicitar al Director Regional, Director de
+Grandes Contribuyentes o Subdirector
+de Fiscalización, la condonación de intereses y multas
+×
+Término de Giro
+¿Qué es el Término de Giro?
+El Término de Giro lo deben realizar todas
+aquellas
+personas naturales que realicen cualquier oficio, profesión u ocupación lucrativa en
+forma
+independiente entregando Boleta de Honorarios electrónicas y que necesitan finalizar
+su
+actividad.
+Corresponde al aviso que deben efectuar al SII, por el
+término de
+sus actividades.
+×
+Término de Giro
+¿Dónde se hace?
+Si requiere formalizar el Término de
+Giro
+lo debe realizar por internet, en sii.cl, menú Servicios Online.
+VOLVER

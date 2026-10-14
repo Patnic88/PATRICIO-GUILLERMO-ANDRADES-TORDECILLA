@@ -1,0 +1,16 @@
+URL: https://www.sii.cl/boleta_honorarios/delegar.htm
+URL final: https://www.sii.cl/boleta_honorarios/delegar.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+DELEGAR EMISION DE BOLETAS
+DELEGAR EMISION DE
+BOLETA DE HONORARIOS ELECTRONICA
+En esta página encontrará las opciones necesarias para delegar a un
+tercero la emisión de sus boletas de honorarios electrónicas, o bien, para revocar estas
+autorizaciones cuando usted lo desee.
+Autorizar
+o revocar a un usuario aurtorizado
+En esta
+opción los contribuyentes podrán autorizar o revocar la
+autorización a un usuario para que emita boletas en su nombre.

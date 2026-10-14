@@ -1,0 +1,189 @@
+URL: https://www.sii.cl/como_se_hace_para/boletas/emitir_prestacion_boletas_servicios_tercero.pdf
+URL final: https://www.sii.cl/como_se_hace_para/boletas/emitir_prestacion_boletas_servicios_tercero.pdf
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+ 
+ 
+  
+  
+  
+  
+  
+1. ¿Qué es este trámite?  
+Es la emisión de Boletas de Prestación de Servicios de Terceros Electrónicas, realizada por contribuyentes de 1° 
+categoría obligados a llevar contabilidad, a personas naturales, chilenas o extranjeras con residencia, que realizan 
+actividades clasificadas como Lucrativas, definidas en el Artículo 42, N° 2 de la Ley sobre Impuesto a la Renta, quienes 
+se encuentran imposibilitadas de emitir sus propias Boletas de Honorarios.  
+  
+2. ¿Quiénes deben realizar este trámite?  
+Los contribuyentes de 1° categoría, como comerciantes, industrias, cooperativas, empresas del estado, sean personas 
+naturales o jurídicas obligados a llevar contabilidad, que contraten servicios prestados por personas naturales del 
+Artículo 42 Nº 2 de la Ley de la Renta.  
+  
+3. ¿Cuándo se hace este trámite?  
+Toda vez que el contribuyente habilitado para emitir este tipo de documentos electrónicos, reciba un servicio prestado 
+por personas imposibilitadas de emitir sus propias Boletas de Honorarios.  
+  
+4. ¿Dónde se hace este trámite?  
+Nuestra página Web: El trámite se hace en línea para emisores individuales, siguiendo la ruta Servicios Online, Boletas 
+de Honorarios Electrónicas, Boletas de Prestación de Servicios de Terceros Electrónicas, Emitir Boletas de Terceros 
+Electrónica por contribuyente, autenticarse con RUT y clave tributaria, emitir el documento solicitado según se señala 
+en el Paso a Paso del numeral 7.1 sobre Emisor Electrónico Individual.  
+  
+Software Propio: Los emisores masivos también pueden emitir Bol etas de Servicios a Terceros Electrónicas, previo a 
+solicitar autorización ante nuestro Servicio, según Paso a Paso del numeral 7.2 sobre Emisor Electrónico Masivo.  
+  
+Tipo de Emisor Electrónico:  
+  
+La emisión de este tipo de boletas se podrá efectuar a través de dos métodos, que deberán utilizarse de acuerdo a las 
+necesidades y volúmenes de emisión de los contribuyentes.  
+Para ello se distinguen dos tipos de emisores:  
+- Emisor individual: Emitirá documentos uno a uno a través de la aplicación computacional puesta a disposición 
+de los contribuyentes en el sitio web de este Servicio.  
+- Emisor masivo: Operará previa autorización otorgada por el SII mediante Resolución (Respuesta ante Petición 
+Administrativa mediante formulario 2117).  
+Esta forma de emisión est á indicada para contribuyentes que reciben servicios de una gran cantidad de 
+personas, cuya remuneración se documenta con Boletas de Prestación de Servicios de Terceros Electrónicas.  
+  
+  
+  
+  
+  
+5. Requisitos para efectuar el trámite  
+  
+  
+5.1 Requisitos copulativos para el Emisor Electrónico individual o masivo:  
+  
+- Contar con Inicio de Actividades en primera categoría, con giro relacionados al comercio, industria, 
+cooperativas, empresas del estado, sean personas naturales o jurídicas obligados a llevar 
+contabilidad.  
+- No registrar anotaciones negativas en nuestras bases.  
+- Emitir las respectivas Boletas Electrónicas a personas que prestaron un servicio calificado como 
+actividad lucrativa, del Artículo 42° N° 2 de la Ley sobre Impuesto a la Renta.  
+- Que las personas que presten sus servicios, se encuentren imposibilitadas de emitir sus propias 
+Boletas de Honorarios.  
+  
+  
+5.2 Requisitos de Boletas de Prestación de Servicios de Terceros Electrónicas.  
+  
+- Numeración independiente a las boletas en papel y en forma correlativa, desde el uno al infinito.  
+- Indicar los siguientes datos del emisor: Nombre completo o razón social, actividades o giros, 
+número de RUT, domicilio de la casa matriz.  
+- Datos del receptor: Nombre completo, número de RUT y domicilio.  
+- Fecha de la Boleta y texto que detalla la naturaleza de la prestación del servicio.  
+- Valor de la prestación del servicio, porcentaje (11,5%) y monto retenido, total líquido a pagar.  
+- Cada boleta tendrá un código de barra único e irrepetible que contiene los prin cipales datos del 
+documento en cuestión.  
+- En cada boleta deberá ir indicada la fecha y hora de emisión del documento.  
+- Deberá destacarse que se trata de una “Boleta de Prestación de Servicios de Terceros Electrónica".  
+- Mayor información la puede obtener en Circular N°21 de 1991 y Resolución Exenta N°112 de 2004.  
+  
+  
+  
+6. Formularios relacionados al trámite  
+Formulario N°2117 sobre Peticiones administrativas, para emisores masivos de Boletas de Prestación de Servicios de 
+Terceros Electrónicas.  
+  
+  
+  
+  
+  
+  
+7. Descripción paso a paso para emitir Boletas de Prestación de 
+Servicios de Terceros Electrónicas.  
+  
+7.1 Emisor Electrónico Individual  
+  
+ Ingresar a sii.cl, Servicios Online, menú Boletas de Honorarios Electrónicas, sub menú Boletas de Prestación  
+1  de Servicios de Terceros Electrónicas, opción Emisión de Boletas de Terceros por contribuyente.  
+  
+ 
+  
+2  Autenticarse con Rut y Clave Tributaria del SII.  
+  
+ 
+  
+3  Ingresar datos del Receptor de la Boleta de Prestación de Servicios de Terceros Electrónica, montos totales y detalle de la prestación del servicio.  
+  
+ 
+    
+ Una vez que los datos se encuentren bien ingresados, elegir opción continuar y luego emitir boleta.  
+4  Se generará un PDF, que se podrá visualizar gráficamente y contará con todos los antecedentes ya mencionados.  
+  
+  
+ 
+  
+  
+  
+  
+Puede 
+  
+enviar 
+  
+archivo 
+  
+PDF 
+  
+al 
+  
+receptor 
+  
+vía 
+  
+email 
+  
+o 
+  
+imprimir 
+  
+copia 
+  
+para 
+  
+ser 
+  
+entregada 
+  
+a 
+  
+la 
+  
+persona 
+  
+que 
+  
+prestó  
+el 
+  
+servicio. 
+  
+5 
+  
+  
+  
+7.2 Emisor Electrónico Masivo  
+  
+ Solicitud mediante formulario N°2117.  
+La solicitud debe realizarla en la Oficina correspondiente al domicilio principal del contribuyente solicitante 
+o vía online.  
+Oficina: Presentarse el propio contribuyente, Representante(s) Legal (es) de la empresa o un mandatario 
+autorizado con poder notarial, más Formulario N°2117 solicitando autorización para emitir en forma  
+1  masiva Boletas de Servicio a Terceros Electrónicas y antecedentes de respaldo.  Mayor información sobre comparecencia en Circular N° 54 del año 2002.  
+En línea: Autenticarse con RUT y Clave Tributaria del contribuyente solicitante, seguir la siguiente ruta:  
+Menú Servicios Online, Sub Menú Solicitudes y Actualización de la Información, opción Peticiones  
+Administrativas, ingresar Petición para emitir en forma masiva Boletas de Servicio a Terceros Electrónicas. 
+Si no cuenta con Clave Tributaria, seguir las indicaciones de nuestro link de Ayudas, Cómo se Hace Para, 
+Obtener Clave Tributaria.  
+  
+ 
+    
+2  El Servicio enviará respuesta mediante Resolución al contribuyente solicitante de la petición, la que puede ser ha lugar o no ha lugar, según los antecedentes presentados por el interesado.  
+  
+ 
+  
+3  Cabe mencionar que, para emitir este tipo de documentos en forma masiva, el contribuyente debe contar con un software propio.  
+ 
+    
+4  La emisión propiamente tal de los documentos, dependerá exclusivamente del tipo de Software con el que cuente el contribuyente.  
+ 

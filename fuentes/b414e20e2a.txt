@@ -1,0 +1,99 @@
+URL: https://www.sii.cl/servicios_online/guia_bhe_sin_datos_del_receptor.pdf
+URL final: https://www.sii.cl/servicios_online/guia_bhe_sin_datos_del_receptor.pdf
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+INFÓRMATE WWW.SII.CL IMPUESTOSINTERNOSCHILE @SII_CHILE
+EMITIR BOLETAS DE 
+HONORARIOS ELECTRÓNICA 
+SIN DATOS DEL RECEPTOR
+GUÍA DE AYUDA
+Documento que deben emitir los contribuyentes
+con Inicio de Actividades de segunda categoría
+por los servicios que prestan, y que han decidido
+retener el porcentaje correspondiente al Pago
+Provisional Mensual por su cuenta.
+01
+¿Quiénes deben realizar este trámite?
+• Contribuyentes con Inicio de Actividades de
+segunda categoría: profesionales, sociedad de
+profesionales y personas que desarrollen
+ocupaciones lucrativas.
+• Contribuyentes que deciden retener el porcentaje
+vigente de Pago Provisional Mensual por su
+cuenta.
+¿Dónde se hace este trámite?
+• A través de la página web del Servicio Impuestos
+Internos, sección Servicios online, menú Boleta de
+Honorarios Electrónica, opción Emisor de Boleta
+Electrónica y Emitir boleta de honorarios
+electrónica.
+¿Cuándo se hace este trámite?
+• Cuando el contribuyente preste un servicio que
+necesite la emisión de una Boleta de Honorarios.
+Requisitos para efectuar el trámite
+• Contar con Inicio de Actividades de segunda
+categoría.
+• Realizar actividades gravadas por el art. 42, N° 2,
+o en el artículo 48, de la Ley sobre Impuesto a la
+Renta.
+• No tener situaciones pendientes con el SII que
+restrinjan la emisión de boletas de honorarios.
+• Contar con una Clave Tributaria, Clave Única o
+Certificado Digital, que permita acceder a las
+aplicaciones del SII.
+
+INFÓRMATE WWW.SII.CL IMPUESTOSINTERNOSCHILE @SII_CHILE
+02
+Paso a Paso
+Emitir boletas de honorarios electrónica sin datos del receptor
+Foto pantalla Foto pantalla 
+Foto pantalla 
+2 INGRESO 3 SELECCIÓN DE MENÚ
+SELECCIÓN DE OPCIÓN4 AUTENTICACIÓN5
+Foto pantalla 
+• Seleccione “Emisor de boleta de honorarios”.
+• Para la autenticación ingresar RUT y Clave
+Tributaria, Clave Única o Certificado Digital.
+• En “Emisor boleta de honorarios electrónicas”,
+seleccione la opción “Por contribuyente”.
+• Ingrese a www.sii.cl, menú Servicios Online, opción
+“Boletas de Honorarios Electrónicas”.
+
+INFÓRMATE WWW.SII.CL IMPUESTOSINTERNOSCHILE @SII_CHILE
+03
+Paso a Paso
+Emitir boletas de honorarios electrónica sin datos del receptor
+Foto pantalla Foto pantalla 
+Foto pantalla 
+5 SELECCIÓN DE OPCIÓN 6 INGRESO DE DATOS
+CONFIRMACIÓN7 VERIFICACIÓN DE DATOS8
+Foto pantalla 
+• Seleccione su dirección e ingrese los datos
+obligatorios: fecha, el detalle y los valores de los
+servicios prestados.
+• Luego, presione “Confirmar emisión”.
+• Si realiza más de cuatro prestaciones, seleccione el
+botón “más prestaciones” para agregar más.
+• Revise el borrador de la Boleta. Si los datos son
+correctos, presione “Emitir boleta de honorarios
+electrónica”.
+• Revise los datos ingresados, si están correctos
+presione “Aceptar”.
+• Visualizará dos opciones, según su caso elija:
+OPCIÓN 2:
+“El contribuyente emisor será quien se encargue de la
+retención del porcentaje vigente de Pago Provisional
+Mensual”, cuando usted emite la boleta y paga el
+impuesto en el Formulario 29.
+INFÓRMATE WWW.SII.CL IMPUESTOSINTERNOSCHILE @SII_CHILE
+04
+Paso a Paso
+Emitir boletas de honorarios electrónica sin datos del receptor
+Foto pantalla 
+9 DOCUMENTO EMITIDO
+• Descargue la boleta emitida en “Ver boleta”.
+• También tiene la opción de “Emitir nueva boleta” o
+emitir otra boleta utilizando la opción “Emitir
+boleta con prellenado”.
+F13522025 – SDAC / Junio 2025 

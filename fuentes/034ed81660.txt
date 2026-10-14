@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1125.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1125.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cómo puedo emitir una boleta de honorarios electrónica?
+¿Puede enviarse una Boleta de Honorarios Electrónica a algún cliente por e-mail?
+ID: 001.120.1125.008
+Fecha de creación: 17/03/2004
+Fecha de actualización: 11/12/2024
+Sí, una Boleta de Honorarios Electrónica puede ser enviada a un cliente por e-mail, ya que al ser generado este documento tributario exitosamente, será el mismo sistema el que entregará dos opciones: "imprimir para entregar" y "enviar la boleta vía e-mail o correo electrónico". A partir de la opción “enviar”, el sistema generará un correo electrónico dirigido al destinatario o receptor de la boleta y, al mismo tiempo, será adjuntada la boleta emitida como archivo atachado en formato pdf.
+Normativa Relacionada
+Ver más

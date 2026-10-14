@@ -1,0 +1,18 @@
+URL: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_3611.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_3611.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Declaración de renta / Rentas de Segunda Categoría por Honorarios / Retenciones
+¿Cómo se determina la tasa provisional de retención en una Boleta de Honorarios Electrónica?
+ID: 001.140.3611.013
+Fecha de creación: 11/11/2005
+Fecha de actualización: 08/04/2026
+La determinación de la tasa provisional de retención de una Boleta de Honorarios Electrónica será en función de la tasa vigente en el año comercial respectivo, ya que ésta irá en aumento año a año hasta el 2028.
+Para el año comercial 2026, será:
+Sobre el monto bruto de los honorarios pactados se calcula el 15,25%, que es el valor para retener.
+Si lo pactado corresponde al monto líquido de los honorarios, se debe dividir este valor por 0,08475 para obtener el monto bruto.
+Normativa Relacionada
+Ver más

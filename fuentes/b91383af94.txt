@@ -1,0 +1,19 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1040.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1040.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Delegar emisión a un usuario autorizado / Autorizar emisión de boletas de honorarios electrónicas a terceros
+¿La autorización para que terceros emitan Boletas de Honorarios Electrónicas, a través de su propia Clave Tributaria, tiene esa única función?
+ID: 001.120.1040.009
+Fecha de creación: 03/03/2004
+Fecha de actualización: 23/04/2025
+Sí, la autorización que otorga un profesional a través del sitio Web del SII, sección Servicios online, Boletas de Honorarios Electrónicas, Emisor de boletas de honorarios, Delegar emisión a un usuario autorizado, opción Autorizar o revocar a un usuario autorizado, ha sido implementada sólo para que terceras personas emitan este tipo de documentación tributaria. El usuario autorizado, al poder ingresar con su propia clave, no debe utilizar la Clave Tributaria del contribuyente que lo autorizó, por tanto, sólo podrá emitir Boletas de Honorarios Electrónicas.
+Los requisitos que deberán cumplir las personas para poder ser usuarios autorizados y emitir los documentos en cuestión, son los siguientes:
+Contar con una Clave Tributaria propia para ingresar al sitio web del SII (www.sii.cl).
+Poseer, previamente, la autorización del contribuyente emisor para realizar esta operación.
+El período de vigencia de los usuarios habilitados será de un año, a partir de la fecha en que haya sido cursada la autorización.
+Normativa Relacionada
+Ver más

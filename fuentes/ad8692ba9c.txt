@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1935.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1935.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Confirmar o rechazar anulación por receptor de boletas de honorarios electrónicas
+¿Qué se debe hacer para confirmar la anulación de una Boleta de Honorarios Electrónica por Internet?
+ID: 001.120.1935.005
+Fecha de creación: 19/10/2004
+Fecha de actualización: 23/04/2025
+Para confirmar la anulación de una Boleta de Honorarios Electrónica, se debe ingresar al sitio Web del SII, sección Servicios online, Boletas de honorarios electrónicas, Emisor de boleta de honorarios, Consultas sobre boletas de honorarios electrónicas, opción Consultar boletas emitidas. Para ello, seleccione la Consulta Mensual o Diaria de Boletas Emitidas y desde allí verifique la anulación del documento respectivo.
+Normativa Relacionada
+Ver más

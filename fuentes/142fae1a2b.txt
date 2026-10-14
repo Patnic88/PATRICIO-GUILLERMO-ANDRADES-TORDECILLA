@@ -1,0 +1,272 @@
+URL: https://www.sii.cl/como_se_hace_para/boletas/guia_emitir_bhe.htm
+URL final: https://www.sii.cl/como_se_hace_para/boletas/guia_emitir_bhe.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Emitir Boletas de Honorarios
+¿Cómo se
+hace para...?
+EMITIR BOLETAS DE HONORARIOS
+Importante:
+esta información que entrega el Servicio de Impuestos Internos, es
+sólo una guía de apoyo para los contribuyentes. Es deber de todo
+contribuyente leer la normativa
+vigente del SII.
+Presione
+la imagen " Versión Imprimible" para obtener una
+versión del documento en formato pdf listo para la
+impresión.
+Versión
+Imprimible
+Bajar
+Adobe® Reader®
+Si usted no tiene
+instalado el Software Acrobat Readers presione la imagen " Bajar
+Adobe Reader".
+1. Descripción
+del trámite paso
+a paso
+2. ¿A qué se refiere este trámite?
+3. ¿Quiénes deben realizar este trámite?
+4. ¿Cuándo se hace este trámite?
+5. ¿Dónde se hace este trámite?
+6. Requisitos para efectuar el trámite
+7. Observaciones
+8. Normativa relacionada al trámite
+9. Preguntas frecuentes del trámite
+10. Formularios relacionados al trámite
+1.-
+Descripción del trámite paso a paso
+Para acceder a la
+descripción del trámite paso a paso para emitir Boletas de Honorarios
+Electrónica, seleccione aquí.
+Para acceder a la
+descripción del trámite paso a paso para otorgar Boletas de
+Honorarios, en papel, seleccione aquí.
+2.
+¿A qué se refiere este trámite?
+Los contribuyentes con Inicio
+de Actividades de segunda categoría, profesionales, sociedad de
+profesionales y personas que desarrollen ocupaciones lucrativas, deben
+otorgar boletas de honorarios por los servicios que por su actividad
+generen.
+Subir
+3. ¿Quiénes deben realizar
+este trámite?
+Este
+trámite lo pueden realizar los contribuyentes con
+inicio de actividades en la Segunda Categoría de la Ley sobre Impuesto
+a la Renta que estén autorizados por el SII para emitir este tipo de
+documentos, ya sea electrónicos o
+en papel.
+Subir
+4.
+¿Cuándo se hace este trámite?
+Este trámite se hace en
+la medida que el contribuyente requiera emitir Boletas de Honorarios.
+Subir
+5.
+¿Dónde se hace este trámite?
+Este trámite lo puede
+hacer:
+- Por internet, en el
+sitio web del SII, www.sii.cl , sección
+Boleta de Honorarios Electrónica, opción Emitir
+boletas , considerando
+las siguientes formas:
+Por contribuyente
+Por contribuyente con
+datos usados anteriormente
+Por usuario autorizado
+Por usuario autorizado
+con datos usados anteriormente
+Esta opción permite emitir en línea
+estos
+documentos sin tener que mandar a hacer previamente talonarios a una
+imprenta, ni llenar y presentar formulario de timbraje en la Unidad del
+SII para su respectiva autorización.
+- Por papel, en este caso
+las puede emitir en el lugar que estime el contribuyente, en un
+talonario impreso para ello, timbrado por el SII.
+Subir
+6.
+Requisitos para efectuar el trámite
+Los requisitos para
+emitir este tipo de documentos son los siguientes:
+A.- Por Internet:
+Haber dado aviso de Inicio de
+Actividades de segunda categoría ante el SII.
+Realizar actividades gravadas por el
+art. 42, N° 2, de la Ley
+sobre Impuesto a la Renta .
+No registrar anotaciones negativas en
+el sistema del SII que restrinjan el timbraje de boletas de
+honorarios.
+Contar con una Clave Secreta que
+permita acceder a las aplicaciones dispuestas para los
+contribuyentes en la Oficina Virtual del SII.
+B.- Por papel:
+Haber dado aviso de Inicio de
+Actividades de segunda categoría ante el SII.
+Realizar actividades gravadas por el
+art. 42, N° 2, de la Ley
+sobre Impuesto a la Renta .
+Mandar a confeccionar los talonarios
+de boletas de honorarios a una imprenta
+Llenar el Formulario 3230, para el
+timbraje de las boletas de honorarios y acudir a la Unidad del SII
+para que sean timbradas.
+Subir
+7.
+Observaciones
+Por Internet el
+sistema de emisión considera, además, las siguientes funcionalidades
+para facilitar la aplicación electrónica:
+1.- El sistema de
+Boletas de Honorarios Electrónica, considera que el contribuyente puede
+autorizar a terceros la emisión de este tipo de documentos, lo que se
+puede hacer desde el sitio web del SII, sección Boletas de Honorarios
+Electrónicas, opción Autorizar
+o revocar a un usuario autorizado .
+El tercero autorizado
+debe contar con Clave Secreta para ingresar a las aplicaciones de la
+Oficina Virtual del SII.
+2.- El contribuyente
+emisor tendrá la posibilidad de consultar las características de
+emisión, desde el sitio web del SII, sección Boletas de Honorarios
+Electrónica, opción Consultas
+sobre boletas , desde
+donde podrá efectuar las siguientes consultas:
+Consultar boletas
+emitidas
+Consultar boletas
+recibidas
+3.- Un
+tercero, (cualquiera), que cuente con clave en el sitio web del SII,
+puede consultar la veracidad y autenticidad de una boleta a honorarios,
+a través de la opción:
+Consulta de boletas por
+Terceros
+En el caso de emisión
+por papel , las boletas deben cumplir con los siguientes requisitos:
+Ser numeradas en
+forma correlativa e impresa y timbradas por el SII.
+Emitirse en
+duplicado, entregando el original al cliente y conservando la copia
+para su posterior revisión
+Llevar impreso el
+nombre completo del profesional o contribuyente que la otorga, su
+número de RUT, dirección, comuna, profesión o actividad y, cuando
+proceda el número telefónico y de casilla. En el caso de
+contribuyentes que además tengan la calidad de trabajadores,
+podrán indicar como domicilio el correspondiente a su trabajo
+habitual.
+Señalar fecha de
+emisión.
+Consignar el nombre
+completo de la persona obligada a retener el impuesto a la renta, su
+número de RUT, dirección, comuna y actividad.
+Indicar la naturaleza
+y monto de los honorarios.
+Dejar constancia
+cuando procediere, de la retención del impuesto a la renta.
+Respecto a las sociedades
+de profesionales de segunda categoría que han optado por tributar por las
+normas de primera categoría, las boletas de honorarios deben ser emitidas
+por el monto total, sin retención, e indicar la siguiente leyenda Sociedad
+de Profesionales sujeta a las normas de la Primera Categoría conforme al
+inciso 3° del N° 2, del artículo 42 de la Ley de la Renta, ello para
+los efectos de evitar las retenciones de impuestos a que se refiere el
+artículo 74 N° 2 del mismo texto legal, las cuales pueden ser emitidas
+por Internet y en Papel.
+En la modalidad de emisión
+por papel, el contribuyente (emisor, receptor o tercero), no podrá
+realizar las consultas de boletas por internet.
+Subir
+8. Normativa
+relacionada al trámite
+- Decreto
+ley N° 830 , sobre Código Tributario.
+- Resolución
+Exenta N° 83, de 2004 , sobre emisión y uso de Boletas de Honorarios
+Electrónicas.
+-
+Resolución
+Ex. N° 1414, de 1978 , sobre
+Boletas de Honorarios
+-
+Circular
+N° 21, de 1991 , sobre
+rentas de profesionales y emisión de documentos.
+Subir
+9. Preguntas
+frecuentes del trámite
+Si desea mayor
+información, seleccione las preguntas
+frecuentes del trámite.
+Subir
+10.
+Formularios relacionados al trámite
+Al realizar los trámite en
+línea, a través de la Oficina Virtual del SII, el contribuyente no tiene
+que adquirir u obtener formularios en las oficinas del SII, ya que existen
+aplicaciones electrónicas para la emisión de las Boletas de Honorarios
+Electrónica.
+Para otorgar Boletas de
+Honorarios por papel, el contribuyente no tiene que adquirir u obtener
+formularios en las oficinas del SII, excepto para los trámites previos,
+como Inicio de
+Actividades y Timbraje
+de boletas.
+Subir
+DESCRIPCIÓN
+PASO A PASO PARA LA EMISION DE BOLETAS DE
+HONORARIOS ELECTRONICA
+Ingrese
+al sitio web del SII, www.sii.cl ,
+sección Boleta de Honorario Electrónica, opción Emitir
+boletas
+Una vez que ingresa a la opción
+señalada, y elija la opción de emisión, deberá identificarse con
+su Rut y Clave Secreta
+Debe seleccionar la
+modalidad de emisión de la Boleta de Honorario Electrónica, con
+retención o sin retención.
+El receptor de la boleta actuará reteniendo el 10% del total de los
+honorarios.
+El propio contribuyente emisor será quien se encargue del pago
+provisional mensual correspondiente al 10%.
+Complete los
+antecedentes requeridos para la emisión de la boleta de honorarios
+electrónica, tales como: Identificación del cliente, descripción del
+servicio y monto del honorario. Confirme emisión y verifique el
+borrador, si está de acuerdo emita la correspondiente boleta.
+Finalmente,
+aparecerá en pantalla la imagen de la boleta emitida. Imprima la boleta
+para entregarla a su cliente, además, si usted lo desea, después de
+imprimir puede seleccionar la opción Enviar Boleta por e-mail.
+Subir
+DESCRIPCIÓN
+PASO A PASO PARA OTORGAR DE BOLETAS DE
+HONORARIOS, EN PAPEL
+Realice
+la Iniciación de
+Actividades por Internet o en la Oficina del SII que corresponda a
+su domicilio
+Una vez que obtenga la autorización, timbre
+las boletas.
+Cuando emita la
+boleta, puede seleccionar entre dos opciones: con retención o sin
+retención.
+- El receptor de la boleta actuará reteniendo el 10% del total de los
+honorarios.
+- El propio contribuyente emisor
+será quien se encargue del pago provisional mensual correspondiente
+al 10%.
+Complete los
+antecedentes requeridos para la emisión de la boleta de honorarios,
+tales como: Identificación del cliente, descripción del servicio y
+monto del honorario y emita la correspondiente boleta.
+Una vez emitida la
+boleta entregue el original a su cliente
+Subir

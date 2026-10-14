@@ -1,0 +1,19 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0889.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0889.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / Emisión de boleta de honorarios electrónica que genera un PPM
+¿Al ser emitida una Boleta de Honorarios Electrónica es necesario declarar los Pagos Provisionales Mensuales (PPM)?
+ID: 001.120.0889.012
+Fecha de creación: 21/01/2004
+Fecha de actualización: 08/01/2026
+Al momento de emitir una Boleta de Honorarios Electrónica, a través del sitio Web del SII, sección Servicios online, menú Boletas de Honorarios Electrónicas, Emisor de boleta de honorarios, mediante las opciones definidas para ello, el sistema pedirá que se marque la alternativa que corresponda en su emisión, esto es:
+El receptor de la boleta actuará reteniendo el 15.25% del total de los honorarios.
+El propio contribuyente emisor será quien se encargue del Pago Provisional Mensual (PPM), correspondiente al 15.25%.
+En la primera opción, la empresa receptora de la Boleta de Honorarios Electrónica ha retenido el 15.25% de los honorarios, el profesional que emite este documento no debe hacer ninguna declaración mensual, puesto que la obligación tributaria la cumple la empresa que recibe el servicio, reteniendo y enterando al fisco tal cantidad.
+En la segunda situación es el profesional de la segunda categoría de la Ley de la Renta quien debe declarar y pagar, en carácter de PPM, el 15.25% de los honorarios cobrados al cliente, situación que se realiza a través de la declaración del Formulario 29 de Declaración Mensual y Pago Simultáneo.
+Normativa Relacionada
+Ver más

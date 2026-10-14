@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3085.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_3085.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Plazos para anular una boleta de honorarios electrónica
+¿Cuál es el plazo para solicitar la anulación de una Boleta de Honorarios Electrónica por Internet, sujeta a la confirmación del receptor?
+ID: 001.120.3085.010
+Fecha de creación: 30/05/2005
+Fecha de actualización: 27/03/2025
+El plazo para solicitar la anulación es entre el día 11 del mes siguiente al mes de la fecha de la boleta y hasta el 01 de marzo del año siguiente a la emisión.
+Normativa Relacionada
+Ver más

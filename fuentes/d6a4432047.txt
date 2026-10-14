@@ -1,0 +1,22 @@
+URL: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_8398.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_8398.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Declaración de renta / Rentas de Segunda Categoría por Honorarios / Retenciones
+¿Cuál es el porcentaje de retención de las Boletas de Honorarios para el año 2026?
+ID: 001.140.8398.009
+Fecha de creación: 08/02/2023
+Fecha de actualización: 03/08/2026
+Para el año 2026 el porcentaje de retención es de un 15,25%.
+Te explicamos con un ejemplo el nuevo cálculo, el que se realizará automáticamente cada vez que emitas este documento:
+Tú cobraste
+$ 100.000
+Cálculo de retención 15,25 %
+$ 15.250 (sobre lo que cobraste)
+Recibirás la suma final de
+$ 84.750
+Normativa Relacionada
+Ver más

@@ -1,0 +1,38 @@
+URL: https://www.sii.cl/destacados/boletas_honorarios/aumento_gradual.html
+URL final: https://www.sii.cl/destacados/boletas_honorarios/aumento_gradual.html
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Aumento Gradual de Retención de Honorarios y Protección Social | SII
+¿Cómo será el aumento gradual?
+El aumento en la retención será de 0,75% por año, hasta llegar a 17% en 2028, de acuerdo al siguiente detalle:
+Año
+Aumento Retención
+Total Retención Boleta
+2020
+0,75%
+10,75%
+2021
+0,75%
+11,5%
+2022
+0,75%
+12.25%
+2023
+0,75%
+13%
+2024
+0,75%
+13.75%
+2025
+0,75%
+14.5%
+2026
+0,75%
+15.25%
+2027
+0,75%
+16%
+2028
+1%
+17%

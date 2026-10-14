@@ -1,0 +1,14 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_8261.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_8261.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / Boleta de honorarios electrónica Plataformas digitales Ley N°21.431
+¿En qué momento se debe emitir la Boleta de Honorarios Electrónica (BHE)?
+ID: 001.120.8261.003
+Fecha de creación: 13/10/2022
+Fecha de actualización: 11/12/2024
+La Boleta de Honorarios Electrónica (BHE) debe emitirse en el mismo período tributario en que la remuneración se perciba o se ponga, en cualquier forma, a disposición del prestador del servicio.
+Ver más

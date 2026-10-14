@@ -1,0 +1,244 @@
+URL: https://www.sii.cl/como_se_hace_para/boletas/anular_boleta.pdf
+URL final: https://www.sii.cl/como_se_hace_para/boletas/anular_boleta.pdf
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   sii.cl / ayudas / 
+¿CÓMO SE HACE?  
+¿Qué es este trámite? 
+Corresponde al procedimiento para anular las boletas de honorarios 
+electrónicas que han sido mal emitidas. 
+ 
+¿Quiénes pueden realizar este trámite? 
+Aquellos contribuyentes que, por razones justificadas, necesiten dejar sin 
+efecto boletas de honorarios electrónicas válidamente emitidas. 
+ 
+¿Cuándo se hace este trámite? 
+Se realiza en la medida que se requiera anular boletas de honorarios 
+electrónicas. 
+ 
+¿Dónde se hace este trámite? 
+Por internet, en la página sii.cl, tanto para anulaciones de boletas de 
+honorarios electrónicas dentro de plazo como fuera de plazo. 
+ 
+Requisitos para efectuar el trámite  
+Tener boletas de honorarios electrónicas emitidas en estado vigente y contar 
+con clave tributaria en sii.cl. 
+ 
+Formularios relacionados al trámite  
+Sólo en caso de anulación fuera de plazo, se requerirá la presentación de  
+una petición administrativa en la sección de Servicios online de la página  
+web sii.cl. 
+ 
+ 
+Descripción paso a paso para  
+Solicitar Sustitución de Multas por 
+Cursos de Capacitación 
+Ver página N° 4. 
+Importante: la información que aquí entregamos es solo una guía.  
+Para conocer más sobre este trámite, revise la normativa asociada  
+en sii.cl.  
+Mrazo/2023 
+A continuación conoce  
+el detalle de los pasos a seguir : 
+1 
+2 
+3 
+5 
+4 
+6 
+7 
+ANULAR BOLETAS DE HONORARIOS ELECTRÓNICAS 
+sii.cl 
+ 
+ 
+ 
+ 
+ 
+1. ¿Qué es este trámite? 
+ 
+Corresponde al procedimiento para anular las boletas de honorarios electrónicas que han sido mal 
+emitidas. 
+Al anular las boletas, tanto el emisor como el receptor deben estar de acuerdo. En caso que el receptor 
+no esté de acuerdo con la anulación, podrá manifestarlo al Servicio de Impuestos Internos y ésta no se 
+hará efectiva. 
+ 
+Instrucciones en Resolución Exenta SII N° 83, del 30 de agosto de 2004. 
+ 
+2. ¿Quiénes deben realizar este trámite?  
+ 
+Aquellos contribuyentes que, por razones justificadas, necesiten dejar sin efecto boletas de honorarios 
+electrónicas válidamente emitidas. 
+ 
+ 
+3. ¿Cuándo se hace este trámite?  
+ 
+Este trámite se realiza en la medida que el contribuyente requiera  anular las boletas de honorarios 
+electrónicas, cuyo procedimiento estará sujeto a lo siguiente:  
+ 
+3.1.- Anulación hasta el día 10 del mes siguiente de la fecha de la boleta:  El documento quedará 
+registrado como anulado inmediatamente al concluir el proceso de anulación. 
+ 
+3.2.- Anulación entre el día 11 del mes siguiente hasta el 1° de marzo siguiente a la fecha de la boleta: 
+El emisor puede solicitar la anulación, pero quedará sujeta a confirmació n del receptor. Durante el 
+período señalado las boletas permanecerán en estado "Vigentes con solicitud de anulación pendiente" 
+(VCA), por ende, deben ser declaradas y pagadas las retenciones o PPM en el período correspondiente 
+hasta que no sea informada la  confirmación de la anulación por parte del receptor. Por lo tanto, el 
+emisor que desee anular una boleta debe contactarse con el receptor para que ingrese la confirmación. 
+ 
+Si el receptor no está de acuerdo con la anulación de la boleta, podrá rechazarla y la boleta continuará 
+vigente.  
+ 
+Tanto para ingresar la confirmación como el rechazo, el receptor debe ingresar al sitio web del SII, 
+sección Servicios online, Boletas de honorarios electrónicas, Emisor de boleta de honorarios, Anulación 
+y observación de boletas emitidas, opción Confirmar o rechazar anulación por receptor, para  lo cual 
+debe contar con su clave secreta.  
+ 
+Si el receptor no confirma la anulación dentro del plazo dispuesto (día 11 al 1° de marzo del año 
+siguiente a la fecha de la boleta), la boleta pasará automáticamente a estado Vigente, por lo tanto, no 
+podrá completarse el proceso de anulación con la confirmación. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+3.3.- Anulación después del 1° de marzo siguiente a la fecha de la boleta (fuera de plazo):  
+El con tribuyente deberá presentar una peti ción administrativa a tra vés de la página web sii.cl, 
+accediendo al menú Servicios online, ahí deberá seleccionar la opción Peticiones administrativas y otras 
+solicitudes, Ingresar petición administrativa y otras solicitudes  y en Materia seleccionar Anulación de 
+BHE, detallando los fundamentos de la anulación en el recuadro Descripción de Solicitud . 
+Adicionalmente deberá adjuntar los siguientes antecedentes:  
+ 
+• Formulario 2117 firmado -en formato pdf o de imagen- con los antecedentes de identificación 
+del contribuyente y de la boleta que se desea anular (número, nombre y RUT de destinatario, 
+fecha de boleta, fecha de emisión, total honorarios). 
+• Fundamentos de la anulación.  
+ 
+En forma adicional, el funcionario asignado para su revisión  le podrá solicitar al contribuyente que 
+desea anular la boleta, antecedentes que verifiquen que efectivamente corresponde la anulación. De 
+igual forma, en caso de existir retención de parte del receptor de la boleta, se confirmará mediante 
+antecedentes de  éste la anulación de la boleta. Si corresponde, se solicitará la rectificación de 
+declaraciones correspondientes al pago y retención del 10% de los honorarios de la boleta anulada. 
+ 
+4. ¿Dónde se hace este trámite?  
+ 
+El trámite se realiza en sitio web sii. cl, sección Servicios online, Boletas de honorarios electrónicas, 
+Emisor de boleta de honorarios, opción Anulación y observación de boletas emitidas. 
+ 
+ 
+5. Requisitos para efectuar el trámite 
+ 
+ Los requisitos para poder anular Boletas de Honorarios Electrónicas son los siguientes:  
+• Tener Boletas de Honorarios Electrónicas emitidas en estado vigente. 
+• Contar con Clave Tributaria que permita operar en Sii.cl. 
+ 
+6. Formularios relacionados al trámite 
+ 
+ Al realizar los trámites en línea, a través de la Oficina Virtual del SII, el contribuyente no tiene que 
+obtener form ularios en las oficinas del SII . Sólo en caso de anulación fuera de plazo , se requerirá 
+adjuntar a la Petición Administrativa el Formulario 2117 en la sección destinada para ello. 
+ 
+ 
+7. Descripción paso a paso para anular una boleta de 
+honorarios electrónica  
+ 
+ 
+ 
+ 
+1 
+Ingrese al sitio web sii.cl, sección Servicios online, Boletas de honorarios electrónicas , Emisor de 
+boleta de honorarios, opción Anulación y observación de boletas emitidas . En esta opción es 
+posible ingresar el número de la boleta a anular, así como también el motivo por el cual desea 
+anularse. 
+ 
+2 
+1.- Plazo: Hasta el día 10 
+del mes siguiente al mes de 
+la boleta, el documento 
+quedará anulado 
+automáticamente al 
+concluir el procedimiento 
+2. Plazo: Entre el día 11 del mes 
+siguiente y hasta el 1° de marzo del 
+año siguiente a la fecha de la boleta, 
+el emisor puede solicitar la 
+anulación, pero quedará sujeta a 
+confirmación del receptor. Si el 
+receptor no confirma la anulación 
+dentro del plazo hasta el 1° de 
+marzo del año siguiente a la fecha 
+de la boleta, esta pasará 
+automáticamente al estado Vigente. 
+Restricción para anular: 
+ 
+La boleta se podrá anular 
+hasta el 1° de marzo del año 
+siguiente a la fecha de la 
+boleta por Internet. 
+  
+El monto total de honorarios 
+debe ser inferior a cien 
+millones de pesos. 
+ 
+ 
+3 
+Entre el 11 del mes siguiente y hasta el 1° de marzo del año 
+siguiente a la fecha de la boleta , el receptor debe 
+confirmar la anulación de la boleta de honorarios 
+electrónica, ingresando al sitio web del SI I, sección 
+Servicios online, Boletas de honorarios electrónicas , 
+Emisor de boleta de honorarios, Anulación y observación 
+de boletas emitidas, opción Confirmar o rechazar 
+anulación por receptor. 
+ 
+4 
+En caso de no cumplir con la restricción, el 
+contribuyente deberá presentar una petición 
+administrativa a través de la página web sii.cl, 
+sección Servicios online, seleccionar la opción 
+Peticiones administrativas y otras solicitudes, 
+Ingresar petició n administrativa y otras 
+solicitudes y en Materia seleccionar Anulación 
+de BHE. 
+ 
+ 
+5 Verificar la anulación electrónica y conservar comprobante. 
+ 
+Nota: La anulación de boletas de honorarios electrónicas sólo puede ser realizada por el contribuyente 
+emisor y no un tercero, a diferencia de la emisión que permite a terceros autorizados por el 
+contribuyente a emitir este tipo de documentos.  

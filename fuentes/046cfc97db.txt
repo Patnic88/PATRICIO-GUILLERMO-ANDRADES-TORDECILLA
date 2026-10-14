@@ -1,0 +1,34 @@
+URL: https://www.sii.cl/boleta_honorarios/emitir.htm
+URL final: https://www.sii.cl/boleta_honorarios/emitir.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+EMITIR BOLETAS
+EMITIR BOLETAS
+En esta página se presentan las opciones disponibles para emitir una
+boleta de honorarios electrónica desde el sitio web del SII, las cuales
+dan como resultado la boleta generada en pantalla con la posibilidad de
+ser impresa y enviada por correo electrónico.
+P or
+contribuyente
+En esta opción los contribuyentes podrán
+emitir boletas de honorarios a través de Internet ingresado por
+primera vez todos los datos de la boleta.
+Por
+contribuyente con datos usados anteriormente
+En esta opción los contribuyentes podrán emitir boletas de
+honorarios en forma rápida, desplegando datos usados anteriormente
+como propuestos.
+P or
+usuario
+autorizado
+En esta opción los usuarios autorizados
+por un contribuyente podrán emitir boletas de honorarios a
+través de Internet ingresado por primera vez todos los datos de la
+boleta.
+Por
+usuario autorizado con datos usados anteriormente
+En esta opción los usuarios
+autorizados por un contribuyente podrán emitir boletas de
+honorarios en forma rápida, desplegando datos usados anteriormente
+como propuestos.

@@ -1,0 +1,771 @@
+URL: https://www.sii.cl/servicios_online/instrucciones_f29_20241112.pdf
+URL final: https://www.sii.cl/servicios_online/instrucciones_f29_20241112.pdf
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+INSTRUCCIONES PARA LLENAR EL FORMULARIO 29 (F29) DE DECLARACIÓN MENSUAL Y PAGO 
+SIMULTÁNEO DE IMPUESTOS: IVA, IMPUESTOS ADICIONALES A LAS VENTAS, RETENCIONES 
+DE IMPUESTOS A LA RENTA Y PAGOS PROVISIONALES MENSUALES  
+ 
+1. El lugar de presentación de la declaración es el siguiente: 
+BANCO ESTADO, BANCOS COMERCIALES E INSTITUCIONES FINANCIERAS QUE ESTEN AUTORIZADAS PARA RECAUDAR 
+IMPUESTOS. 
+2. Antes de presentarla, debe revisar cuidadosamente las operaciones y antecedentes que ha registrado en ella. Si contiene error es, su 
+declaración será observada. 
+3. En el registro de valores, encuádrese dentro de los renglones respectivos y anote siempre las cantidades en pesos y sin centavos. 
+4. Todos los valores registrados en el F29 deben ser positivos, salvo los Códigos. 538, 743, 745, 537 y 596. (Líneas 22, 42, 43, 47 y 10 8, 
+respectivamente). 
+5. En las columnas en que se solicita información sobre “Cantidad de Documentos” se deben incluir todos los documentos, tanto ma nuales 
+como electrónicos, comprendiendo en los respectivos débitos o créditos, los montos que les accedan, o aquellas sumas por re tenciones o 
+cambio de sujeto. 
+Complete los antecedentes solicitados, en los siguientes casilleros del formulario: 
+a) Período Tributario: Registre el mes calendario en que se efectuaron las ventas, servicios y compras que se declaran. Considere números 
+arábigos y el año con cuatro dígitos. Ejemplo: Enero de 2010 debe registrarse 01-2010. 
+b) Rol Único Tributario (RUT): Registre el número de RUT del contribuyente declarante. La cédula de RUT debe ser exhibida al momento de 
+presentar la declaración en el banco. Solicite al Cajero la verificación de este, ya que el pago se acreditará en la cuenta única tributaria, al 
+número de RUT indicado en la declaración. En el caso de las personas naturales, la Cédula de Identidad reemplaza al RUT. Las personas 
+naturales extranjeras y otras personas sin domicilio o residencia en Chile deben utilizar el RUT autorizado por el Servicio de Impuestos Internos 
+(SII). 
+c) Identificación: Registre la razón social, el apellido paterno, materno, y nombres del contribuyente según sea el caso. 
+ 
+IMPUESTO AL VALOR AGREGADO 
+ 
+ 
+DÉBITOS Y VENTAS Y/O SERVICIOS PRESTADOS: 
+ 
+· LÍNEA 1:  
+Cód.585: Registre la cantidad de documentos de exportación emitidos durante el período que declara. 
+Cód.20: Registre el monto neto contenido en los documentos registrados en el Cód.585. 
+ 
+· LÍNEA 2:  
+Cód.586: Registre la cantidad de documentos emitidos durante el período que declara por concepto de ventas y/o servicios exentos o no 
+gravados asociados al giro.  
+Cód.142: Registre el monto neto de los documentos registrados en Cód.586. 
+ 
+· LÍNEA 3:  
+Cód.731: Registre, de existir la cantidad de documentos tributarios emitidos durante el período, por ventas con retención anticipada d el IVA 
+sobre el margen de comercialización (contribuyentes retenidos).  
+Cód.732: Registre el monto neto por las ventas del período, documentadas o no, con retención sobre el margen de comercialización 
+(contribuyentes retenidos), como ocurre, por ejemplo, en las ventas de cigarrillos, gas licuado y medios de prepago, consigna do en los casos 
+en que registre documentos en el Cód. 731. 
+ 
+· LÍNEA 4:  
+Cód.714: Registre la cantidad de documentos emitidos (facturas y boletas de ventas y servicios, no afectos o exentos de IVA, notas de débito 
+y notas de crédito), durante el período que declara por concepto de ventas y/o servicios no afectos o exentos de IVA no aso ciados al giro. 
+Cód.715: Registre el monto neto de los documentos registrados en Cód. 714. 
+ 
+· LÍNEA 5:  
+Cód.515: Registre la cantidad de facturas de compra, notas de débito y notas de crédito recibidas, asociadas a facturas de compra y facturas 
+de inicio emitidas con retención total producto del cambio de sujeto que afecta a las operaciones realizadas durante el per íodo que declara. 
+Las facturas de inicio deben ser emitidas, en el período que medie entre la fecha de inicio de actividades y la fecha en que se haya efectuado 
+por parte del Servicio de Impuestos Internos el procedimiento de verificación de actividad.  
+Cód.587: Registre la sumatoria de los montos netos contenidos en las facturas de compra y notas de débito recibidas, menos las notas d e 
+crédito recibidas y más las facturas de inicio emitidas en el período y registradas en el Cód. 515. 
+ 
+· LÍNEA 6:  
+Cód.720: Registre el monto neto de las facturas de compra recibidas con retención parcial producto del cambio de sujeto que afecta a las 
+operaciones realizadas, durante el período que declara más las notas de débito recibidas y notas de crédito recibidas asociadas a facturas de 
+compra con retención parcial.  
+· LÍNEA 7:  
+Cód.503: Registre la cantidad de facturas emitidas durante el período que declara.  
+Cód.502: Registre el monto de impuesto recargado en las facturas registradas en el Cód. 503. 
+ 
+ · LÍNEA 8:  
+Cód.763: Registre la cantidad de facturas emitidas durante el periodo que declara, por la venta de bienes inmuebles.  
+Cód. 764: Registre el monto de impuesto recargado en las facturas registradas en el Cód. 763, por las ventas de bienes inmuebles gravados 
+en conformidad a la Ley 20.780. Además, registre el monto del impuesto recargado por las ventas de bienes inmuebles, que no soportaron 
+crédito fiscal, de acuerdo con lo establecido en el artículo 16, letra g), D.L. N°825, de 1974. 
+ 
+· LÍNEA 9:  
+Cód.716: Registre la cantidad de facturas y notas de débito emitidas en el período, por ventas o servicios que no son del giro (activo  fijo y 
+otros).  
+Cód.717: Registre el monto de impuesto recargado en los documentos registrados en el código 716. 
+ 
+· LÍNEA 10:  
+Cód.110: Registre la cantidad de boletas manuales y/o vales de máquinas registradoras autorizadas emitidas durante el período que declara. 
+Cód.111: Registre el monto del débito fiscal incluido en las boletas manuales y/o vales de máquinas registradoras autorizadas, consign adas 
+en Cód.110. 
+ 
+· LÍNEA 11:  
+Cód.758: Registre la cantidad de comprobantes o recibos de pago emitidos por terminal transaccional de ventas efectuadas a través de medios 
+electrónicos durante el periodo que declara, por concepto de ventas y/o servicios afectos.  
+Cód.759: Registre el monto del débito fiscal incluido en los comprobantes o recibos de pago por las transacciones pagadas a través de medios 
+electrónicos. 
+ 
+· LÍNEA 12:  
+Cód.512: Registre la cantidad de notas de débito emitidas y las notas de débito recibidas asociadas a facturas de compra con retención parcial 
+durante el período que declara.  
+Cód.513: Registre el monto del débito fiscal consignado en las notas de débito registradas en el Cód.512. 
+· LÍNEA 13: 
+Cód.509: Registre la cantidad de notas de crédito emitidas por facturas otorgadas y las notas de crédito recibidas asociadas a facturas de 
+compra con retención parcial durante el período que declara.  
+Cód.510: Registre el monto de impuesto recargado en las notas de crédito registradas en el Cód. 509. 
+ 
+· LÍNEA 14:  
+Cód.708: Registre la cantidad de notas de crédito emitidas en el período que declara, por anulación de ventas efectuadas con vales de 
+Máquinas Registradoras, Terminales de Puntos de Ventas o Impresoras Fiscales, autorizadas por el SII. Cód.709: Registre el monto de 
+impuesto contenido en las notas de crédito registradas en el Cód. 708. 
+ 
+· LÍNEA 15:  
+Cód.733: Registre la cantidad de notas de crédito emitidas por ventas y servicios que no son del giro (activo fijo y otros).  
+Cód.734: Registre el impuesto recargado en las notas de crédito emitidas por ventas y servicios que no son del giro registrados en el Cód. 733. 
+ 
+· LÍNEA 16:  
+Cód.516: Registre la cantidad de facturas de compra recibidas con retención parcial producto del cambio de sujeto que afecta a las operaciones 
+realizadas, durante el período que declara  
+Cód.517: Registre la sumatoria de los montos del débito fiscal que corresponda a la fracción del IVA no retenido por el comprador, consignado 
+en las facturas de compra recibidas en el período, registradas en el Cód. 516. 
+ 
+· LÍNEA 17:  
+Cód.500: Registre la cantidad de liquidaciones y/o liquidaciones facturas recibidas y cantidad de liquidaciones facturas emitidas, en virtud de 
+un mandato, por las operaciones afectas al Impuesto al Valor Agregado, realizadas durante el período tributario por el cual se está presentando 
+la declaración.  
+Cód.501: Cuando el contribuyente actúe como mandante de la operación debe registrar la sumatoria de los montos de impuesto al valor 
+agregado consignados en las liquidaciones o liquidaciones -facturas recibidas, correspondientes al débito fiscal por las ventas o ser vicios 
+gravados con impuesto al valor agregado efectuados por terceros en virtud de un mandato. 
+Cuando el contribuyente actúe como mandatario de la operación, debe registrar la sumatoria de los montos de impuesto al valor  agregado 
+consignados en las liquidaciones -factura emitidas, correspondientes al débito fiscal por la comisión cobrada al mandante por las ventas o 
+servicios efectuados en virtud de un mandato. En caso de que el cobro de dicha comisión se realice a través de una factura, esta será tratada 
+como el resto de las operaciones cuyo respaldo es una factura, por lo cual deberá ser informada e n la línea 7 del formulario 29. Si las 
+operaciones se afectan además con algún impuesto adicional, éste debe declararse en el reverso del formulario 29 en la línea indicada para 
+cada caso. 
+ 
+· LÍNEA 18:  
+Cód.154: Registre el monto generado por devoluciones o imputaciones del   remanente de crédito fiscal superiores a las que correspondía, en 
+base al Art. 27 bis registradas en otros períodos, debidamente reajustados de acuerdo con la Ley y su Reglamento. 
+ 
+· LÍNEA 19: 
+Cód.518: Registre la restitución adicional generada en la proporción de operaciones exentas y/o no gravadas sobre las afectas que corresponde 
+a la devolución del Art. 27 bis, inciso 2° de la Ley N° 19.738, de 2001 (Circular N° 94, de 2001). 
+ 
+· LÍNEA 20:  
+Cód.713: Reintegro de Impuesto de Timbres y Estampillas utilizado como crédito fiscal, por haber superado durante el año comercial, el límite 
+de ventas y servicios del giro, establecido en el Art. 3° de la Ley N° 20.259, de 2008. Además, este código debe ser llena do por aquellas 
+personas que efectúen arrendamiento de inmuebles amoblados de forma esporádica, en el cual se debe registrar el monto de impu esto 
+generado por dichas operaciones efectuadas en el periodo que declara, de acuerdo al artículo N° 8, letra g) del D.L. N° 825, de 1974 y 
+considerando lo establecido en el Art. 17 de dicha ley y el Art. 33 de su Reglamento. 
+ 
+· LÍNEA 21: Esta línea debe ser utilizada por los contribuyentes del IVA que tengan derecho a recuperación de los Impuestos Específicos a los 
+Combustibles establecidos en la Ley N° 18.502, que deban calcular el monto de dicha recuperación sobre la base de los impuest os 
+determinados conforme a la Ley N° 20.765. Esta línea no debe ser utilizada por los contribuyentes señalados en el inciso cuarto del artículo 1° 
+de la Ley N° 20.765.  
+Cód.738: Registre la cantidad de metros cúbicos (M3) de petróleo diesel adquiridos en el período tributario, y consignados en facturas por las 
+cuales el monto a recuperar resultare negativo.  
+Cód.739: Registre el total del componente base del Impuesto Específico al Petróleo Diesel (Art. 6° de la Ley N° 18.502, de 1986) 
+correspondiente a los M3 declarados en el cód. 738.  
+Cód.740: Registre el total del componente variable (Art. 3° Ley N° 20.765) correspondiente a los M3 declarados en el Cód. 738. Los 
+transportistas de carga por carretera deben declarar el componente base (Cód. 739) y el componente variable de este impuesto (Cód. 740), 
+por el monto resultante de aplicar al total de éstos, el porcentaje determinado según el Art. 2°, de la Ley N° 19.764, de 2001 y sus modificaciones.  
+Cód.741: Registre el valor absoluto determinado de la diferencia entre el componente base (Cód. 739) y el componente variable (Cód. 740). 
+ 
+LÍNEA 22:  
+Cód.791: Registre si usted hizo uso del beneficio de devolución de remanente y en los periodos posteriores tuvo ventas exentas. Los 
+contribuyentes que hayan recibido la devolución del beneficio indicado en el Art. 2 de la Ley N° 21.353, y que realicen ventas exentas o no 
+gravadas, en cualquiera de los periodos tributarios posteriores, en forma adicional a los pagos que señala el inciso sexto de dicho artículo, 
+deberán restituir las sumas equivalentes a las cantidades que resulten de aplicar la tasa de impuesto establecida en el artículo 14 de la LIVS, 
+a la cantidad que se determine de multiplicar el monto de  las operaciones totales del mes por la proporción de la cantidad de las operaciones 
+gravadas usada para determinar el crédito fiscal del periodo mensual de la solicitud y restar de dicho resultado la suma que corresponde las 
+operaciones afectas del mes. 
+ 
+· LÍNEA 23:  
+Cód.538: Registre el valor que resulte de realizar la operación aritmética de los montos de la línea 7 a 22. 
+ 
+CRÉDITOS Y COMPRAS Y/O SERVICIOS UTILIZADOS: 
+· LÍNEA 24:  
+Cód.511 y Cód.514: Registre el monto recargado en el total de los documentos electrónicos recibidos, tanto aquellos con derecho a crédito 
+fiscal como aquellos sin derecho a crédito. 
+  
+· LÍNEA 2 5–27: En estas líneas se registra información de adquisiciones que no dan derecho a crédito fiscal. En la columna ‘Cantidad de 
+documentos’.  
+Cód.564, Cód.566 y Cód.584: registrar separadamente, según corresponda a compras internas afectas, importaciones o compras internas 
+exentas o no gravadas, el número de documentos recibidos, ya sean manuales o electrónicos. En la columna ‘Monto Neto’ Cód. 521, Cód. 560 
+y Cód. 562, registrar en cada código, según corresponda, el monto neto de las compras que no dan derecho a crédito fiscal. 
+ 
+· LÍNEA 28:  
+Cód.519: Registre la cantidad de facturas recibidas durante el período que declara, por adquisición de bienes o utilización de servicios que dan 
+derecho a crédito fiscal, incluidas las facturas de compra emitidas cuando el contribuyente tenga el carácter de agent e retenedor. ·Cód.520: 
+Registre el monto de crédito fiscal recargado en las facturas registradas en el Cód. 519. En estos códigos no deben registrar se los datos 
+relativos a las adquisiciones en supermercados y comercios similares, sino que en los códigos 761 y 762 siguientes. 
+ 
+· LÍNEA 29:  
+Cód.761: Registre la cantidad de facturas recibidas durante el periodo que declara, por adquisiciones en Supermercados y Comercios similares, 
+según Art.23 N°4 D.L.825, de 1974 (Ley N°20.780).  
+Cód.762: Registre el monto de impuesto recargado en las facturas registradas en el Cód. 761. Dicho monto de crédito fiscal no deberá 
+registrarse en ningún otro código que conforme el crédito fiscal declarado en este formulario. 
+ 
+· LÍNEA 30:  
+Cód.765: Registre la cantidad de facturas recibidas con anterioridad al 01.01.2016, por la adquisición o construcción mediante un cont rato 
+general de construcción de bienes inmuebles, según artículo octavo transitorio de Ley N°20.780, modificado por Ley 20.899. Cód. 766: Registre 
+el monto del impuesto soportado con anterioridad al 01 de enero de 2016, en la adquisición o construcción de los bienes inmue bles vendidos 
+durante este período tributario, respecto de los cuales puede utilizar como crédito fiscal e l IVA, que le fue recargado por la adquisición y/o 
+construcción de dichos bienes, siempre que, entre la fecha de las facturas de adquisición o construcción de los bienes y su venta, no haya 
+transcurrido un plazo mayor a tres años. Este crédito, debe corresponder al IVA efectivamente soportado y que formó parte del costo del bien 
+respectivo, por lo que no podrá utilizarse para estos efectos, la parte del débito fiscal rebajada por aplicación del crédito especial estableci do 
+en el artículo 21 de D.L. N° 910 de 1975. (Art. octavo transitorio de la Ley 20.780, modificado por Ley 20.899). 
+ 
+· LÍNEA 31:  
+Cód.524: Registre la cantidad de facturas recibidas durante el período que declara, por adquisición de activo fijo que da derecho a cr édito 
+fiscal.  
+Cód.525: Registre el monto de crédito fiscal recargado en las facturas registradas en el Cód. 524. 
+ 
+· LÍNEA 32:  
+Cód.527: Registre la cantidad de notas de crédito recibidas y notas de crédito emitidas asociadas facturas de compra durante el período que 
+declara. ·Cód.528: Registre el monto de crédito fiscal recargado en las notas de crédito registradas en el Cód. 527. 
+ 
+· LÍNEA 33:  
+Cód.531: Registre la cantidad de notas de débito recibidas  y notas de débito emitidas asociadas facturas de compra  durante el período que 
+declara.  
+Cód.532: Registre el monto de crédito fiscal recargado en notas de débito registradas en Cód. 531. 
+ 
+· LÍNEA 34:  
+Cód.534: Registre la cantidad de declaraciones de ingreso (DIN) del Servicio Nacional de Aduanas por importaciones que dan derecho a 
+crédito fiscal (excluidos aquellos por concepto de bienes de activo fijo, que se registran en Cód. 536) tramitados durante el período que declara. 
+Cód.535: Registre el monto de crédito fiscal contenido en los documentos registrados en el Cód. 534. 
+ 
+· LÍNEA 35: 
+ Cód.536: Registre la cantidad de DIN por concepto de importaciones de bienes del activo fijo, que dan derecho a crédito fiscal, tramit ados 
+durante el período que declara.  
+Cód.553: Registre el monto de crédito fiscal contenido en los documentos registrados en el Cód. 536. 
+· LÍNEA 36:  
+Cód.504: Registre la cantidad en pesos, del remanente de crédito fiscal del mes anterior para ser utilizado en este período que declar a, y 
+debidamente reajustado de acuerdo al Art. 27 del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 37:  
+Cód.593: Registre la cantidad en pesos, de la devolución solicitada por IVA exportadores, sobre la base del Art. 36 del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 38: 
+Cód. 594: Registre la cantidad en pesos, de la devolución por compras de activo fijo, sobre la base del Art. 27 bis del D.L. N° 825, de  1974, 
+solicitada en el período tributario que declara. 
+ 
+· LÍNEA 39:  
+Cód.592: Registre la cantidad en pesos, del certificado de imputación solicitado por compras de activo fijo, sobre la base del Art. 27 bis del D.L. 
+N° 825, de 1974, en el período tributario que declara. 
+ 
+· LÍNEA 40:  
+Cód.539: Registre la cantidad en pesos, de la devolución solicitada por concepto de cambio de sujeto, en el período que declara. No se debe 
+incorporar a esta línea la devolución por anticipo de cambio de sujeto. 
+ 
+· LÍNEA 41:  
+Cód.718: Registre la cantidad en pesos, de la devolución solicitada por las Generadoras Eléctricas, por remanente de crédito fiscal IV A 
+originado en Impuesto Específico al Petróleo Diesel (IEPD) (Ley N° 20.258, de 2008). 
+ 
+· LÍNEA 42: Devolución Solicitud Reembolso Remanente de Crédito Fiscal IVA cód 790  
+ 
+· LÍNEA 43:  
+Cód.164: Registre la suma reintegrada en la cual se restituyó el crédito fiscal IVA percibido indebidamente, excluidos los intereses, sólo si la 
+restitución se constituye nuevamente en créditos, según lo dispuesto en el D.S. N° 348, de 1975. 
+ 
+· LÍNEA 44:  
+Cód.730: Registre la cantidad de metros cúbicos (M3) de petróleo diesel adquiridos en el período con derecho a crédito.  
+Cód.742: Registre el total del componente base del Impuesto Específico al Petróleo Diesel soportado en las adquisiciones del período tributario 
+(Art. 7° de la Ley N° 18.502).  
+Cód.743: Sólo para los contribuyentes que no se encuentran en los supuestos del inciso cuarto del artículo 1° de la Ley N° 20.765. Registre el 
+total del componente variable (con signo negativo o positivo según corresponda) soportado en las adquisiciones con derech o a crédito del 
+período tributario. ·Cód.127: Si el componente variable de este impuesto, consignado en las respectivas facturas, fuere negativo y el valor 
+absoluto de éste sea superior al componente base, ambos componentes del impuesto deberán ser  declarados en la Línea 21, y no deberán 
+ser registrados en esta línea. En caso contrario, registre la cantidad en pesos resultante de sumar el componente base, Cód. 742 y el 
+componente variable, Cód. 743. 
+ 
+· LÍNEA 45:  
+Cód.729: Registre la cantidad de metros cúbicos (M3) de petróleo diesel adquiridos en el período con derecho a crédito fiscal.  
+Cód.744: Registre el componente base, por el monto resultante de aplicar al total de éste, el porcentaje determinado según el Art. 2°, de la Ley 
+N° 19.764, de 2001 y sus modificaciones. ·Cód.745: Sólo para los contribuyentes que no se encuentran en los supuestos del inciso cuarto del 
+artículo 1° de la Ley N° 20.765. Registre el componente variable (con signo negativo o positivo según corresponda) por el monto resultante de 
+aplicar al total de éste, el porcentaje determinado según el Art. 2°, de la Ley N° 19.764, de 2001 y sus modificaciones.  
+Cód.544: Si el componente variable de este impuesto, consignado en las respectivas facturas, fuere negativo y el valor absoluto de ést e sea 
+superior al componente base, ambos componentes del impuesto deberán ser declarados en la línea 21, y no deberán ser registrados en esta 
+línea. De lo contrario, registre la cantidad en pesos resultante de sumar el componente base, Cód. 744 y el componente variable, Cód. 745. 
+ 
+· LÍNEA 46:  
+Cód.523: Registre la cantidad en pesos, del impuesto del Art. 11° de la Ley N° 18.211, de 1983 por importaciones de contribuyentes 
+establecidos en la Zona Franca de Extensión y que se rijan por las normas del D.L. N° 825, de 1974. 
+· LÍNEA 47:  
+Cód.712: Registre la cantidad de Impuesto de Timbres y Estampillas, pagado y/o devengado en el período tributario que declara, según el Art. 
+3° de la Ley N° 20.259, de 2008. 
+ 
+· LÍNEA 48: 
+Cód.757: Las Administradoras de Fondos deberán registrar en esta línea el crédito fiscal a que tienen derecho y que corresponde al monto del 
+Impuesto al Valor Agregado cobrado por la gestión de fondos, en aquella parte que corresponda a cuotas de propiedad de inversionistas sin 
+domicilio ni residencia en Chile y cuyo monto fue restituido a éstos en el período al que corresponde la declaración. En cons ecuencia, para 
+tener derech o a este crédit o las Administradoras debieron afectar con Impuesto al valor Agreg ado las Remuneraciones por servici os de 
+administración de cuotas de propiedad inversionistas sin domicilio ni residencias en Chile y haber restituido a éstos el impuesto correspondiente. 
+(Art. 83 inciso final, del artículo primero de la Ley N° 20.712, de 2014). 
+ 
+· LÍNEA 49:  
+Cód.537: Registre el valor que resulte de realizar la operación aritmética de los montos de la línea 28 a 48. 
+ 
+ 
+· LÍNEA 50: Si el total Créditos resulta mayor que el total Débitos, el monto resultante regístrelo en el Cód. 77, remanente para el mes siguiente, 
+en caso contrario regístrelo en el Cód. 89, impuesto IVA determinado. Cód 756 y Cód 755 
+ 
+ 
+· LÍNEA 57:  
+Cód.760: Registre la restitución de impuestos de acuerdo con  lo señalado en el art. 27 ter D.L. 825, de 1974, inciso 2°, a contar del mes 
+siguiente del período en que venza el plazo para que el deudor efectúe el pago de las sumas acordadas en el respectivo acuerd o de 
+reorganización, cuando se haya efectuado una imputación y obtenido una devolución superior a la que corresponda y en caso de término de 
+giro. 
+ 
+· LÍNEA 58:  
+Cód.767: Registre la cantidad en pesos, del certificado de imputación solicitado sobre la base del artículo 27 ter del D.L. 825, incorporado por 
+la Ley N°20.720, emitido por la Tesorería General de la República, en el periodo tributario que declare. 
+ 
+RETENCIONES Y PAGOS PROVISIONALES MENSUALES DE IMPUESTO A LA RENTA 
+ 
+· LÍNEA 59:  
+Cód.50 Registre la cantidad que resulte de aplicar la tasa de impuesto de Primera Categoría que esté vigente sobre las rentas pagadas afectas 
+al impuesto de Primera Categoría según el N° 2 del Art. 20 de la Ley de la Renta (LIR). De acuerdo con el Art. 79 de la LIR, esta retención debe 
+ser declarada y pagada hasta el día 12 del mes siguiente de aquél en que fue pagada, distribuida, retirada, remesada, abonada  en cuenta o 
+puesta a disposición la renta respectiva. 
+ 
+· LÍNEA 60:  
+Cód.751: Registre el crédito por donaciones con fines culturales establecidas en el artículo 8° de la Ley N° 18.985 que se descontó del Impuesto 
+Único de Segunda Categoría que afecta al trabajador, según los artículos 1° y 5° de Ley de Donaciones con fines Culturales.  
+Cód.735: Registre el crédito por donaciones destinadas al Fondo Nacional de la Reconstrucción (FNR) que se descontó del Impuesto Único  
+de Segunda Categoría que afecta al trabajador, según los Arts. 5° y 9° de la Ley N° 20.444, de 2010.  
+Cód.48: Registre el saldo de Impuesto Único de Segunda Categoría a pagar, equivalente al impuesto determinado sobre las rentas del artículo 
+42, N°1° de la LIR, conforme al Art. 43, N°1°, menos el crédito por donación anotado en el Cód. 735 y/o Cód. 751 anteriores . En el Cód. 48 
+también debe anotarse el impuesto Único de Segunda Categoría que afecta a los sueldos empresariales asignados a los empresari os 
+individuales y socios de sociedades de personas y socios gestores de sociedades en comandita por acciones  y la mayor retención de dicho 
+impuesto solicitada a los empleadores, habilitados o pagadores por rentas simultáneas, conforme al inciso final del Art. 88 de la LIR. 
+ 
+· LÍNEA 61: 
+Cód.151 Registre el monto de la retención, correspondiente a rentas clasificadas en el Art. 42, N° 2°, de la LIR, esto es, las remune raciones 
+pagadas a profesionales independientes; a personas que ejerzan cualquier profesión u ocupación lucrativa; a los Notarios, Conservadores de 
+Bienes y Archiveros Judiciales y a las sociedades de profesionales clasificadas en la Segunda Categoría. El monto retenido corresponde a la 
+aplicación del porcentaje conforme a lo señalado en el artículo quinto transitorio de la Ley 21.133, que rige a partir del 1 de enero del 2020. 
+· LÍNEA 62: 
+Cód.153 Si el beneficiario registra residencia o domicilio en Chile, registre el 10% del monto pagado durante el mes respectivo a los directores 
+y consejeros de sociedades anónimas por concepto de participaciones o asignaciones. En caso contrario ver instruccione s para los Códigos. 
+272 y 273 del Formulario 50. 
+ 
+ · LÍNEA 63: 
+Cód.49: Retención sobre rentas del Art. 42 N° 1 LIR con tasa del 3% por reintegro del préstamo tasa 0%, según art. 9 letra a) Ley N° 
+21.252. Esta retención adicional de tasa 3% debe ser efectuada por los empleadores que a contar del 1° de septiembre de 2021 paguen rentas 
+del artículo 42 N° 1 de la Ley sobre Impuesto a la Renta (LIR) (sueldos, sobresueldos, salarios, premios, dietas, gratificaciones, participaciones, 
+etc.) a trabajadores que hayan obtenido el préstamo tasa cero de la Ley N° 21.252. La retención debe ser declarada y pagada al Fisco en el 
+mes siguiente de efectuada. Esta retención se debe realizar independiente del monto de la renta percibida aun encontrándose e n el tramo 
+exento. 
+ 
+· LÍNEA 64  
+Cód.155: Retención sobre rentas del Art. 42 N° 2 LIR con tasa del 3% por reintegro del préstamo tasa 0%, según art. 7 Ley N° 21.242 
+y art. 9 letra b) Ley N° 21.252. Los pagadores obligados a retenerlos trabajadores independientes deberán realizar una retención adicional de 
+tasa 3% a dichos trabajadores independientes que hayan obtenido el préstamo tasa cero de la Ley N° 21.252 o de la Ley N° 21.242, en forma 
+independiente de los porcentajes establecidos que deben ser declarados en el código 151. 
+ 
+· LÍNEA 65:  
+Cód.54: Registre el 0,5% sobre el monto total de las ventas de periódicos, revistas e impresos realizados efectivamente a los Suplementeros. 
+· LÍNEA 66:  
+Cód.56: Registre el monto del impuesto retenido en el mes, determinado según el mineral de que se trate y las tasas que correspondan de 
+acuerdo a la publicación de tasas efectuada por el SII en cada año comercial mediante Circular correspondiente sobre el monto de las compras 
+de productos mineros efectuadas en el mes a los Pequeños Mineros Artesanales del Art. 22, N° 1º de la LIR; y a los contribuyentes mineros de 
+mediana importancia que determinan sus impuestos de acuerdo a una presunción de renta, según el Art. 34, N° 1º de la LIR. En el caso que el 
+vendedor del producto minero haya hecho uso del crédito por concepto de patente minera a que se refiere el Art. 164 del Códig o de Minería, 
+el monto a declarar es el impuesto efectivamente retenido una vez efectuada la imputación de dicho crédito (Circular N° 58, de 2001). 
+ 
+· LÍNEA 67:  
+Cód.588: Esta línea debe ser utilizada por las Compañías de Seguro que en cumplimiento de un seguro dotal contratado a partir del 7 de  
+noviembre de 2001, efectúen la retención con tasa del 15% del Art. 17, N° 3 de la LIR. El monto a declarar corresponde a la tasa de 15%  
+aplicada sobre el saldo positivo determinado de acuerdo con el mecanismo establecido en la Circular Nº 28, de 2002. 
+ 
+· LÍNEA 68:  
+Cód.589: Esta línea debe ser utilizada por las Administradoras de Fondos de Pensiones y las Instituciones Autorizadas que administren los 
+recursos de Ahorro Previsional Voluntario (APV) que efectúen la retención que establece el inciso 2° del N° 3°, del Art. 42 b is de la LIR. el 
+monto a declarar corresponde a la tasa del 15% aplicado sobre el monto de los retiros de APV efectuados desde tales instituciones, que no se 
+destinen a anticipar o mejorar las pensiones de jubilación. (Circular N° 51, de 2008). 
+ 
+· LÍNEA 69: Esta línea debe ser utilizada por los contribuyentes de la Primera Categoría que declaren sus impuestos sobre renta efectiva. 
+Cód.750: Marque con una “X” en este código sólo si es un contribuyente con inversiones en las zonas extremas del país, determinadas en  
+dichas leyes, y cumple los requisitos para acceder al beneficio de suspensión total o parcial de pagos provisionales mensuales obligatorios de 
+acuerdo a lo indicado en el Artículo 1° bis de la Ley N° 19.420 y/o en el Artículo 1° bis de la Ley N° 19.606 (incorporados por los artículos 4° y 
+5° Ley N° 20.655 de 2013). 
+Cód.30: Registre el monto de la Pérdida de Primera Categoría determinada ésta en conformidad a las normas contenidas en los Arts. 29 al 33 
+de la LIR. Si determina una pérdida tributaria al 31 de diciembre, regístrela en esta columna, en las declaraciones del trimestre siguiente, y no 
+llene ninguna de las columnas siguientes de esta línea, puesto que en tal caso opera la suspensión de efectuar Pagos Provisionales Mensuales 
+(PPM) dispuesta por el Art. 90 de la LIR. Si un contribuyente al término del ejercicio obtiene una pérdida tributaria, y ésta  ha sido totalmente 
+absorbida por utilidades retenidas en el Registro FUT a dicha fecha, dicho contribuyent e en tal caso, no se encuentra en una situación de 
+pérdida tributaria y no le da derecho a suspender los PPM por el primer trimestre del año siguiente. Aquellos contribuyentes acogidos a 
+suspensión PPM (Art. 1° bis Ley 19.420 y Art. 1° bis Ley 19.606) en código 750 no deben registrar información en esta columna. 
+Cód.563: Registre el monto de los ingresos brutos del período, determinados en Conformidad al Art. 29 y el inciso final del Art. 84 de  la LIR. 
+Respecto de los contribuyentes de la letra A) del Art. 14 ter se anota el monto de los ingresos mensuales de su actividad  (Circular N°43 del 
+2016). Para aquellos contribuyentes acogidos al beneficio de suspensión de pagos provisionales mensuales obligatorios según lo dispuesto en 
+el Artículo 1° bis de la Ley N° 19.420 y/o Artículo 1° bis de la Ley N° 19.606, la cantidad a imputar en este código se regirá por las instrucciones 
+generales de esta columna para efectos del cálculo de los pagos provisionales mensuales obligatorios del período en que se suspende el pago. 
+Cód.115: Registre la tasa porcentual a aplicar (con un sólo decimal), determinada según las normas del Art. 84, letra a) de la LIR. En el caso 
+de los contribuyentes del Art. 14 ter la tasa de los PPM equivale al 0,25%; sin embargo, podrá optar por utilizar la tasa especial establecida en 
+el Art. 84 letra i) e instruida en Circular N°43 del 2016. 
+Cód.68: Provisional Mensual Obligatorio del mismo ejercicio comercial, todo ello según el Art. 88 de la LIR. Las Administradoras de Fondos de 
+Pensiones, deberán registrar en este código, el crédito establecido en el Art. 23 del D.L. N°3.500, de 1980 (Circular N° 55, de 2008). 
+Los contribuyentes acogidos a suspensión PPM (Art. 1° bis Ley 19.420 y Art. 1° bis Ley 19.606) deben registrar en este código el monto tope 
+de suspensión. Aquellos que tengan derecho a la suspensión total, ingresarán el monto que resulte de la multiplicaci ón de lo declarado en el 
+código 563 por la tasa declarada en el código 115. Aquellos con tope máximo de 25% de los desembolsos deberán registrar, en e l primer 
+período tributario mensual en que opere la suspensión, el Monto Tope de Suspensión Anual determin ado en Declaración Jurada 1908, 
+presentada al SII para acogerse al beneficio, o en su declaración complementaria o rectificatoria, según el caso. En los períodos subsiguientes, 
+registrará el saldo (a valor histórico) del monto tope de suspensión, una vez descontados los pagos provisionales mensuales obligatorios que 
+han sido suspendidos por encontrarse cubiertos con dicho monto. Si agotado este tope, aún quedan períodos por declarar pagos provisionales 
+mensuales obligatorios en el mismo año comercial, se debería registrar valor cero en este código. 
+Cód.62: Registre el resultado que se produzca entre el producto de la Base Imponible por la Tasa, menos el Crédito registrado en la columna 
+anterior. En el caso de contribuyentes acogidos a suspensión PPM (Art. 1° bis Ley 19.420 y Art. 1° bis Ley 19.606), registre la diferencia entre 
+el valor que resulte del producto de la Base Imponible registrado en el código 563, por la Tasa registrada en el código 115, y el Monto Tope 
+Suspensión registrado en el código 68, lo anterior sólo si el primer valor determinado es mayor que el monto declarado en la columna ‘Crédito 
+/ Tope Suspensión PPM (Arts. 1°bis Leyes 19.420 y 19.606)’, código 68. 
+ 
+· LÍNEA 70:   
+Cód.156: 1ra Categoría. Art. 84 letra a) y 14 letra D) N° 3 letra (k) y N° 8 letra (a) numeral (viii) LIR, con tasa 3%, por reintegro de 
+préstamo tasa 0%, según art. 9° letra c) Ley N° 21.252 . Los empresarios individuales que hayan obtenido el préstamo tasa cero de la Ley 
+21.252 mientras registren un saldo por reintegrar del citado préstamo, deberán aumentar en un 3% el monto de los PPM que deben efectuar, 
+conforme con los artículos 14 letra D) N° 3 letra (k), 14 letra D) N° 8 letra a) N° (viii), 84 letra a), 86 y 90 de la LIR, según corresponda. Esta 
+retención se debe realizar aun cuando se encuentren suspendidos los PPMs y en forma independiente al monto de PPM declarado en código 
+62 de PPM obligatorios. 
+ 
+· LÍNEA 71: Esta línea debe ser llenada por los contribuyentes Mineros que no sean Pequeños Mineros Artesanales o Mineros que declaren 
+sus impuestos a base de renta presunta. Para tales efectos debe ceñirse a las mismas instrucciones impartidas en la línea ant erior, con la 
+única diferencia que en la Columna Crédito junto con el Pago Provisional Voluntario (PPV) de períodos anteriores que se imputa como crédito, 
+pueden imputar además, el crédito por concepto del pago de Patentes Mineras del Art. 164 del Código de Minería, según las instrucciones de 
+la Circular N° 58, de 2001. 
+ 
+· LÍNEA 72: Esta línea debe ser utilizada por los contribuyentes afectos al impuesto específico a la actividad minera del Art. 64 bis de la LIR, 
+para declarar el PPM de la letra h) del Art. 84 del mismo texto legal. 
+Cód.700: Registre el monto de la pérdida operacional que según el inciso 4° del Art. 90 de la LIR, le permite suspender este pago provisional, 
+y no llene ninguna de las columnas siguientes de esta línea.  
+Cód.701: Registre el monto de los ingresos brutos percibidos o devengados durante el mes que se declara, que provengan de las ventas d e 
+los productos mineros.  
+Cód.702: Registre la tasa variable determinada según el mecanismo de la Circular N° 55, de 2005 (con un sólo decimal); o bien la tasa de 
+0,3% en caso de que no pueda determinar la tasa variable de PPM, ya sea, por no haberse producido renta imponible operacional en el ejercicio 
+comercial anterior o por tratarse del primer ejercicio comercial afecto al citado impuesto específico o por cualquier otra circunstancia.  
+Cód.711: Registre el monto del PPV reajustado que se impute al cumplimiento del Pago Provisional Mensual Obligatorio del mismo ejercic io 
+comercial, todo ello según el Art. 88 de la LIR.  
+Cód.703: Registre el resultado que se produzca entre el producto de la base Imponible por la Tasa, menos el crédito registrado en la columna 
+anterior. 
+Línea 73: Explotador Minero Royalty Ley 21.591 
+ 
+Estos códigos deberán ser utilizados por los contribuyentes explotadores mineros obligados al pago del royalty, que no gocen de invariabilidad 
+tributaria, y que declaren y paguen sus impuestos en moneda nacional1 .  
+ 
+Cód.806: Registre el monto de la pérdida operacional que según el inciso 4° del Art. 90 de la LIR, le permite suspender este pago provisional, 
+y no llene ninguna de las columnas siguientes de esta línea, en conformidad a las instrucciones contenidas en los puntos 5.7.3. y 5.5. ambos 
+de “Suspensión de PPMO”, de la Circular N° 03 de 2024, según corresponda.  
+ 
+Cód.807: Registre el monto de los ingresos brutos percibidos o devengados durante el mes que se declara, que provengan de las ventas d e 
+los productos mineros, en conformidad a las instrucciones contenidas en los puntos 5. PAGOS PROVISIONALES MENSUALES (PPMO) y 5.7. 
+Explotadores mineros sujetos al artículo 64 bis de la LIR al 31 de diciembre de 2023, de la Circular N° 03 de 2024, según cor responda. No 
+debe incorporarse en este código el monto referido al promedio de ventas trimestrales a que se refiere el artículo segundo transitorio de la Ley 
+N° 21.591.  
+ 
+Cód.808: Registre la tasa variable determinada según el mecanismo de la Circular N° 03 de 2024. Durante el período en que rijan las normas 
+del artículo segundo de las normas transitorias de la Ley 21.591 de 2023, para el cálculo de las tasas deberá estarse a lo in dicado en las 
+instrucciones de la referida Circular, según si los contribuyentes estaban sujetos a las disposiciones de la letra b) o c) de l inciso tercero del 
+artículo 64 bis de la ley sobre impuesto a la renta; en conformidad a los puntos 5.7.1. Expl otadores mineros sujetos a la letra b) del inciso 
+tercero del artículo 64 bis de la LIR y 5.7.2. Explotadores mineros sujetos a la letra c) del inciso tercero del artículo 64 bis de la LIR. No debe 
+considerarse en este código la tasa del 1% a que se refiere el artículo segundo transitorio de la Ley N° 21.591. Cumplido el plazo de aplicación 
+de normas transitorias, para el cálculo de las tasas deberá estarse a lo preceptuado en el artículo 7 de la Ley 21.591 de 202 3, y a las 
+instrucciones de la referida Circular, en los puntos 5.1. Determinación de la tasa variable a aplicar, y siguientes; o, aplicar la tasa del 0.3%, en 
+caso de que la tasa variable no pueda determinarse. En estos casos, además deberá aplicarse el reajuste trimestral a que se refiere el pu nto 
+5.3. de la Circular antes comentada.  
+ 
+Cód.809: Registre el monto del Pago Provisional Voluntario conforme a lo señalado en el artículo 88 de la LIR e inciso final del artíc ulo 7 de 
+Ley N° 21.591. 
+ 
+Cód.810: Registre el resultado que se produzca de multiplicar la base Imponible (código 807) por la Tasa (código 808), incorporando los ajustes 
+que correspondan conforme al artículo 7 y segundo transitorio de la Ley N° 21.591 y de acuerdo a las instrucciones de la  Circular N° 03 de 
+2024, según proceda. 
+ 
+LÍNEA 74: Esta línea debe ser utilizada por los contribuyentes cuya actividad sea el transporte terrestre de pasajeros y/o carga ajena,  que 
+tributen sobre la base de renta presunta. 
+Cód.66: Registre el 0,3% del precio corriente en plaza de los vehículos destinados al transporte, según tabla de valores que cada año publica 
+el SII. En el caso de los automóviles destinados a taxis o taxis colectivos rebaje en un 30% dicho valor. 
+Acumulación de PPM: Según el Art. 91 de la LIR, los contribuyentes mencionados en la letra e) del Art. 84 de la LIR, están fa cultados para 
+acumular hasta por cuatro (4) meses, el monto de sus PPM e ingresarlos en Tesorería entre el 1° y 12 de los meses de Abril, Agosto y Diciembre. 
+ 
+· LÍNEA 75: Según la Ley N° 20.326, de 2009, esta línea debe ser declarada por internet y utilizada, por los contribuyentes del Impuesto de 
+Primera Categoría de la LIR, que conforme a lo dispuesto por la Ley N° 19.518, de 1997 tengan derecho a deducir, como crédito  contra el 
+referido impuesto, los gastos incurridos en el financiamiento de programas de capacitación desarrollados en el territorio nacional a favor de sus 
+trabajadores, siempre y cuando en el respectivo año tributario anterior, se hubiesen obtenido ingresos  brutos totales iguales o inferiores a 
+100.000 unidades de fomento (Circulares N°s 9 y 34, de 2009).  
+Cód.721: Registre y declare por internet el monto del crédito del mes por gastos de capacitación. El monto a deducir como crédito debe ser el 
+menor entre: 1) Los gastos de capacitación que el contribuyente haya efectuado en el mes que corresponda la declaración, que cumplan con 
+los requisitos de la Ley N° 19.518, de 1997 y sus normas reglamentarias; 2) El equivalente al 1% de las remuneraciones imponibles a que se 
+refiere la Ley N° 19.518, y sus normas reglamentarias, del mes que corresponda a la declaració n en que se efectúa la deducción y 3) el que 
+resulte de dividir, el crédito por gastos de capacitación de la Ley N° 19.518, imputado por el contribuyente al Impuesto de P rimera Categoría 
+en el año tributario anterior, por doce, o por el número menor de mes es en que el contribuyente hubiese efectuado actividades en el año 
+comercial respectivo debidamente reajustado, en el caso que el contribuyente no hubiese imputado crédito por gastos de capaci tación, éste 
+monto será el equivalente al 5% de los PPM que deban pagarse en la declaración respectiva.  
+Cód.722: Registre y declare por internet el remanente por gastos de capacitación del mes anterior debidamente reajustado.  
+Cód.724: Registre y declare por internet el monto de remanente por gasto de capacitación para el período siguiente que resulta de la diferencia 
+positiva de la suma entre los Códigos. 62, 123, 703 y 66 contra el Cód.723.  
+Cód.723: Registre y declare por internet el monto de crédito por gastos de capacitación a imputar que resulta de la suma de los Códigos. 721 
+y 722, con tope del valor de los PPM declarados en los Códigos. 62, 123, 703 y 66. 
+ 
+·LÍNEA 76:  
+Cód.152: Registre el monto del pago provisional mensual de las rentas percibidas por contribuyentes del Art. 42, N° 2° de la LIR, esto  es, 
+profesionales independientes; personas que ejerzan cualquier profesión u ocupación lucrativa y sociedades de profesionales clasificadas en la 
+Segunda Categoría, respecto de las cuales no se les haya efectuado la retención del Art. 74, N° 2° de la LIR. Tratándose de los Notarios, 
+Conservadores de Bienes Raíces y Archiveros Judiciales, podrán deducir del monto de sus ingresos, las remuneraciones brutas que en el mes 
+respectivo paguen a su personal (Circular N° 21, de 1991). El monto del pago provisional mensual corresponde a la aplicación del porcentaje 
+conforme a lo señalado en el artículo quinto transitorio de la Ley 21.133. 
+Registre el 10% del monto de las rentas percibidas por contribuyentes del Art. 42, N° 2° de la LIR, esto es, profesionales in dependientes; 
+personas que ejerzan cualquier profesión u ocupación lucrativa y sociedades de profesionales clasificadas en la Segunda Categoría, respecto 
+de las cuales no se les haya efectuado la retención del Art. 74, N° 2° de la LIR. Tratándose de los Notarios, Conservadores de Bienes Raíces 
+y Archiveros Judiciales, podrán deducir del monto de sus ingresos, las remuneraciones brutas que en el mes respectivo paguen a su personal 
+(Circular N° 21, de 1991). 
+ 
+·LÍNEA 77: 
+Cód. 157 2da. Categoría. Art. 84 letra b) LIR con tasa 3%, por reintegro de préstamo tasa 0%, según art. 7° Ley N° 21.242 y art. 9° letra 
+b) Ley N° 21.252. Los trabajadores independientes que hayan obtenido el préstamo tasa cero de la Ley N° 21.252 o de la Ley N° 21.242, y 
+obtengan rentas del artículo 42 N° 2 de la LIR no siendo sujetos de la retención del N° 2 del artículo 74 de la LIR, deberán aumentar en un 3% 
+el monto de los PPM que efectúen conforme a la letra b) del artículo 84 de la LIR. Los tres puntos porcentuales de retención adicional se deben 
+realizar por sobre los porcentajes establecidos en el artículo quinto transitorio de la Ley Nº 21.133, que se declaran el código 152. 
+ 
+· LÍNEA 78:  
+Cód. 70: Registre el 3% del monto de los ingresos brutos de los Talleres Artesanales u Obreros, determinados según el Art. 29 de la LIR. Si el 
+taller artesanal se dedica preponderantemente a la fabricación de bienes, aplique la tasa de 1,5% en reemplazo del 3%. 
+LÍNEA 79: Renta Líquida Provisional inciso final de la letra a) del art 84 de la LIR, Ley N° 21.210 
+ 
+· LÍNEA 80: 
+Cód.595 Registre la suma de las líneas 50 a 67, de la columna Impuesto Determinado. 
+ 
+RESULTADO DEL EJERCICIO 
+ 
+· LÍNEA 140:  
+Cód.91: Registre el resultado positivo del valor del código 595 (línea 80) o el valor registrado en código 547 (línea 134). 
+ 
+IMPUESTO ADICIONAL A LAS VENTAS, CAMBIO DE SUJETO Y OTROS 
+ 
+TRIBUTACIÓN SIMPLIFICADA 
+· LÍNEA 81:  
+Cód.529: Ventas del Período: Registre el total de las ventas efectuadas en el período. 
+ 
+· LÍNEA 82:  
+Cód.530: Créditos del Período: Registre el total del impuesto soportado en las compras efectuadas en el período. 
+ 
+· LÍNEA 83:  
+Cód.409: Registre la diferencia entre el Débito Fiscal Fijo menos el Crédito Fiscal determinado en el trimestre. Cálculo que quedará inserto en 
+el libro correspondiente, anotando los débitos. Sin embargo, si en algún mes del trimestre que se determina, el Crédito Fiscal es superior al 
+Débito Fiscal Fijo, estos excesos o remanentes se pierden. No registre ninguna cantidad en esta línea, si en el trimestre se produce esta 
+situación. 
+ 
+IMPUESTO ADICIONAL A LAS VENTAS 
+· LÍNEA 84:  
+Cód.522: Registre el impuesto determinado al aplicar la tasa del 15%, al monto neto de la primera venta o importación de las especies que se 
+señalan en el Art. 37, letras e), h), i), l) del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 85:  
+Cód.526: Registre el impuesto determinado al aplicar la tasa del 50%, al monto neto de la primera venta o importación de las especies que se 
+señalen en el Art. 37, letra j) del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 86:  
+Cód.113: Registre el total de débitos por impuesto adicional de las letras a), b) y c) del Art. 37 y Art. 40 del D.L. N° 825, de 1974, con tasa del 
+15%. 
+ 
+· LÍNEA 87:  
+Cód.28: Registre el total del crédito del período por impuesto adicional del Art. 37, letras a), b) y c) del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 88: 
+ Cód.548: Registre el monto reintegrado por devoluciones indebidas de crédito fiscal de exportadores, relativas al impuesto adicional d el Art. 
+37, del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 89:  
+Cód.540: Registre el remanente del mes anterior por concepto de impuesto adicional del Art. 37, letras a), b) y c) del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 90:  
+Cód.541: Registre el monto de la devolución solicitada según el Art. 36, del D.L. N° 825, de 1974 (franquicia exportadores), por conce pto de 
+impuesto adicional del Art. 37, letras a), b) y c) del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 91:  
+Cód. 549: Reste al monto declarado en el Cód. 113, la suma de los montos declarados en los Códigos.28, 548 y 540, y sume el monto declarado 
+en Cód. 541. Si el resultado es negativo regístrelo en el Cód. 549 sin signo. En caso contrario regístrelo en el Cód. 550. 
+ 
+· LÍNEA 92 a 96:  
+Cód.577, Cód.32, Cód.150, Cód.146 y Cód. 752: Columna “Débitos”: Registre en cada línea según corresponda, el monto del impuesto por 
+ventas afectas a impuesto adicional del Art. 42, del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 97:  
+Cód.545: Columna “Débitos”: Registre el monto de impuesto adicional del Art. 42, del D.L. N° 825, de 1974, recargado en las notas de débito 
+emitidas en el período. 
+· 
+ LÍNEA 98:  
+Cód. 546: Columna “Débitos”:  Registre el monto de impuesto adicional del Art. 42, del D.L. N° 825, de 1974, recargado en las notas de 
+crédito emitidas en el período. 
+ 
+· LÍNEA 99:  
+Cód.710: Columna “Débitos”: Registre el monto del impuesto adicional del Art. 42, del D.L. N° 825, de 1974, recargado en las notas de crédito 
+emitidas en el período, por anulación de ventas efectuadas con vales de Máquinas Registradoras, Terminales de Puntos de Ventas o Impresoras 
+Fiscales, autorizadas por el Servicio. 
+· 
+ LÍNEA 100:  
+Cód.602: Columna “Débitos”: Registre el valor que resulte de la operación aritmética de los débitos de las líneas 78 a 85. 
+ 
+· LÍNEA 101 a 105: Columna “Total crédito recargado en facturas recibidas”: Cód. 575, Cód. 574, Cód. 580, Cód. 582 y Cód. 753: Registre 
+el total del impuesto adicional del Art. 42 del D.L. N° 825, de 1974 por compras o importaciones afectas, según la tasa corre spondiente, en el 
+período que declara. Columna “Crédito imputable del período”: Cód. 576, Cód. 33, Cód. 149 Cód. 85 y Cód. 754: Registre el impuesto que 
+tiene derecho a imputar, soportado en las adquisiciones o importaciones del período que declare, de acuerdo a Circular N° 10 de 1980. 
+ 
+· LÍNEA 106:  
+Cód.551: Columna “Crédito Imputable del período”: Registre el monto de impuesto adicional del Art. 42, del D.L. N° 825, de 1974, recargado 
+en las notas de débito recibidas en el período. 
+ 
+· LÍNEA 107:  
+Cód.559: Columna “Crédito Imputable del período”: Registre el monto de impuesto adicional del Art. 42, del D.L. N° 825, de 1974, recargado 
+en las notas de crédito recibidas en el período. 
+ 
+· LÍNEA 108:  
+Cód.508: Registre el remanente de impuesto adicional del Art. 42 del D.L. N° 825, de 1974, del período anterior. 
+ 
+ 
+· LÍNEA 109: Cód.533: Registre la devolución solicitada según el Art. 36, del D.L. N° 825, de 1974 (franquicia exportador), por concepto de 
+impuesto adicional del Art. 42 del D.L. N° 825, de 1974. 
+ 
+· LÍNEA 110:  
+Cód.552: Registre el monto reintegrado por Devoluciones indebidas de crédito fiscal exportadores del impuesto adicional del Art. 42, del D.L. 
+N° 825, de 1974. 
+ 
+· LÍNEA 111:  
+·Cód.603: Registre el valor que resulte de realizar la operación aritmética de las líneas 101 a 110, de la columna ‘Crédito Imputable del período’. 
+· LÍNEA 112: Reste al monto registrado en el Cód. 602, el monto registrado en el Cód. 603. Si el resultado es negativo, regístrelo en el C ód. 
+507, sin signo. Si el resultado es positivo, regístrelo en el Cód. 506. 
+ 
+CAMBIO DE SUJETO 
+· LÍNEA 113 a 116: Estas líneas deben ser llenadas por contribuyentes retenidos.  
+Cód.556: Registre el monto de anticipo del IVA que le han retenido en el período que declara (5% para carne y 12% para harina).  
+Cód.557: Registre el remanente del anticipo del mes anterior.  
+Cód.558: Registre el monto de las devoluciones a que tuvo lugar el mes anterior.  
+Cód.543: Registre el monto de anticipo del mes, que resulta de la suma de los montos declarados en los Códigos. 556 y 557, menos la 
+devolución del mes anterior declarada en el Cód. 558. 
+ 
+· LÍNEA 117: 
+Cód.573: Registre el monto de anticipo que resulta de la diferencia positiva entre el Cód. 89, línea 50 y el Cód. 543.  
+Cód.598: Registre el monto de anticipo a imputar (5% para carne y 12% para harina), que resulta del monto declarado en el Cód. 543, con el 
+tope del IVA declarado en el Cód. 89. 
+ 
+Las siguientes líneas deben ser llenadas por contribuyentes agentes retenedores:  
+ 
+· LÍNEA 118:  
+Cód.39: Registre el monto total de las retenciones de IVA realizadas a terceros por cambio de sujeto con retención total, en el período. Registre 
+el monto total de IVA retenido a terceros por facturas de inicio recibidas. 
+ 
+· LÍNEA 119:  
+Cód.554: Registre el monto total de las retenciones de IVA realizadas a terceros por cambio de sujeto con retención parcial, del período. 
+ 
+· LÍNEA 120: C 
+Cód.736: Registre el monto total del IVA retenido por notas de crédito emitidas a terceros por cambio de sujeto con retención total o parcial, 
+del período. 
+ 
+· LÍNEA 121:  
+Cód.597: Registre el monto total de las retenciones del IVA correspondiente al margen de comercialización del vendedor minorista que 
+corresponde por la venta posterior al público consumidor, del período. 
+ 
+· LÍNEA 122:  
+Cód.555: Registre el monto total de las retenciones de IVA por anticipo de cambio de sujeto realizadas a terceros con retención parcia l, del 
+período.  
+Cód.596: Registre el monto total de las retenciones efectuadas a terceros por cambio de sujeto, que corresponde a la suma de los Cód. 39, 
+554, 597 y 555, y menos el Cód. 736. 
+ 
+CAMBIO ESPECIAL DE SUJETO (Inciso 7°, Art. 3° D.L. 825) 
+ 
+· LÍNEA 123: 
+Cód.100: Registre el monto total de IVA retenido a terceros en el periodo, por cambio especial de sujeto con retención total, conforme al inciso 
+séptimo del Art. 3° del Decreto Ley N°825, de 1974.  
+ 
+· LÍNEA 124:  
+Cód.101: Registre el monto total de ajustes por concepto de IVA asociado a reversiones y contracargos (disputas) solucionadas en el período, 
+siempre que dicho impuesto haya sido devuelto previamente al tarjetahabiente en el mismo periodo.  
+ 
+· LÍNEA 125: 
+·Cód.102: Registre el valor nominal del remanente de ajuste registrado en el código [104] del período anterior. Respecto de este valor nominal 
+no procede el reajuste a que refiere el Art. 27 del Decreto Ley N°825 de 1974. 
+ 
+· LÍNEA 126:  
+Cód.103: Registre el monto neto de IVA retenido en el período que resulte de restar al código [100] la suma de los códigos [101] y [102]. Si el 
+resultado de la operación es negativo, registre cero. El monto negativo resultante constituirá un remanente de ajuste para el próximo período y 
+debe registrase en el código [104] de la línea 126.  
+ 
+· LÍNEA 127:  
+Cód.104: Registre, sin signo, el monto negativo que resulte de restar al código [100] la suma de los códigos [101] y [102]. Este monto constituye 
+un remanente de ajuste para el período siguiente. 
+ 
+ 
+CRÉDITOS ESPECIALES 
+· LÍNEA 128:  
+Cód.725: Las empresas constructoras deben registrar el monto del crédito por Sistemas Solares Térmicos incorporados en la construcción de 
+una vivienda, determinado según el Art. 4° de la Ley N° 20.365, de 2009 y su Reglamento contenido en el D.S. N° 331, de 2010 del M. de 
+Energía.  
+Cód.737: Registre el remanente declarado en el Cód. 728 del mes inmediatamente anterior, reajustado según el Art. 27 del D.L. N° 825, de 
+1974.  
+Cód.727: Registre la suma de los Códigos. 725 y 737. 
+ 
+· LÍNEA 129:  
+Cód.704: Registre el monto pagado por patentes a que se refieren los Art. 129 bis 20 y 129 bis 21 del Código de Aguas, contenido en el D.F.L. 
+N° 1.122, de 1981. Cód.705: Registre el remanente declarado en el Cód. 707 del mes inmediatamente anterior, reajustado según el Art. 27 del 
+D.L. 825, de 1974. Cód.706: Registre la suma de los Códigos. 704 y 705. 
+ 
+· LÍNEA 130:  
+Cód.160: Registre el monto de la cotización adicional pagada en el período, que de acuerdo a lo dispuesto por la Ley N° 18.566, de 198 6, le 
+haya sido solicitada por sus trabajadores. Para dichos efectos tenga presente las instrucciones de las Circulares del SII N°s 38, de 1988 y 37, 
+de 2000 (beneficio tributario derogado a partir del 1° de junio de 2004).  
+Cód.161: Registre el remanente por concepto de cotización adicional de la Ley N° 18.566 de 1988 declarado en el código Cód. 73 del mes  
+inmediatamente anterior, reajustado según Art. 27 del D.L. N° 825, de 1974.  
+Cód.570: Registre la suma de los Códigos. 160 y 161. 
+ 
+· LÍNEA 131:  
+Cód.126: Registre el 65% del Débito Fiscal recargado por las empresas constructoras en la venta de inmuebles para habitación construid os 
+por ellas y sobre los contratos generales de construcción que no sean por administración de dichos inmuebles, considerando los topes legales 
+y los requisitos para la utilización de este crédito (Art. 21 del D.L. N° 910, de 1975 y sus modificaciones, Circulares N°s 5 2, de 2008, 39, de 
+2009 y 65 de 2014).  
+Cód.128: Registre el remanente de Crédito Especial de Empresas Constructoras declarado en línea 11 9 Cód. 130 del mes inmediatamente 
+anterior, reajustado según el Art. 27, del D.L. N° 825, de 1974.  
+Cód.571: Registre la suma de los Códigos. 126 y 128. 
+ 
+· LÍNEA 132:  
+Cód.572: Las empresas de transporte de pasajeros que sean propietarias o arrendatarias con opción de compra, de buses, que presten 
+servicios de transporte rural, interurbano o internacional, anotarán aquí el porcentaje que corresponda de las sumas de peaje s pagadas por 
+dichos vehículos, en las correspondientes plazas interurbanas concesionadas. Dicho porcentaje, de acuerdo al Art. 1° de la Ley N° 19.764, de 
+2001, y sus modificaciones y Circular N° 40, de 2008, corresponde a un 35% por los peajes pagados a contar de l 01-07-2009. ·Cód.568: 
+Registre el remanente por concepto de Recuperación de Peajes Transportistas Pasajeros de la Ley N° 19.764, de 2001, declarado en la línea 
+118, Cód. 591 del mes inmediatamente anterior, reajustado según el Art. 27, del D.L. N° 825, de 1974.  
+Cód.590: Registre la suma de los Códigos. 572 y 568. 
+ 
+· LÍNEA 133:  
+Cód.768: Las empresas que incurran en desembolsos adicionales o extraordinarios directamente relacionados con la implementación de 
+sistemas de trazabilidad de bienes, que formen parte del crédito establecido en el inciso 6° del artículo 60 quinquies del Có digo Tributario, 
+anotarán aquí el monto de dichos desembolsos, de acuerdo con las instrucciones impartidas en las Circulares N° 36 y 47, de 2015; y 30, de 
+2016, todas publicadas en internet (sii.cl).  
+Cód.769: Registre el remanente de crédito, por concepto de  desembolsos adicionales o extraordinarios directamente relacionados con la 
+implementación de sistemas de trazabilidad de bienes a que se refiere el artículo 60 quinquies del Código Tributario, declarado en la línea 121, 
+Cód. 771 del mes inmediatamente anterior, reajustado de acuerdo al Art. 27 del D.L. N° 825, de 1974.  
+Cód.770: Registre la suma de los Códigos. 768 y 769. 
+ 
+· LÍNEA 134: Anote el resultado de la suma de las cantida des registradas en las líneas 80 a la 133 (columna Impuesto Determinado). Si el 
+resultado es negativo regístrelo en esta línea entre paréntesis. Si el resultado es positivo, regístrelo en esta línea y trasládelo además a la línea 
+141, Cód. 91, del anverso del formulario. 
+ 
+ 
+· LÍNEA 135, 136, 137, 138, 139, 140: Registre en el Cód. 728, 707, 73, 130, 591 y/o 771, según corresponda, el resultado negativo determinado 
+en la línea 134 anterior (sin signo ni paréntesis). Para los fines de determinar el concepto a que corresponde este remanente, Cód. 728, 707,  
+73, 130, 591 y/o 771, impute los créditos según su procedencia de acuerdo con el orden señalado en el formulario. 
+ 
+ANTECEDENTES DEL CONTRIBUYENTE 
+Los campos de domicilio y representante legal deben ser llenados sólo en caso de modificar algún dato registrado erróneo, de ningún modo 
+significa que con el llenado de estos campos se esté cumpliendo con el aviso formal de cambio de domicilio que se debe hacer ante el Servicio 
+de Impuestos Internos mediante el Formulario 3239 “Modificación y Actualización de la Información”. 
+Todos los datos del contribuyente declarante que se registran en los códigos que se indican a continuación, no deben ser llenados en caso de 
+que no haya modificación de los mismos, y deben ser llenados en caso de que hayan sido registrados en forma incorrecta en declaraciones 
+anteriores. 
+· Código 06. Nombre de la calle o avenida del domicilio. 
+· Código 610. Número del domicilio. 
+· Código 611. Número del departamento del domicilio. 
+· Código 612. Nombre de Villa o Población del domicilio. 
+· Código 08. Nombre de la comuna. 
+· Código 53. Número de la región a la que pertenece. Para la Región Metropolitana es el 13. 
+· Código 613. Código de área del número de teléfono. 
+· Código 09. Número de teléfono. 
+· Código 601. Número del fax. 
+· Código 604. Número de teléfono celular. 
+· Código 55. Dirección de correo electrónico (mail) o de referencia del mismo. 
+· Código 44. Domicilio postal. 
+· Código 726. Comuna postal a la que pertenece. 
+· Código 313. Número de Rut del contador. 
+· Código 314. Número de Rut del representante legal. 
+ 
+NOTAS: 
+1. Se debe declarar sólo un Formulario 29 por cada período tributario. 
+2. No se aceptan formularios enmendados o con borrones y aquellos que no consignen valor en el código 91. 
+ 

@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1830.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_1830.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Anulación y observación de boletas emitidas / Plazos para anular una boleta de honorarios electrónica
+¿Cómo se puede revalidar una Boleta de Honorarios Electrónica que fue anulada por error?
+ID: 001.120.1830.005
+Fecha de creación: 16/09/2004
+Fecha de actualización: 27/03/2025
+No se puede revalidar una Boleta de Honorarios Electrónica que fue anulada por error, pues la normativa tributaria existente no considera tal situación. Por ende, debe emitirse una nueva Boleta de Honorarios Electrónica.
+Normativa Relacionada
+Ver más

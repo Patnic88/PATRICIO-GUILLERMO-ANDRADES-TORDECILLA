@@ -1,0 +1,15 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2155.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_2155.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:43 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Boleta de Prestación de Servicios de Terceros Electrónica / ¿Como emitir una boleta de prestación de servicios de terceros electrónica?
+¿Qué es la Boleta de Prestación de Servicios de Terceros Electrónica?
+ID: 001.120.2155.005
+Fecha de creación: 31/12/2004
+Fecha de actualización: 11/12/2024
+La Boleta de Prestación de Servicios de Terceros Electrónica es la representación informática de un documento tributario generado electrónicamente, que reemplaza al documento físico en papel, pero con idéntico valor legal.
+Normativa Relacionada
+Ver más

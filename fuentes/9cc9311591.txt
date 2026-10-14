@@ -1,0 +1,17 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0608.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0608.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Delegar emisión a un usuario autorizado / Autorizar emisión de boletas de honorarios electrónicas a terceros
+¿Para qué sirve la opción “Por usuario autorizado”, en el menú de Boletas de Honorarios Electrónica?
+ID: 001.120.0608.004
+Fecha de creación: 24/10/2003
+Fecha de actualización: 26/05/2025
+La opción "Por usuario autorizado", existente en el menú de Boletas de Honorarios Electrónica, permite que la emisión de este tipo de documentación tributaria pueda ser realizada por otra persona que cuente, previamente, con la autorización del contribuyente para realizar esta operación por Internet.
+Para ello, el contribuyente debe ingresar al sitio web del SII, sección Servicios online, Boletas de honorarios electrónicas, Emisor de boleta de honorarios, Delegar emisión a un usuario autorizado, opción Autorizaro revocar a un ususario autorizado, donde deberá ingresar al sistema la información de la persona que emitirá las boletas, y luego autorizarlo para que emita las boletas a nombre del contribuyente.
+También a través de esta misma opción será posible eliminar esta facultad otorgada a un tercero.
+Normativa Relacionada
+Ver más

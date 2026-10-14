@@ -1,0 +1,24 @@
+URL: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0606.htm
+URL final: https://www.sii.cl/preguntas_frecuentes/boleta_honorario_electr/001_120_0606.htm
+Estado HTTP: 200
+Leído: 2026-10-14 00:42 UTC
+
+Preguntas Frecuentes
+PREGUNTAS FRECUENTES
+Menú Principal / Boletas de Honorarios Electrónicas / Emitir boleta de honorarios electrónica / ¿Cómo puedo emitir una boleta de honorarios electrónica?
+¿Cuáles son las modalidades para emitir Boletas de Honorarios Electrónicas por Internet?
+ID: 001.120.0606.007
+Fecha de creación: 24/10/2003
+Fecha de actualización: 23/05/2025
+Las modalidades que existen, en la actualidad, para emitir Boletas de Honorarios Electrónicas por Internet son las siguientes:
+Por contribuyente, en la cual es el propio contribuyente quien emite la Boleta de Honorarios Electrónica.
+Por contribuyente con datos usados anteriormente, en que, al igual que la opción anterior, es el mismo contribuyente quien emite el documento electrónico, a través de las siguientes opciones:
+a) Seleccionar boleta de destinatario frecuente.
+b) Destinatarios de los últimos 30 días.
+c) Basarse en última boleta emitida.
+d) Tomar como base el número de la boleta emitida.
+Por usuario autorizado, en que el documento es emitido por una tercera persona autorizada por el contribuyente.
+Por un usuario autorizado con datos utilizados anteriormente.
+Emisión para Directores S.A.
+Puede obtener más información relativa a este tema en el sitio Web del SII, sección "Servcios online", "Boleta de Honorarios Electrónica", "Emisor de boleta de honorarios", opción Emtir boleta de honorarios electrónica.
+Ver más
