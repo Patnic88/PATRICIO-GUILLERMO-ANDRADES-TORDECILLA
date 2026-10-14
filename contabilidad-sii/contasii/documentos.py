@@ -276,9 +276,7 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 f"{d['id']}: {d['libro']} tipo {d['tipo_dte']} folio {d['folio']} RUT {d['rut_contraparte']} "
                 f"período {d['periodo']} total {d['total']} (asiento N° {anulado_por}): {motivo}")
 
-    alertas += _avisos_f29(lib, docs, {d["id"]: min(vigentes_doc[d["id"]] or
-                                                     centralizaciones.get(_clave_centralizacion(d)) or [0])
-                                       for d in docs})
+    alertas += _avisos_f29(lib, docs, {d["id"]: _primer_registro(lib, d, vigentes_doc[d["id"]]) for d in docs})
     for rut in sorted({d["rut_contraparte"] for d in docs if d["rut_contraparte"]}):
         pagos = len(_vigentes(lib, "SELECT DISTINCT l.asiento FROM linea l JOIN asiento a ON a.numero=l.asiento "
                                    "WHERE l.rut_aux=? AND l.documento IS NULL AND a.anula_a IS NULL "
@@ -288,6 +286,22 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                            f"correspondía a un documento borrado: esos movimientos no se anularon.")
     return {"eliminados": len(docs), "ya_borrados": len(ya_borrados), "contra_asientos": sorted(contra.values()),
             "alertas": alertas}
+
+
+def _primer_registro(lib: Libro, d, vigentes) -> int | None:
+    """Primer asiento que registró el documento (aunque después se haya anulado), o None si nunca tuvo uno."""
+    if vigentes:
+        return min(vigentes)
+    propios = _asientos_propios(lib, d["id"])
+    if propios:
+        return min(propios)
+    clave = _clave_centralizacion(d)
+    if clave[0] == "asiento":
+        return clave[1]
+    if clave[0] == "mes":
+        todas = _centralizaciones_del_mes(lib, clave[1], clave[2])
+        return min(todas) if todas else None
+    return None
 
 
 def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
@@ -326,8 +340,9 @@ def _aviso_pagos_posteriores(lib: Libro, docs, primer_asiento: dict) -> list:
     comprador de una venta no se registra en ellas.
     """
     from .rcv import FACTURAS_COMPRA
-    afecta = [d for d in docs if (d["libro"] == "honorario_recibido" and d["retencion"] > 0)
-              or (d["libro"] == "venta" and d["tipo_dte"] in FACTURAS_COMPRA)]
+    afecta = [d for d in docs if primer_asiento.get(d["id"]) and (
+        (d["libro"] == "honorario_recibido" and d["retencion"] > 0)
+        or (d["libro"] == "venta" and d["tipo_dte"] in FACTURAS_COMPRA))]  # sin registro: no movió esas cuentas
     if not afecta:
         return []
     desde = min(primer_asiento[d["id"]] for d in afecta)

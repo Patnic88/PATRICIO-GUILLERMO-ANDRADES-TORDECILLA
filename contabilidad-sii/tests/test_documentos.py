@@ -630,6 +630,26 @@ class TestQuintaRonda(Base):
         self.assertEqual(res["eliminados"], 2)
         self.assertTrue(any("nunca tuvieron registro" in a for a in res["alertas"]), res["alertas"])
 
+    def test_pago_anterior_a_una_centralizacion_antigua_anulada_no_se_avisa(self):
+        operaciones.registrar_pago_f29(self.lib, "2026-10-12", "2026-09", {"retencion_honorarios": 50000})
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        fc = self._csv("fc46.csv", VENTAS, ["1;46;Del Giro;77444444-0;CLIENTE UNO SPA (FICTICIO);700;20/10/2026;"
+                                            "20/10/2026;;;0;100000;19000;119000;19000;0;0;0;0"])
+        r = rcv.importar(self.lib, fc, "venta", "2026-10", modo="centralizado")  # después del F29
+        self.lib.anular(r.asientos[0], "2026-10-31", "a mano, versión anterior")
+        self.lib.con.execute("UPDATE documento SET asiento_centralizacion=NULL")  # base anterior a 0.4.0
+        self.lib.con.commit()
+        self.assertFalse(documentos.entro_en_f29(self.lib, self.doc("venta", "700")))
+        res = documentos.eliminar(self.lib, r.documentos, "x")
+        self.assertFalse(any("pago de F29" in a for a in res["alertas"]), res["alertas"])  # el pago N° 1 es anterior
+        # Un pago registrado después de esa importación sí se avisa.
+        operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"iva_retenido_pagar": 19000})
+        self.lib.con.execute("UPDATE documento SET eliminado=NULL WHERE folio='700'")
+        self.lib.con.commit()
+        res = documentos.eliminar(self.lib, r.documentos, "x")
+        self.assertTrue(any("pago de F29" in a for a in res["alertas"]), res["alertas"])
+
     def test_base_antigua_tiene_indice_de_centralizacion(self):
         with tempfile.TemporaryDirectory() as tmp:
             ruta = os.path.join(tmp, "vieja.db")
