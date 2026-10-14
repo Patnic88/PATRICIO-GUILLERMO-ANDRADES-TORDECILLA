@@ -443,6 +443,92 @@ class TestEliminar(Base):
         self.assertIn("2002", [str(f) for f in folios])
 
 
+class TestQuintaRonda(Base):
+    def _csv(self, nombre, modelo, filas):
+        """Archivo con la cabecera del ejemplo `modelo` y las filas dadas."""
+        with open(modelo, encoding="utf-8") as f:
+            cabecera = f.readline().rstrip("\n")
+        ruta = os.path.join(self.tmp.name, nombre)
+        with open(ruta, "w", encoding="utf-8") as f:
+            f.write("\n".join([cabecera] + filas))
+        return ruta
+
+    def test_venta_con_iva_retenido_por_el_comprador_no_avisa_pago(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        tardia = self._csv("tardia.csv", VENTAS, ["1;33;Del Giro;77444444-0;CLIENTE UNO SPA (FICTICIO);777;20/10/2026;"
+                                                  "20/10/2026;;;0;500000;95000;595000;0;95000;0;0;0"])
+        venta = rcv.importar(self.lib, tardia, "venta", "2026-10").documentos
+        operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"retencion_honorarios": 122000})
+        # La venta no movió retencion_honorarios ni iva_retenido_pagar: ningún pago pudo incluirla.
+        self.assertEqual(documentos.eliminar(self.lib, venta, "x")["alertas"], [])
+
+    def test_aviso_de_pago_una_sola_vez_con_varios_meses(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        b10 = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)["documentos"]
+        ven11 = self._csv("ven11.csv", VENTAS, ["1;33;Del Giro;77444444-0;CLIENTE UNO SPA (FICTICIO);601;05/11/2026;"
+                                                "05/11/2026;;;0;1000000;190000;1190000;0;0;0;0;0"])
+        rcv.importar(self.lib, ven11, "venta", "2026-11")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-11"))
+        bol11 = self._csv("bol11.csv", HONORARIOS, ["91;08/11/2026;VIGENTE;12345678-5;PROFESIONAL UNO (FICTICIO);"
+                                                    "500000;76250;423750"])
+        b11 = honorarios.importar(self.lib, bol11, "recibido", "2026-11", self.params)["documentos"]
+        operaciones.registrar_pago_f29(self.lib, "2026-12-12", "2026-11", {"retencion_honorarios": 76250})
+        alertas = documentos.eliminar(self.lib, b10 + b11, "x")["alertas"]
+        self.assertEqual(sum("pago de F29" in a for a in alertas), 1, alertas)
+
+    def test_centralizacion_que_suma_cero_se_rechaza(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        par = self._csv("par.csv", COMPRAS, [
+            "1;33;Del Giro;76444444-2;PROVEEDOR CUATRO SPA (FICTICIO);7001;12/10/2026;12/10/2026;;0;500000;95000;0;;"
+            "595000;0;0;0;0;0;;;",
+            "2;61;Del Giro;76444444-2;PROVEEDOR CUATRO SPA (FICTICIO);7002;13/10/2026;13/10/2026;;0;500000;95000;0;;"
+            "595000;0;0;0;0;0;;;"])
+        antes = self.lib.con.execute("SELECT COUNT(*) FROM documento").fetchone()[0]
+        with self.assertRaises(ErrorContable) as cm:
+            rcv.importar(self.lib, par, "compra", "2026-10", modo="centralizado")
+        self.assertIn("por documento", str(cm.exception))
+        self.assertEqual(self.lib.con.execute("SELECT COUNT(*) FROM documento").fetchone()[0], antes)
+        # Por documento sí se registran y se pueden borrar.
+        r = rcv.importar(self.lib, par, "compra", "2026-10")
+        self.assertEqual(documentos.eliminar(self.lib, r.documentos, "x")["eliminados"], 2)
+        self.assertTrue(self.controles_ok()["IVA de compras"])
+
+    def test_documentos_sin_registro_vigente_se_pueden_borrar(self):
+        # Base de la versión preliminar: dos documentos que se compensaban quedaron sin asiento ni centralización.
+        r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10", modo="centralizado")
+        for folio, tipo in (("7001", 33), ("7002", 61)):
+            self.lib.con.execute("INSERT INTO documento (libro, tipo_dte, rut_contraparte, folio, fecha, periodo, neto, "
+                                 "iva, total) VALUES ('compra', ?, '76444444-2', ?, '2026-10-12', '2026-10', 500000, "
+                                 "95000, 595000)", (tipo, folio))
+        self.lib.con.commit()
+        sueltos = [self.doc("compra", "7001")["id"], self.doc("compra", "7002")["id"]]
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, sueltos[:1], "x")  # se borran juntos
+        res = documentos.eliminar(self.lib, sueltos, "x")
+        self.assertEqual((res["eliminados"], res["contra_asientos"]), (2, []))
+        self.assertTrue(any("sin contra-asiento" in a for a in res["alertas"]), res["alertas"])
+        self.assertIsNone(self.lib.anulado_por(r.asientos[0]))  # la centralización de las otras sigue vigente
+        self.assertIsNone(self.doc("compra", "7001")["asiento_eliminado"])
+
+    def test_base_antigua_tiene_indice_de_centralizacion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = os.path.join(tmp, "vieja.db")
+            con = sqlite3.connect(ruta)
+            con.executescript("\n".join(l for l in db.ESQUEMA.splitlines()
+                                        if "eliminado" not in l and "asiento_centralizacion" not in l))
+            con.close()
+            lib = Libro(ruta)
+            try:
+                plan = " ".join(str(tuple(r)) for r in lib.con.execute(
+                    "EXPLAIN QUERY PLAN SELECT 1 FROM documento WHERE asiento_centralizacion=?", (1,)))
+                self.assertIn("ix_documento_centralizacion", plan)
+            finally:
+                lib.con.close()
+
+
 class TestMigracion(unittest.TestCase):
     def test_base_antigua_recibe_las_columnas(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -150,6 +150,10 @@ def _migrar(con: sqlite3.Connection) -> None:
                 # Otra conexión (la línea de comandos, otro hilo del servidor) la agregó recién.
                 if "duplicate column" not in str(e).lower():
                     raise
+    # Índices sobre columnas nuevas: van aquí y no en ESQUEMA, porque en una base anterior la columna
+    # recién existe después de agregarla.
+    with con:
+        con.execute("CREATE INDEX IF NOT EXISTS ix_documento_centralizacion ON documento(asiento_centralizacion)")
 
 
 def registrar_bitacora(con, accion: str, detalle: str = "") -> None:

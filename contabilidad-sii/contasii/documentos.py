@@ -178,6 +178,10 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
             por_asiento.setdefault(n, set()).add(d["id"])
     centralizados = [d for d in docs if not _asientos_propios(lib, d["id"])]
     centralizaciones = _centralizaciones(lib, centralizados, {d["id"] for d in docs})
+    for clave, ns in centralizaciones.items():
+        if not ns:
+            alertas.append(f"Las {({'compra': 'compras', 'venta': 'ventas'}).get(clave[1], 'boletas')} de {clave[2]} "
+                           f"elegidas no tenían un registro contable vigente: se marcan borradas sin contra-asiento.")
     for d in docs:
         # El F29 registrado del mes se calculó con los documentos que ya estaban: esos no se borran sin
         # anularlo primero. Uno importado después (su asiento es posterior) no entró en él.
@@ -208,8 +212,9 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 anulado_por = max(contra[n] for n in vigentes_doc[d["id"]])
             elif _asientos_propios(lib, d["id"]):
                 anulado_por = max(lib.anulado_por(n) for n in _asientos_propios(lib, d["id"]))
-            else:  # centralizado: lo anuló el contra-asiento de su centralización
-                anulado_por = max(contra[n] for n in centralizaciones[_clave_centralizacion(d)])
+            else:  # centralizado: lo anuló el contra-asiento de su centralización (None si no tenía registro vigente)
+                ns = centralizaciones[_clave_centralizacion(d)]
+                anulado_por = max(contra[n] for n in ns) if ns else None
             lib.con.execute("UPDATE documento SET eliminado=datetime('now','localtime'), motivo_eliminado=?, "
                             "asiento_eliminado=? WHERE id=?", (motivo, anulado_por, d["id"]))
             db.registrar_bitacora(
@@ -218,7 +223,7 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 f"período {d['periodo']} total {d['total']} (asiento N° {anulado_por}): {motivo}")
 
     alertas += _avisos_f29(lib, docs, {d["id"]: min(vigentes_doc[d["id"]] or
-                                                     centralizaciones.get(_clave_centralizacion(d), [0]))
+                                                     centralizaciones.get(_clave_centralizacion(d)) or [0])
                                        for d in docs})
     for rut in sorted({d["rut_contraparte"] for d in docs if d["rut_contraparte"]}):
         pagos = len(_vigentes(lib, "SELECT DISTINCT l.asiento FROM linea l JOIN asiento a ON a.numero=l.asiento "
@@ -233,13 +238,13 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
 
 def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
     """El F29 del mes confirmado sin asiento, pagado, o los F29 siguientes que usaron su remanente."""
-    out = []
+    out, tardios = [], []
     for per in sorted({d["periodo"] for d in docs}):
         if f29_registrado(lib, per):
             # Se borraron documentos importados después de ese F29: el mes vuelve a lo registrado. Pero un
             # pago de F29 posterior (de este mes o de otro) pudo incluir su retención o IVA retenido: el
-            # formulario de pago los toma del saldo de esas cuentas.
-            out += _aviso_pagos_posteriores(lib, [d for d in docs if d["periodo"] == per], primer_asiento)
+            # formulario de pago los toma del saldo de esas cuentas. Se revisa una vez para todos los meses.
+            tardios += [d for d in docs if d["periodo"] == per]
             continue
         rem = lib.con.execute("SELECT monto FROM remanente_iva WHERE periodo=?", (per,)).fetchone()
         pago = _pago_f29(lib, per)
@@ -255,13 +260,18 @@ def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
             if siguientes:
                 out.append(f"El F29 de {', '.join(siguientes)} ya se confirmó con el remanente de IVA de los meses "
                            f"anteriores, que cambia con este borrado: revíselo.")
-    return out
+    return out + _aviso_pagos_posteriores(lib, tardios, primer_asiento)
 
 
 def _aviso_pagos_posteriores(lib: Libro, docs, primer_asiento: dict) -> list:
-    """Pagos de F29 registrados después de estos documentos que pagaron retención o IVA retenido."""
+    """Pagos de F29 registrados después de estos documentos que pagaron retención o IVA retenido.
+
+    Solo cuentan los documentos que abonan esas cuentas: boletas recibidas con retención
+    (retencion_honorarios) y facturas de compra emitidas (iva_retenido_pagar). El IVA que retiene el
+    comprador de una venta no se registra en ellas.
+    """
     from .rcv import FACTURAS_COMPRA
-    afecta = [d for d in docs if (d["libro"] == "honorario_recibido" and d["retencion"] > 0) or d["iva_retenido"] > 0
+    afecta = [d for d in docs if (d["libro"] == "honorario_recibido" and d["retencion"] > 0)
               or (d["libro"] == "venta" and d["tipo_dte"] in FACTURAS_COMPRA)]
     if not afecta:
         return []
@@ -300,8 +310,10 @@ def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
             raise ErrorContable(f"Las {nombre} de {per} que se registraron juntas en una centralización mensual "
                                 f"({len(todos)} documentos) se borran todas juntas: elíjalas todas.")
         asientos = _centralizacion_de(lib, clave)
-        if not asientos:
+        if not asientos and clave[0] == "asiento":
             raise ErrorContable(f"No encuentro la centralización de {nombre} de {per}: revísela con su contador.")
+        # Sin centralización vigente (se anuló a mano en una versión anterior, o los documentos se compensaban
+        # y no generaron asiento): no tienen registro contable que anular; se marcan borrados todos juntos.
         out[clave] = asientos
     return out
 

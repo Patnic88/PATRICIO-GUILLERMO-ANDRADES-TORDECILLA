@@ -324,12 +324,18 @@ def importar(lib: Libro, ruta: str, libro_tipo: str, periodo: str, modo: str = "
                     a.lineas.append(_linea(c, neto, 0))
                 elif neto < 0:
                     a.lineas.append(_linea(c, 0, -neto))
-            if len(a.lineas) >= 2:
-                n = lib.registrar(a, _transaccion=False)
-                res.asientos.append(n)
-                # Cada documento queda ligado a su centralización: se borran juntos y se sabe si entraron en el F29.
-                lib.con.executemany("UPDATE documento SET asiento_centralizacion=? WHERE id=?",
-                                    [(n, i) for i in res.documentos])
+            if len(a.lineas) < 2:
+                # Los documentos nuevos se compensan entre sí (por ejemplo, una factura y su nota de crédito por el
+                # total): no habría asiento que los registre ni que se pueda anular para borrarlos después.
+                raise ErrorContable(
+                    f"Los {res.importados} documento(s) nuevo(s) de este archivo suman cero (por ejemplo, una factura y "
+                    f"su nota de crédito por el total): una centralización mensual no los puede registrar. "
+                    f"Impórtelos «por documento». No se registró nada.")
+            n = lib.registrar(a, _transaccion=False)
+            res.asientos.append(n)
+            # Cada documento queda ligado a su centralización: se borran juntos y se sabe si entraron en el F29.
+            lib.con.executemany("UPDATE documento SET asiento_centralizacion=? WHERE id=?",
+                                [(n, i) for i in res.documentos])
         if res.importados:
             from . import documentos
             res.alertas += documentos.avisos_importacion(lib, periodo, centralizado=(modo != "documento"))

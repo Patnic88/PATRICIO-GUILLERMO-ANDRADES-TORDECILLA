@@ -901,7 +901,7 @@ async function libro(t, q) {
         + (r.eliminados.length ? `<details class="panel"><summary>Documentos borrados de este mes (${r.eliminados.length})</summary>
           <div class="tablewrap"><table><thead><tr><th>Documento</th><th>RUT</th><th class="num">Total</th><th>Borrado</th><th>Motivo</th><th>Anulado con</th></tr></thead><tbody>
           ${r.eliminados.map(d => `<tr><td>${nom[d.libro]}: ${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td>${esc(d.rut_contraparte)}</td><td class="num">${peso(d.total)}</td>
-            <td class="fecha">${esc(String(d.eliminado || "").slice(0, 16).replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3-$2-$1"))}</td><td>${esc(d.motivo)}</td><td>N° ${esc(d.asiento)}</td></tr>`).join("")}</tbody></table></div></details>` : "");
+            <td class="fecha">${esc(String(d.eliminado || "").slice(0, 16).replace(/^(\d{4})-(\d{2})-(\d{2})/, "$3-$2-$1"))}</td><td>${esc(d.motivo)}</td><td>${d.asiento ? "N° " + esc(d.asiento) : "—"}</td></tr>`).join("")}</tbody></table></div></details>` : "");
       if (puede) {
         const sel = () => [...el.querySelectorAll(".docSel:checked")].map(x => +x.value);
         const contar = () => {
