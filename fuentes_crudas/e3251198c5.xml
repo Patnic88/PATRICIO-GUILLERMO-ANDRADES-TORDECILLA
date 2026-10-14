@@ -1,1 +1,319 @@
-{"error": "Service limit has been reached"}
+<?xml version="1.0" encoding="UTF-8"?><Norma xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.leychile.cl/esquemas" xsi:schemaLocation="http://www.leychile.cl/esquemas http://www.leychile.cl/esquemas/EsquemaIntercambioNorma-v1-0.xsd" normaId="1128420" esTratado="no tratado" fechaVersion="2019-02-02" SchemaVersion="1.0" derogado="no derogado">
+  <Identificador fechaPromulgacion="2019-01-24" fechaPublicacion="2019-02-02">
+    <TiposNumeros>
+      <TipoNumero>
+        <Tipo>Ley</Tipo>
+        <Numero>21133</Numero>
+      </TipoNumero>
+    </TiposNumeros>
+    <Organismos>
+      <Organismo>MINISTERIO DEL TRABAJO Y PREVISI&#211;N SOCIAL</Organismo>
+    </Organismos>
+  </Identificador>
+  <Metadatos>
+    <TituloNorma>MODIFICA LAS NORMAS PARA LA INCORPORACI&#211;N DE LOS TRABAJADORES INDEPENDIENTES A LOS REG&#205;MENES DE PROTECCI&#211;N SOCIAL</TituloNorma>
+    <Materias>
+      <Materia>Protecci&#243;n Social</Materia>
+      <Materia>Trabajador a Honorarios Sector P&#250;blico</Materia>
+      <Materia>Trabajador a Honorarios Sector Privado</Materia>
+      <Materia>Trabajador a Honorarios</Materia>
+    </Materias>
+    <NombresUsoComun>
+      <NombreUsoComun>&#160;</NombreUsoComun>
+    </NombresUsoComun>
+    
+    <IdentificacionFuente>Diario Oficial</IdentificacionFuente>
+    <NumeroFuente>42270</NumeroFuente>
+  </Metadatos>
+  <Encabezado fechaVersion="2019-02-02" derogado="no derogado">
+    <Texto>
+LEY N&#218;M. 21.133
+
+MODIFICA LAS NORMAS PARA LA INCORPORACI&#211;N DE LOS TRABAJADORES INDEPENDIENTES A LOS REG&#205;MENES DE PROTECCI&#211;N SOCIAL
+
+     Teniendo presente que el H. Congreso Nacional ha dado su aprobaci&#243;n al siguiente, 
+     
+     Proyecto de ley:</Texto>
+  </Encabezado>
+  <EstructurasFuncionales>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996570">
+      <Texto>
+     "Art&#237;culo 1&#176; .- Introd&#250;cense las siguientes modificaciones en el decreto ley N&#186; 3.500, del Ministerio del Trabajo y Previsi&#243;n Social, de 1980, que establece nuevo sistema de pensiones:
+
+     1) En el art&#237;culo 90:
+
+     a) En el inciso primero:
+
+     i) Reempl&#225;zase la expresi&#243;n "un ingreso m&#237;nimo mensual" por "cuatro ingresos m&#237;nimos mensuales".
+     ii) Agr&#233;gase la siguiente oraci&#243;n final: "Lo dispuesto en este inciso se aplicar&#225; a los socios de sociedades profesionales que tributen conforme al art&#237;culo 42, N&#176; 2&#176;, de la Ley sobre Impuesto a la Renta, quienes estar&#225;n obligados a cotizar de acuerdo a las disposiciones de este P&#225;rrafo.".
+
+     b) Agr&#233;gase, en el inciso segundo, la siguiente oraci&#243;n final: "En el evento que las cotizaciones previsionales superen el monto que debe enterarse de acuerdo al l&#237;mite m&#225;ximo imponible establecido en el inciso primero, se proceder&#225; a la reliquidaci&#243;n de las mismas por parte de las respectivas instituciones previsionales, las que estar&#225;n obligadas a devolver los excesos de cotizaci&#243;n al trabajador independiente.".
+     c) En el inciso tercero:
+
+     i) Interc&#225;lase, en la primera oraci&#243;n, a continuaci&#243;n de la locuci&#243;n "inciso primero", la siguiente frase: "o que perciban dichas rentas y no est&#233;n obligados a cotizar seg&#250;n lo dispuesto en dicho inciso,".
+     ii) Agr&#233;gase la siguiente oraci&#243;n final: "Respecto de las cotizaciones de salud, &#233;stas se calcular&#225;n sobre la base de la renta que declare mensualmente este trabajador independiente, ante la instituci&#243;n de salud previsional respectiva, la que para estos efectos no podr&#225; ser inferior a un ingreso m&#237;nimo mensual ni superior al l&#237;mite m&#225;ximo imponible que resulte de la aplicaci&#243;n del art&#237;culo 16.".
+
+     d) Interc&#225;lase el siguiente inciso cuarto, nuevo, pasando el actual inciso cuarto a ser quinto:
+
+     "Tambi&#233;n podr&#225; cotizar excepcionalmente de esta forma, el trabajador independiente del art&#237;culo 89, durante los meses en que no estuviere cubierto, por no haber percibido rentas del art&#237;culo 42, N&#176; 2&#176;, de la Ley sobre Impuesto a la Renta durante el a&#241;o calendario inmediatamente anterior. Asimismo, el trabajador independiente del art&#237;culo 89, podr&#225; cotizar de esta forma, si sus ingresos mensuales durante el a&#241;o en que se encontrare cubierto fueren superiores a sus ingresos mensuales del a&#241;o inmediatamente anterior y que sirvi&#243; de base para el pago de sus cotizaciones previsionales. En este caso, s&#243;lo podr&#225; cotizar la suma que corresponda hasta el  monto que no supere el m&#225;ximo imponible del art&#237;culo 16, una vez sumados los ingresos del mes respectivo del a&#241;o anterior y los ingresos del mes que est&#225; cotizando. Si el trabajador se encontrare en el caso del inciso segundo de este art&#237;culo, la cotizaci&#243;n no podr&#225; superar el mencionado monto m&#225;ximo imponible, una vez sumados los ingresos del mes respectivo de ambos a&#241;os y las remuneraciones correspondientes al mes que est&#225; cotizando.".
+
+     2) En el art&#237;culo 92:
+
+     a) En el inciso primero:
+
+     i) Reempl&#225;zase, en la primera oraci&#243;n, la expresi&#243;n "ingresos de los se&#241;alados" por "rentas de las se&#241;aladas".
+     ii) Elim&#237;nase, en la segunda oraci&#243;n, la expresi&#243;n "en los incisos cuarto y quinto del presente art&#237;culo y".
+
+     b) Interc&#225;lase, en el inciso segundo, a continuaci&#243;n de la expresi&#243;n "art&#237;culo 84", la siguiente frase: ", en cuyo caso el Servicio de Impuestos Internos calcular&#225; el 7% destinado a las prestaciones de salud, que ser&#225; enterado por la Tesorer&#237;a General de la Rep&#250;blica en la instituci&#243;n que el afiliado hubiere elegido".
+     c) Interc&#225;lase, en el inciso tercero, a continuaci&#243;n del primer punto seguido, la siguiente oraci&#243;n: "La diferencia entre el 7% y el monto pactado con la instituci&#243;n de salud previsional ser&#225; pagada directamente por el afiliado en la forma, plazo y condiciones acordadas, no pudiendo imputarse dicha diferencia a la retenci&#243;n a que se refiere el ordinal i) del art&#237;culo 92 F.".
+     d) Reempl&#225;zase el inciso cuarto, por el siguiente:
+
+     "Los trabajadores independientes se&#241;alados en el art&#237;culo 89 podr&#225;n, adem&#225;s, efectuar mensualmente pagos de las cotizaciones se&#241;aladas en el T&#237;tulo III, por las rentas que no est&#233;n comprendidas en el art&#237;culo 42, N&#176; 2&#176;, de la Ley sobre Impuesto a la Renta, las cuales deber&#225;n enterarse de acuerdo al inciso primero del art&#237;culo 19. En este caso, el trabajador podr&#225; pagar la cotizaci&#243;n de salud en la Administradora, quien la enterar&#225; en el Fondo Nacional de Salud.".
+
+     e) Elim&#237;nase el inciso quinto. 
+     f) Reempl&#225;zase el actual inciso sexto, que ha pasado a ser quinto, por los siguientes incisos quinto y sexto, nuevos:
+
+     "El trabajador independiente a que se refiere el art&#237;culo 89, mayor de sesenta y cinco a&#241;os de edad si es hombre, o mayor de sesenta, si es mujer, o aquel que estuviere acogido a pensi&#243;n de vejez o invalidez total, y continuare trabajando, deber&#225; efectuar la cotizaci&#243;n para salud, para el seguro social de la ley N&#176; 16.744 y para el seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063; y estar&#225; exento de la obligaci&#243;n de cotizar establecida en el T&#237;tulo III.
+     El trabajador independiente a que se refiere el art&#237;culo 89 acogido a pensi&#243;n de invalidez parcial y aquel que se encontrare dentro del plazo de seis meses a que se refiere el inciso cuarto del art&#237;culo 4&#176;, que continuare trabajando, deber&#225; efectuar las cotizaciones establecidas en este art&#237;culo 92. Asimismo, estar&#225; exento de pagar la cotizaci&#243;n destinada al financiamiento del seguro a que se refiere el art&#237;culo 59.".
+
+     3) Elim&#237;nase, en el inciso primero del art&#237;culo 92 A, la expresi&#243;n "monto total de pagos provisionales efectuados de acuerdo al inciso cuarto del art&#237;culo 92, por el trabajador independiente en el a&#241;o calendario anterior y el".
+     4) Reempl&#225;zase el art&#237;culo 92 B, por el siguiente:
+
+     "Art&#237;culo 92 B.- En el mes de febrero de cada a&#241;o, la Superintendencia de Salud y la Superintendencia de Seguridad Social informar&#225;n al Servicio de Impuestos Internos sobre la instituci&#243;n de salud previsional a la que se encuentren afiliados los trabajadores independientes.".
+
+     5) En el art&#237;culo 92 D:
+
+     a) Reempl&#225;zase, en la primera oraci&#243;n, la expresi&#243;n "verificar&#225; anualmente el monto efectivo que debi&#243;", por "calcular&#225; anualmente las cotizaciones que debe".
+     b) Interc&#225;lase, en la segunda oraci&#243;n, a continuaci&#243;n de la expresi&#243;n "administradora de fondos de pensiones", la siguiente frase: "y a la instituci&#243;n de salud previsional o Fondo Nacional de Salud, seg&#250;n sea el caso,".
+     c) Elim&#237;nase, en la tercera oraci&#243;n, el siguiente texto: ", considerando los descuentos que procedan por las cotizaciones de pensiones y de salud enteradas en el Fondo Nacional de Salud que hubiere realizado el trabajador en su calidad de dependiente, como aquellos pagos que hubiere efectuado de conformidad a los incisos cuarto y quinto del art&#237;culo 92, todos en el a&#241;o calendario inmediatamente anterior a aquel en que deba pagar sus cotizaciones como afiliado independiente y reajustados seg&#250;n determine este reglamento".
+
+     6) Reempl&#225;zase el art&#237;culo 92 E, por el siguiente:
+
+     "Art&#237;culo 92 E.- Para los efectos del seguro de invalidez y sobrevivencia, el trabajador independiente que hubiese efectuado sus cotizaciones obligatorias conforme al art&#237;culo siguiente tendr&#225; una cobertura anual de ese seguro desde el d&#237;a 1 de julio del a&#241;o en que pag&#243; las cotizaciones hasta el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago. De igual manera, estar&#225;n cubiertos aquellos trabajadores independientes que realicen pagos de cotizaciones, de acuerdo a lo establecido en los incisos tercero y cuarto del art&#237;culo 90 y en el inciso cuarto del art&#237;culo 92, en el mes anterior al siniestro.".
+
+     7) En el art&#237;culo 92 F:
+
+     a) En el inciso primero:
+
+     i) Reempl&#225;zase su encabezamiento, por el siguiente:
+
+     "Art&#237;culo 92 F.- Las cotizaciones obligatorias se&#241;aladas en el inciso primero del art&#237;culo 92 se pagar&#225;n anualmente de acuerdo al siguiente orden:".
+
+     ii) Elim&#237;nanse los ordinales i) y ii), pasando los actuales numerales iii) y iv) a ser ordinales i) y ii), respectivamente.
+     iii) Sustit&#250;yese en el actual numeral iii), que ha pasado a ser ordinal i), la frase "en los art&#237;culos 84,", por la siguiente: "en los art&#237;culos 74, N&#176; 2&#176;, 84, letra b),".
+     iv) Reempl&#225;zase en el actual numeral iv), que ha pasado a ser ordinal ii), la frase "establezca la Superintendencia de Pensiones mediante norma de car&#225;cter general", por la siguiente: "establezcan las Superintendencias de Pensiones y de Salud mediante norma de car&#225;cter general conjunta".
+
+     b) En la primera oraci&#243;n del inciso segundo:
+
+     i) Reempl&#225;zase la referencia "el literal iii)", por la siguiente: "el ordinal i)". 
+     ii) Interc&#225;lase, a continuaci&#243;n de la locuci&#243;n "Fondo Nacional de Salud", la siguiente frase: "o de la instituci&#243;n de salud previsional respectiva, seg&#250;n sea el caso,".
+
+     c) En el inciso tercero:
+
+     i) Agr&#233;gase, a continuaci&#243;n de la expresi&#243;n "Fondo Nacional de Salud", la siguiente frase: "o la instituci&#243;n de salud previsional que corresponda".
+     ii) Agr&#233;gase la siguiente oraci&#243;n final: "El reglamento regular&#225; la forma y t&#233;rminos bajo los cuales la Tesorer&#237;a General de la Rep&#250;blica enterar&#225; mensual o anualmente las cotizaciones previsionales a las distintas instituciones de seguridad social, seg&#250;n el mismo reglamento determine.".
+
+     8) Reempl&#225;zase el art&#237;culo 92 G, por el siguiente:
+
+     "Art&#237;culo 92 G.- Si las cantidades se&#241;aladas en el numeral i) del inciso primero del art&#237;culo anterior fueren de un monto inferior a las cotizaciones por pagar, se pagar&#225;n en primer lugar las destinadas al financiamiento del seguro a que se refiere el art&#237;culo 59; en segundo lugar, las cotizaciones del seguro social de la ley N&#176; 16.744; en tercer lugar, la cotizaci&#243;n para el seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063; en cuarto lugar, las cotizaciones de salud se&#241;aladas en el inciso primero del art&#237;culo 92; en quinto lugar, la destinada al financiamiento de la cotizaci&#243;n obligatoria para pensi&#243;n establecida en el inciso primero del art&#237;culo 17 y a la comisi&#243;n destinada al financiamiento de la Administradora que se se&#241;ala en el inciso tercero del art&#237;culo 29, a prorrata; y, en sexto lugar, los saldos insolutos pendientes de las cotizaciones para pensiones a que se refiere el orden inmediatamente anterior, que no hubieren podido cubrirse en los a&#241;os precedentes, reajustados de conformidad con lo dispuesto en el inciso d&#233;cimo del art&#237;culo 19.".</Texto>
+      <Metadatos>
+        <NombreParte presente="si">1 </NombreParte>
+        <TituloParte presente="no">&#160;</TituloParte>
+        
+      </Metadatos>
+    </EstructuraFuncional>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996571">
+      <Texto>
+     Art&#237;culo 2&#176;.- Introd&#250;cense las siguientes modificaciones en la ley N&#176; 20.255, que establece la reforma previsional:
+
+     1) Elim&#237;nase, en el inciso quinto del art&#237;culo 87, la segunda oraci&#243;n. 
+     2) En el art&#237;culo 88:
+
+     a) Reempl&#225;zase el inciso tercero, por el siguiente:
+
+     "Las cotizaciones se calcular&#225;n sobre la base de la renta establecida en los incisos primero y segundo del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980. Estas cotizaciones tendr&#225;n el car&#225;cter de previsionales para efectos de la Ley sobre Impuesto a la Renta.".
+
+     b) Elim&#237;nanse sus incisos cuarto y quinto, pasando su actual inciso sexto a ser cuarto y as&#237; sucesivamente.
+     c) En el actual inciso sexto, que ha pasado a ser cuarto:
+
+     i) Reempl&#225;zase la frase "En el caso que dichos trabajadores independientes no hubieren realizado los pagos mensuales correspondientes o que de la reliquidaci&#243;n practicada existieren rentas imponibles sobre las que no se hubieren efectuado las cotizaciones a que se refiere el inciso segundo,", por la siguiente "Para el pago de las cotizaciones,".
+     ii) Interc&#225;lase, a continuaci&#243;n de la expresi&#243;n "Tesorer&#237;a General de la Rep&#250;blica", la primera vez que aparece, la frase ", en el mismo plazo que establece el art&#237;culo 97 de la Ley sobre Impuesto a la Renta,".
+     iii) Interc&#225;lase, a continuaci&#243;n de la expresi&#243;n "correspondientes cotizaciones,", la frase "conforme a lo dispuesto en el art&#237;culo 92 G del decreto ley N&#176; 3.500, de 1980,".
+
+     d) Reempl&#225;zase el actual inciso s&#233;ptimo, que ha pasado a ser quinto, por el siguiente:
+
+     "Se conceder&#225; a los trabajadores independientes a que se refiere este art&#237;culo, las prestaciones m&#233;dicas y los beneficios pecuniarios del seguro social a que se refiere la ley N&#186; 16.744, a partir del d&#237;a 1 de julio del a&#241;o en que se pagaron las cotizaciones hasta el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago. Para tal efecto, se considerar&#225;n como base de c&#225;lculo de los citados beneficios, la renta imponible anual a que se refiere el inciso primero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, dividida por doce. Con todo, s&#243;lo proceder&#225; el pago de los beneficios, una vez verificado que el afiliado se encuentra al d&#237;a en el pago anual de sus cotizaciones para el Seguro Social contra Riesgos de Accidentes del Trabajo y Enfermedades Profesionales contemplado en la ley N&#186; 16.744.".
+
+     e) Sustit&#250;yese el actual inciso octavo, que ha pasado a ser sexto, por el siguiente:
+
+     "Los trabajadores independientes a que se refiere este art&#237;culo y aquellos a que se refiere el inciso tercero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, en forma previa al entero de la primera cotizaci&#243;n para el referido seguro, ya sea anual o mensual respectivamente, deber&#225;n registrarse en alguno de los organismos administradores del seguro social de la ley N&#186; 16.744. Sin perjuicio de lo anterior, para efectos de lo dispuesto en el inciso cuarto, los trabajadores independientes que no se encuentren adheridos a una mutualidad de empleadores se entender&#225;n afiliados al Instituto de Seguridad Laboral.".
+     
+     f) Elim&#237;nase en el actual inciso noveno, que ha pasado a ser s&#233;ptimo, la segunda oraci&#243;n. 
+     g) Supr&#237;mese el inciso final.
+
+     3) En el art&#237;culo 89:
+
+     a) Reempl&#225;zase, en el inciso primero, la referencia "los incisos primero, segundo, cuarto, octavo, noveno y final", por la siguiente: "el inciso segundo".
+     b) Sustit&#250;yese, en el inciso segundo, la frase "no se considerar&#225;n renta", por la siguiente: "se considerar&#225;n cotizaciones previsionales".
+     c) Agr&#233;gase el siguiente inciso tercero, nuevo, pasando el actual inciso tercero a ser cuarto:
+
+     "Las cotizaciones deber&#225;n pagarse mensualmente ante el organismo administrador del Seguro Social contra Riesgos de Accidentes del Trabajo y Enfermedades Profesionales establecido en la ley N&#176; 16.744, a que se encontrare afecto el respectivo trabajador, hasta el &#250;ltimo d&#237;a h&#225;bil del mes calendario siguiente a aquel a que corresponde la renta declarada.".
+
+     d) Interc&#225;lanse a continuaci&#243;n del actual inciso tercero, que ha pasado a ser inciso cuarto, los siguientes incisos quinto a s&#233;ptimo, nuevos:
+
+     "Para tener derecho a las prestaciones de la ley N&#186; 16.744, los trabajadores independientes de que trata el presente art&#237;culo deber&#225;n estar registrados en un organismo administrador con anterioridad al accidente o al diagn&#243;stico de la enfermedad. Adem&#225;s, deber&#225;n haber enterado la cotizaci&#243;n correspondiente al mes anteprecedente a aquel en que ocurri&#243; el accidente o tuvo lugar el diagn&#243;stico de la enfermedad profesional, o haber pagado, a lo menos, seis cotizaciones, continuas o discontinuas, en los &#250;ltimos doce meses anteriores a los mencionados siniestros, sea que aquellas se hayan realizado en virtud de su calidad de trabajador independiente o dependiente.
+     Con todo, el trabajador que se afilia por primera vez al seguro social de la ley N&#186; 16.744 en su calidad de independiente, durante los tres primeros meses posteriores a su registro, acceder&#225; a las prestaciones de aquel siempre que pague, a lo menos, las cotizaciones del mes en que ocurri&#243; el accidente o se diagnostic&#243; la enfermedad de que se trate, conforme a lo dispuesto en el inciso anterior.
+     Los trabajadores independientes a que se refiere este art&#237;culo, en forma previa al entero de la primera cotizaci&#243;n para el referido seguro, deber&#225;n registrarse en alguno de los organismos administradores del seguro social de la ley N&#176; 16.744.".
+
+     e) Elim&#237;nase el inciso final.
+
+     4) Reempl&#225;zase, en el art&#237;culo trig&#233;simo primero transitorio, la referencia "los incisos segundo, cuarto y noveno del art&#237;culo 88", por la que sigue: "el inciso segundo del art&#237;culo 88 y los incisos tercero y quinto del art&#237;culo 89".</Texto>
+      <Metadatos>
+        <NombreParte presente="si">2 </NombreParte>
+        <TituloParte presente="no">&#160;</TituloParte>
+        
+      </Metadatos>
+    </EstructuraFuncional>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996572">
+      <Texto>
+     Art&#237;culo 3&#176;.- Introd&#250;cense las siguientes modificaciones en el decreto con fuerza de ley N&#176; 1, del Ministerio de Salud, promulgado el a&#241;o 2005 y publicado el a&#241;o 2006:
+
+     1) Reempl&#225;zase el art&#237;culo 148, por el siguiente:
+
+     "Art&#237;culo 148.- Los trabajadores afiliados independientes a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, tendr&#225;n derecho a las prestaciones m&#233;dicas que proporciona el R&#233;gimen y a la atenci&#243;n en la modalidad de "libre elecci&#243;n", a partir del d&#237;a 1 de julio del a&#241;o en que pagaron las cotizaciones mediante la declaraci&#243;n anual de impuesto a la renta respectiva y hasta el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago. Los trabajadores independientes que no hayan pagado sus cotizaciones mediante la citada declaraci&#243;n requerir&#225;n un m&#237;nimo de seis meses de cotizaciones en los &#250;ltimos doce meses anteriores a la fecha en que impetren el beneficio, continuas o discontinuas.".
+
+     2) Agr&#233;gase, en el art&#237;culo 149, el siguiente inciso tercero:
+
+     "En el caso de los trabajadores independientes a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, se entender&#225;n cumplidos los requisitos se&#241;alados en los numerales 2, 3 y 4 del inciso precedente, a partir del d&#237;a 1 de julio del a&#241;o en que se pagaron las cotizaciones y hasta el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago.".
+
+     3) En el inciso segundo del art&#237;culo 152:
+
+     a) Agr&#233;gase, a continuaci&#243;n del primer punto seguido, la oraci&#243;n siguiente: "Para el c&#225;lculo de los subsidios de los trabajadores independientes del art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, generados por licencias otorgadas durante el per&#237;odo a que se refiere el inciso final del art&#237;culo 149, se deber&#225; considerar adem&#225;s la renta imponible anual establecida en el inciso primero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, dividida por doce.".
+     b) Reempl&#225;zase la expresi&#243;n "para salud" por "previsionales".
+
+     4) Interc&#225;lase en el art&#237;culo 164, a continuaci&#243;n del inciso sexto, el siguiente inciso s&#233;ptimo, nuevo, pasando el actual inciso s&#233;ptimo a ser octavo:
+
+     "En el caso de los trabajadores independientes a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, la renta mensual corresponder&#225; al 80% del conjunto de las rentas brutas anuales gravadas por el art&#237;culo 42, N&#176; 2&#186;, de la Ley sobre Impuesto a la Renta divididas por doce. En el caso de los trabajadores independientes a que se refiere el inciso tercero del art&#237;culo 90 del referido decreto ley, la renta mensual corresponder&#225; a aquella declarada ante la respectiva instituci&#243;n de salud previsional o del Fondo Nacional de Salud, seg&#250;n sea su afiliaci&#243;n.".
+
+     5) Agr&#233;gase, en el inciso sexto del art&#237;culo 197, la siguiente oraci&#243;n final: "En el caso de los trabajadores independientes del art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, los beneficios contemplados para el per&#237;odo comprendido entre el d&#237;a 1 de julio del a&#241;o en que se pagaron las cotizaciones y el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago estar&#225;n financiados por las cotizaciones a que se refiere el inciso primero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, las que se pagar&#225;n anualmente de acuerdo a lo dispuesto en el art&#237;culo 92 F del citado decreto ley.".</Texto>
+      <Metadatos>
+        <NombreParte presente="si">3 </NombreParte>
+        <TituloParte presente="no">&#160;</TituloParte>
+        
+      </Metadatos>
+    </EstructuraFuncional>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996573">
+      <Texto>
+     Art&#237;culo 4&#176;.- Introd&#250;cense las siguientes modificaciones en la ley N&#176; 21.063, que crea un seguro para el acompa&#241;amiento de ni&#241;os y ni&#241;as que padezcan las enfermedades que indica, y modifica el C&#243;digo del Trabajo para estos efectos:
+
+     1) Reempl&#225;zase la letra b) del art&#237;culo 5&#176;, por la siguiente:
+
+     "b) Los trabajadores a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, entender&#225;n cumplidos los requisitos de acceso al seguro, a partir del d&#237;a 1 de julio del a&#241;o en que se pagaron las cotizaciones y hasta el d&#237;a 30 de junio del a&#241;o siguiente a dicho pago. Respecto de los otros trabajadores independientes deber&#225;n contar, a lo menos, con doce cotizaciones previsionales mensuales, continuas o discontinuas, en los &#250;ltimos veinticuatro meses anteriores al inicio de la licencia m&#233;dica. Las cinco &#250;ltimas cotizaciones m&#225;s pr&#243;ximas al inicio de la licencia deber&#225;n ser continuas. Adem&#225;s, estos trabajadores deber&#225;n encontrarse al d&#237;a en el pago de las cotizaciones para pensiones, salud, el seguro de la ley N&#176; 16.744 y para el seguro contemplado en esta ley. Para los efectos de esta ley se considerar&#225; que se encuentran al d&#237;a quienes hayan pagado las cotizaciones para pensiones, salud, el seguro de la ley N&#176; 16.744 y el seguro creado por esta ley, el mes inmediatamente anterior al inicio de la licencia.".
+
+     2) Sustit&#250;yese el inciso cuarto del art&#237;culo 16, por el siguiente:
+
+     "Trat&#225;ndose de los trabajadores independientes del art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, el subsidio total o parcial se calcular&#225; en base a la renta anual imponible dividida por doce, del subsidio, o de ambos, por la que hubieran cotizado para el a&#241;o en que se inicia el permiso. Respecto de los otros trabajadores independientes, el subsidio se calcular&#225; sobre la base de las rentas netas y subsidios percibidos dentro de los cinco meses anteriores m&#225;s pr&#243;ximos al mes en que se inicia el permiso.".
+
+     3) Reempl&#225;zase el inciso segundo del art&#237;culo 28, por el siguiente:
+
+     "El pago de las cotizaciones de los trabajadores independientes se regir&#225; por las normas establecidas en los incisos primero y cuarto del art&#237;culo 92 del citado decreto ley N&#176; 3.500, de 1980. Para dicho pago, se proceder&#225; de acuerdo al art&#237;culo 92 F del decreto ley N&#176; 3.500, de 1980, debiendo el Servicio de Impuestos Internos comunicar a la Tesorer&#237;a General de la Rep&#250;blica, en el mismo plazo que establece el art&#237;culo 97 de la Ley sobre Impuesto a la Renta, la individualizaci&#243;n de los afiliados independientes que deban pagar dichas cotizaciones, el monto a pagar por dichos conceptos y el correspondiente organismo administrador. La Tesorer&#237;a General de la Rep&#250;blica deber&#225; enterar al respectivo organismo administrador las correspondientes cotizaciones, de acuerdo al orden de prelaci&#243;n dispuesto en el art&#237;culo 92 G del decreto ley N&#176; 3.500, de 1980, con cargo a las cantidades retenidas conforme a lo dispuesto en dicha norma y hasta el monto en que tales recursos alcancen para realizar el pago.".</Texto>
+      <Metadatos>
+        <NombreParte presente="si">4 </NombreParte>
+        <TituloParte presente="no">&#160;</TituloParte>
+        
+      </Metadatos>
+    </EstructuraFuncional>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996574">
+      <Texto>
+     Art&#237;culo 5&#176; .- Introd&#250;cense las siguientes modificaciones en la Ley sobre Impuesto a la Renta, contenida en el art&#237;culo 1&#186; del decreto ley N&#186; 824, del Ministerio de Hacienda, de 1974:
+
+     1) Interc&#225;lase, en el inciso final del art&#237;culo 50, a continuaci&#243;n de la frase "ingresos brutos anuales.", la siguiente oraci&#243;n: "El monto de las cotizaciones previsionales que se enteren por estos trabajadores independientes no se rebajar&#225; como gasto necesario para producir la renta.".
+     2) Reempl&#225;zase, en el n&#250;mero 2&#186; del art&#237;culo 74, la expresi&#243;n "10%" por "17%". 
+     3) Sustit&#250;yese, en la letra b) del inciso primero del art&#237;culo 84, la expresi&#243;n "10%" por "17%".</Texto>
+      <Metadatos>
+        <NombreParte presente="si">5 </NombreParte>
+        <TituloParte presente="no">&#160;</TituloParte>
+        
+      </Metadatos>
+    </EstructuraFuncional>
+    <EstructuraFuncional transitorio="no transitorio" tipoParte="T&#237;tulo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996575">
+      <Texto>
+     DISPOSICIONES TRANSITORIAS</Texto>
+      <Metadatos>
+        <NombreParte presente="no">&#160;</NombreParte>
+        <TituloParte presente="si">DISPOSICIONES TRANSITORIAS</TituloParte>
+        
+      </Metadatos>
+      <EstructurasFuncionales>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996576">
+          <Texto>
+     Art&#237;culo primero.- Las modificaciones que la presente ley introduce al art&#237;culo 92 E del decreto ley N&#176; 3.500, de 1980, entrar&#225;n en vigencia el 1 de julio de 2020. El afiliado independiente que hubiere pagado su cotizaci&#243;n en el proceso de declaraci&#243;n conforme con el art&#237;culo 65 de la Ley sobre Impuesto a la Renta del a&#241;o tributario 2021 tendr&#225; una cobertura de ese seguro desde el d&#237;a 1 de mayo del a&#241;o 2021 hasta el d&#237;a 30 de junio del a&#241;o 2022.
+     A su vez, el orden de prelaci&#243;n para el pago de las cotizaciones previsionales se&#241;alado en el art&#237;culo 92 G del decreto ley N&#176; 3.500, de 1980, comenzar&#225; a regir para las cotizaciones que se paguen en el proceso de declaraci&#243;n conforme con el art&#237;culo 65 de la Ley sobre Impuesto a la Renta del a&#241;o tributario 2019.</Texto>
+          <Metadatos>
+            <NombreParte presente="si">primero</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996577">
+          <Texto>
+     Art&#237;culo segundo.- Los trabajadores a que se refiere el inciso primero del art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, deber&#225;n efectuar las cotizaciones del T&#237;tulo III del mencionado decreto ley y el 7% destinado a financiar prestaciones de salud, as&#237; como la cotizaci&#243;n del seguro social de la ley N&#176; 16.744 y la cotizaci&#243;n para el seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063, por el 100% de la renta imponible establecida en el inciso primero del art&#237;culo 90 del citado decreto ley, en el proceso de declaraci&#243;n conforme con el art&#237;culo 65 de la Ley sobre Impuesto a la Renta del a&#241;o tributario 2019. Los trabajadores podr&#225;n en forma expresa manifestar su voluntad de cotizar por los montos a que se refiere el inciso siguiente, en el proceso de declaraci&#243;n conforme con el art&#237;culo 65 de la Ley sobre Impuesto a la Renta del a&#241;o tributario 2019. La Superintendencia de Pensiones, mediante una norma de car&#225;cter general, establecer&#225; el procedimiento para el ejercicio de este derecho.
+     Los trabajadores que ejerzan el derecho a que se refiere el inciso anterior, deber&#225;n efectuar las cotizaciones del T&#237;tulo III del decreto ley N&#176; 3.500, de 1980, y el 7% destinado a financiar prestaciones de salud, con excepci&#243;n de la cotizaci&#243;n destinada al financiamiento del seguro de invalidez y sobrevivencia, de la cotizaci&#243;n del seguro social de la ley N&#176; 16.744 y de la cotizaci&#243;n para el seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063, por la renta imponible establecida en el inciso primero del art&#237;culo 90 del citado decreto ley, multiplicada por 5%, 17%, 27%, 37%, 47%, 57%, 70%, 80%, 90% y 100%, en la declaraci&#243;n anual de la renta del a&#241;o tributario 2019 y siguientes, respectivamente.
+     A los subsidios por incapacidad a que tuvieren derecho los trabajadores que ejerzan el derecho a que se refiere el inciso primero no se les aplicar&#225; lo dispuesto en el inciso primero del art&#237;culo 17 del decreto con fuerza de ley N&#176; 44, del Ministerio del Trabajo y Previsi&#243;n Social, de 1978.</Texto>
+          <Metadatos>
+            <NombreParte presente="si">segundo</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996578">
+          <Texto>
+     Art&#237;culo tercero.- No regir&#225;n las obligaciones de efectuar las cotizaciones del T&#237;tulo III del decreto ley N&#176; 3.500, de 1980, el 7% destinado a financiar prestaciones de salud, la cotizaci&#243;n del seguro social de la ley N&#176; 16.744 y la cotizaci&#243;n para el seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063, para aquellos trabajadores a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, que tengan 55 a&#241;os o m&#225;s, en el caso de los hombres, o 50 a&#241;os o m&#225;s, en el caso de las mujeres, al 1 de enero de 2018.</Texto>
+          <Metadatos>
+            <NombreParte presente="si">tercero</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996579">
+          <Texto>
+     Art&#237;culo cuarto .- Hasta el 30 de junio del a&#241;o 2019, y s&#243;lo para efectos de que los trabajadores independientes se&#241;alados en el actual inciso primero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, puedan acceder a las prestaciones m&#233;dicas y pecuniarias otorgadas por el seguro social a que se refiere la ley N&#176; 16.744, el seguro de acompa&#241;amiento para ni&#241;os y ni&#241;as contenido en la ley N&#176; 21.063 y las cotizaciones de salud a que se refiere el inciso primero del art&#237;culo 92 del decreto ley N&#176; 3.500, de 1980, se entender&#225;n vigentes las normas de las leyes n&#250;meros 20.255 y 21.063 y del decreto con fuerza de ley N&#176; 1, del Ministerio de Salud, promulgado el a&#241;o 2005 y publicado el a&#241;o 2006, modificadas por la presente ley.
+     Asimismo, los pagos de cotizaciones que los trabajadores indicados en el inciso anterior hubieren realizado para los reg&#237;menes de seguridad social se&#241;alados en dicho inciso, durante el a&#241;o 2018, se imputar&#225;n a las cotizaciones que est&#233;n obligados a pagar en el proceso de declaraci&#243;n conforme con el art&#237;culo 65 de la Ley sobre Impuesto a la Renta respecto al a&#241;o tributario 2019, seg&#250;n corresponda.
+     Para el c&#225;lculo de los subsidios por incapacidad de origen com&#250;n generados por siniestros ocurridos antes de septiembre de 2019 y de los subsidios por incapacidad laboral, maternal o derivados de la ley N&#176; 21.063 generados por siniestros ocurridos antes de diciembre de 2019, la renta imponible mensual se determinar&#225; como el cociente entre la renta imponible anual a que se refiere el inciso primero del art&#237;culo 90 del decreto ley N&#176; 3.500, de 1980, obtenida en el a&#241;o 2018.</Texto>
+          <Metadatos>
+            <NombreParte presente="si">cuarto</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996580">
+          <Texto>
+     Art&#237;culo quinto.- En los ocho primeros a&#241;os contados desde el 1 de enero del a&#241;o siguiente a la publicaci&#243;n de la presente ley, el porcentaje de las cantidades que deben ser retenidas en conformidad a lo establecido en el art&#237;culo 74, N&#176; 2&#186;, de la Ley sobre Impuesto a la Renta, y de los pagos provisionales mensuales que deben efectuarse conforme al art&#237;culo 84, letra b), de la misma ley, contenida en el art&#237;culo 1&#186; del decreto ley N&#186; 824, del Ministerio de Hacienda, de 1974, modificados por el art&#237;culo 5&#176; de la presente ley, se incrementar&#225; en un 0,75% anual a partir del 1 de enero del respectivo a&#241;o; y el 1 de enero del noveno a&#241;o se incrementar&#225; en un 1%, alcanzando el 17%. De manera tal que la primera retenci&#243;n ser&#225; la que corresponda a los servicios prestados en el mes de enero del a&#241;o respectivo y al pago provisional mensual que se efect&#250;e en el mes de febrero del mismo a&#241;o, devengado en el mes de enero anterior.
+     Durante los primeros nueve a&#241;os, contados desde el a&#241;o 2019, para los trabajadores independientes que no opten por la gradualidad establecida en el art&#237;culo segundo transitorio, la cotizaci&#243;n para pensiones a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, ser&#225; el monto que resulte de la diferencia entre las cantidades retenidas y pagadas en conformidad a lo establecido en los art&#237;culos 74, N&#176; 2&#186;, 84, letra b), 88 y 89 de la Ley sobre Impuesto a la Renta y el monto que corresponda a la suma de las cotizaciones del seguro a que se refiere el art&#237;culo 59 del decreto ley N&#176; 3.500, de 1980, del seguro social de la ley N&#176; 16.744, del seguro de acompa&#241;amiento de ni&#241;os y ni&#241;as de la ley N&#176; 21.063, de la cotizaci&#243;n de salud a que se refiere el inciso primero del art&#237;culo 92 del decreto ley N&#176; 3.500, de 1980, y la comisi&#243;n del inciso tercero del art&#237;culo 29 del decreto ley N&#176; 3.500, de 1980, para el financiamiento de la Administradora. Dicha comisi&#243;n ser&#225; equivalente al cociente resultante de dividir la tasa de comisi&#243;n de la Administradora respectiva por la suma de la tasa de cotizaci&#243;n para el fondo de pensiones, a que se refiere el inciso primero del art&#237;culo 17 del decreto ley N&#176; 3.500, de 1980, y la tasa de comisi&#243;n antes mencionada, multiplicado por la suma que en cada a&#241;o se destine a pensiones, en la cual se entender&#225; incluida tanto la comisi&#243;n de la Administradora respectiva como la tasa de cotizaci&#243;n para el fondo de pensiones, seg&#250;n lo determine una norma de car&#225;cter general de la Superintendencia de Pensiones.</Texto>
+          <Metadatos>
+            <NombreParte presente="si">quinto</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+        <EstructuraFuncional transitorio="no transitorio" tipoParte="Art&#237;culo" fechaVersion="2019-02-02" derogado="no derogado" idParte="9996581">
+          <Texto>
+     Art&#237;culo sexto .- En el caso de que los trabajadores independientes a que se refiere el art&#237;culo 89 del decreto ley N&#176; 3.500, de 1980, al 31 de marzo de 2019 no hubieren pagado sus cotizaciones mensuales de salud y del seguro social de la ley N&#176; 16.744 correspondientes al a&#241;o 2018, de acuerdo a lo dispuesto en las modificaciones introducidas por la ley N&#176; 20.255, de 2008, las instituciones de previsi&#243;n respectivas no podr&#225;n perseguir el cobro de dichas deudas, las que se entender&#225;n extinguidas.".</Texto>
+          <Metadatos>
+            <NombreParte presente="si">sexto</NombreParte>
+            <TituloParte presente="no">&#160;</TituloParte>
+            
+          </Metadatos>
+        </EstructuraFuncional>
+      </EstructurasFuncionales>
+    </EstructuraFuncional>
+  </EstructurasFuncionales>
+  <Promulgacion fechaVersion="2019-02-02" derogado="no derogado">
+    <Texto>
+     Y por cuanto he tenido a bien aprobarlo y sancionarlo; por tanto prom&#250;lguese y ll&#233;vese a efecto como Ley de la Rep&#250;blica.
+
+     Santiago, 24 de enero de 2019.- SEBASTI&#193;N PI&#209;ERA ECHENIQUE, Presidente de la Rep&#250;blica.- Nicol&#225;s Monckeberg D&#237;az, Ministro del Trabajo y Previsi&#243;n Social.- Felipe Larra&#237;n Bascu&#241;&#225;n, Ministro de Hacienda.- Emilio Santelices Cuevas, Ministro de Salud.
+     Lo que transcribo a usted, para su conocimiento.- Mar&#237;a Jos&#233; Zald&#237;var Larra&#237;n, Subsecretaria de Previsi&#243;n Social. </Texto>
+  </Promulgacion>
+  
+</Norma>
