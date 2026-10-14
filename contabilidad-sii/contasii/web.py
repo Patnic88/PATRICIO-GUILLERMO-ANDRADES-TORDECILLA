@@ -314,6 +314,9 @@ class App:
             "documentos": docs, "periodos": periodos, "cerrado": lib.periodo_cerrado(periodo) if periodo else False,
             "asientos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=?", (periodo,)).fetchone()[0]
             if periodo else 0,
+            # Pagos, cobros y asientos que registró la persona (no los de facturas, boletas ni el F29, ni anulaciones).
+            "pagos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=? AND origen IN ('operacion','manual') "
+                                         "AND anula_a IS NULL", (periodo,)).fetchone()[0] if periodo else 0,
             "utm": utm,
             "retencion_honorarios": self.params(periodo).valor_opcional("retencion_honorarios") if periodo else None,
             "f29_registrado": bool(periodo and documentos.f29_registrado(lib, periodo)),
@@ -526,9 +529,25 @@ class App:
         desde, hasta = self._rango(q)
         anulados = {r[0] for r in lib.con.execute("SELECT DISTINCT anula_a FROM asiento WHERE anula_a IS NOT NULL")
                     if lib.anulado_por(r[0])}
+        origen_de = {}
+
+        def automatico(a, ls):
+            """Registro que el programa hizo al importar facturas o boletas (o la anulación de uno de ellos)."""
+            if a["origen"] in documentos.ORIGENES_DE_DOCUMENTOS or any(l["documento"] for l in ls):
+                return True
+            n = a["anula_a"]
+            while n is not None:
+                if n not in origen_de:
+                    r = lib.con.execute("SELECT origen, anula_a FROM asiento WHERE numero=?", (n,)).fetchone()
+                    origen_de[n] = (r["origen"], r["anula_a"]) if r else (None, None)
+                if origen_de[n][0] in documentos.ORIGENES_DE_DOCUMENTOS:
+                    return True
+                n = origen_de[n][1]
+            return False
+
         return {"asientos": [{"numero": a["numero"], "fecha": a["fecha"], "glosa": a["glosa"], "origen": a["origen"],
-                              "tipo": a["tipo"], "anulado": a["numero"] in anulados,
-                              "de_documento": any(l["documento"] for l in ls),
+                              "tipo": a["tipo"], "anulado": a["numero"] in anulados, "anula_a": a["anula_a"],
+                              "de_documento": any(l["documento"] for l in ls), "automatico": automatico(a, ls),
                               "anulable": documentos.motivo_no_anulable(lib, a["numero"]) is None,
                               "lineas": [{"cuenta": l["cuenta"], "nombre": l["nombre"], "debe": l["debe"],
                                           "haber": l["haber"], "rut": l["rut_aux"] or ""} for l in ls]}

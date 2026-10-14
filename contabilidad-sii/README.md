@@ -72,11 +72,64 @@ Cada mes se trabaja en **4 pasos**, en lenguaje simple:
 | 3. Calcular el impuesto (F29) | Ve el total a pagar, la fecha límite y el detalle explicado en palabras simples, y confirma para registrarlo. |
 | 4. Revisar y cerrar el mes | Ve las comprobaciones de cuadratura en verde o rojo y cierra el mes. |
 
-La pantalla de inicio muestra el dinero en el banco y en efectivo, cuánto le deben los
-clientes y cuánto debe a proveedores. Las acciones que no se pueden deshacer, como
-anular un registro o cerrar el mes, piden confirmación en pantalla. En "Libros e
-informes" están el Diario, el Mayor, el Balance de 8 columnas, el estado de resultados
-y la descarga a Excel.
+**Barra superior.** Siempre a la vista, con:
+
+- la empresa abierta (nombre y RUT);
+- el mes de trabajo, con flechas para pasar al mes anterior o al siguiente;
+- los pasos del mes, con ✓ en los que están hechos.
+
+Desde ahí se va a cualquier paso sin volver al inicio. La ventana recuerda dónde estaba:
+al recargarla (F5) vuelve a la misma pantalla, y Alt+← vuelve a la anterior.
+
+**Inicio del mes:**
+
+- destaca el paso que sigue y ofrece «Continuar» hacia él;
+- muestra los saldos de la contabilidad: banco, efectivo, lo que le deben los clientes y lo
+  que debe a proveedores;
+- si el mes todavía no termina, lo dice y ofrece ir al mes anterior, que es el que se
+  declara.
+
+**Montos.** Se escriben como se acostumbra en Chile: `1.190.000`, `1190000` o
+`$ 1.190.000`. Bajo el campo se ve cómo se entendió («= $1.190.000»). Un monto con
+decimales no se envía.
+
+**Datos sin registrar.** Si deja un formulario a medio llenar o un archivo revisado sin
+importar, el programa pregunta antes de cambiar de pantalla o de mes.
+
+**Pagos y cobros:**
+
+- las operaciones están agrupadas en «Entró dinero», «Salió dinero» y «Otros»;
+- después de registrar, el formulario queda abierto para anotar otro, con el número del
+  registro y la opción de anularlo;
+- la lista separa lo que registró la persona de los registros automáticos de las facturas
+  y boletas importadas.
+
+**Impuesto (F29):**
+
+- dice que confirmar no declara ni paga en el SII;
+- explica qué hacer si el cálculo no coincide con la propuesta del SII;
+- recuerda, por empresa y mes, las opciones avanzadas (tasa de PPM, impuesto único…) y las
+  muestra sobre el total;
+- después de confirmar, ofrece registrar el pago.
+
+**Cierre del mes:**
+
+- avisa si falta registrar el impuesto;
+- no permite cerrar un mes que no ha terminado;
+- pide marcar una casilla antes de cerrar;
+- al terminar, ofrece pasar al mes siguiente.
+
+**Libros e informes:**
+
+- Diario, Mayor, Balance de 8 columnas, Ganancias y pérdidas y descarga a Excel;
+- en «Documentos», búsqueda por RUT, nombre o número;
+- las tablas largas mantienen el encabezado a la vista.
+
+**Accesibilidad.** Todo se puede usar con el teclado, incluida la elección de archivos y
+las pestañas con flechas. Al cambiar de pantalla, el foco va al título. Los avisos se
+anuncian al lector de pantalla y los campos tienen bordes con contraste suficiente.
+
+Las acciones que no se pueden deshacer piden confirmación en pantalla.
 
 ![Inicio del mes](docs/pantalla-inicio.png)
 ![Impuesto del mes](docs/pantalla-f29.png)
@@ -92,9 +145,11 @@ pendrive.
 
 ### Eliminar una empresa o cliente
 
-En la pantalla «¿De quién es la contabilidad?», cada empresa tiene el botón **«Eliminar»**.
+En la pantalla «¿De quién es la contabilidad?», cada empresa tiene **«Enviar a la papelera»**.
 Pide confirmación y mueve la contabilidad a la **Papelera** (la subcarpeta `Papelera` de la
-carpeta de datos), con la fecha y hora en que se eliminó. Desde la Papelera, al pie de esa
+carpeta de datos), con la fecha y hora en que se eliminó. Justo después aparece
+**«Deshacer»**. La misma pantalla ofrece **«Continuar con»** la última empresa abierta y,
+con dos o más, un buscador por nombre o RUT. Desde la Papelera, al pie de esa
 misma pantalla, puede **«Restaurar»** la contabilidad o **«Borrar para siempre»**; para borrar
 hay que escribir el RUT y no se puede deshacer. No se puede restaurar encima de una
 contabilidad activa con el mismo RUT.
@@ -107,8 +162,10 @@ en la empresa equivocada o en el mes equivocado):
 - **Al importar:** la tarjeta del archivo ofrece **«Deshacer esta importación»**, que borra
   los documentos que ese archivo registró. Una boleta agregada a mano ofrece **«Borrar esta
   boleta»**.
-- **Después:** en **«Libros» → «Documentos»** del mes, marque los documentos y presione
-  **«Borrar los elegidos»**. Se pide un motivo.
+- **Después:** en **«Libros» → «Documentos»** del mes, presione **«Corregir: borrar
+  documentos importados por error»**. Marque los documentos y presione **«Borrar los
+  elegidos»**. Se pide un motivo. Si usa la búsqueda, solo se borran los documentos que
+  están a la vista.
 
 Qué hace el programa al borrar:
 
@@ -231,8 +288,9 @@ propio contribuyente (fuentes de terceros, sin confirmación oficial vigente).
 
 ### Qué está verificado y qué falta
 
-Verificado contra el SII real el 13-10-2026, sin credenciales, desde GitHub Actions en
-Windows con Edge:
+Verificado contra el SII real el 13-10-2026 con Edge, y de nuevo el 14-10-2026 con
+Google Chrome (el navegador que usa el programa desde la versión 0.5.0). Ambas pruebas se
+hicieron sin credenciales, desde GitHub Actions en Windows:
 
 - La página de ingreso recibe después de «?» la dirección a la que vuelve. Tiene el
   formulario de RUT y clave y el botón de Clave Única
@@ -242,7 +300,8 @@ Windows con Edge:
   programa usa esas cookies para detectar el ingreso y mostrar el RUT.
 - Sin sesión, la dirección del Registro de Compras y Ventas
   (`www4.sii.cl/consdcvinternetui/`) redirige a la página de ingreso.
-- El programa abre Edge, lo controla, recibe descargas y lo cierra borrando el perfil.
+- El programa abre el navegador, lo controla, recibe descargas y lo cierra borrando el
+  perfil.
 
 **[VERIFICAR] con una sesión real:**
 

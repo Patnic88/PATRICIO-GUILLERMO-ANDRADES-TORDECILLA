@@ -115,7 +115,8 @@ class VentanaPrograma:
         self.perfil = perfil or carpeta_perfil_ventana()
         os.makedirs(self.perfil, exist_ok=True)
         args = [self.ruta, f"--app={url}", f"--user-data-dir={self.perfil}", "--remote-debugging-port=0",
-                "--no-first-run", "--no-default-browser-check", "--disable-default-apps", "--window-size=1280,860"]
+                "--no-first-run", "--no-default-browser-check", "--disable-default-apps", "--window-size=1280,860",
+                "--lang=es-CL"]  # fechas en día-mes-año y textos de Chrome en español
         if headless:
             args += ["--headless=new", "--disable-gpu"]
         if sys.platform.startswith("linux") and os.geteuid() == 0:

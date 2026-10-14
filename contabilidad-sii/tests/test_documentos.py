@@ -807,6 +807,10 @@ class TestRutasWeb(unittest.TestCase):
         self.assertEqual(d["eliminados"][0]["motivo"], "Importación deshecha: compras.csv")
         st, res = self.req(e + "/resumen?periodo=2026-10")
         self.assertNotIn("compra", res["documentos"])
+        self.assertEqual(res["pagos_mes"], 0)  # las anulaciones de documentos no son pagos ni cobros
+        st, d = self.req(e + "/diario?periodo=2026-10")
+        anul = [a for a in d["asientos"] if a["tipo"] == "anulacion"]
+        self.assertTrue(anul and all(a["automatico"] and a["anula_a"] for a in anul))  # van con los automáticos
         st, rv = self.req(e + "/revision?periodo=2026-10")
         self.assertTrue(all(c["ok"] for c in rv["controles"] if c["nombre"] != "Documentos con RUT válido"), rv)
 

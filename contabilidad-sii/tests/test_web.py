@@ -63,9 +63,18 @@ class TestWeb(unittest.TestCase):
             st, r = self.req(e + "/importar", {"contenido": self.b64(f), "periodo": "2026-10", "nombre": f})
             self.assertEqual(st, 200, r)
 
+        st, r = self.req(e + "/resumen?periodo=2026-10")
+        self.assertEqual(r["pagos_mes"], 0)  # lo importado no cuenta como pagos y cobros de la persona
         st, r = self.req(e + "/movimiento", {"operacion": "cobro_cliente", "fecha": "2026-10-28", "monto": 5950000,
                                              "medio": "banco", "rut": "77444444-0"})
         self.assertEqual(st, 200, r)
+        cobro = r["numero"]
+        st, r = self.req(e + "/resumen?periodo=2026-10")
+        self.assertEqual(r["pagos_mes"], 1)
+        st, r = self.req(e + "/diario?periodo=2026-10")
+        auto = {a["numero"]: a["automatico"] for a in r["asientos"]}
+        self.assertFalse(auto.pop(cobro))
+        self.assertTrue(auto and all(auto.values()))  # los de facturas y boletas importadas
         st, r = self.req(e + "/movimiento", {"operacion": "cobro_cliente", "fecha": "2026-10-28", "monto": 0})
         self.assertEqual(st, 400)
 
