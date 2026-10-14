@@ -1,6 +1,6 @@
 """Lectura directa (sin credenciales) de páginas oficiales sobre boletas de honorarios.
 Guarda el texto de cada página en fuentes/ con la URL, el estado HTTP y la fecha de lectura."""
-import datetime, hashlib, html, os, re, subprocess, urllib.error, urllib.request
+import datetime, hashlib, html, os, re, urllib.error, urllib.request
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36"}
 os.makedirs("fuentes", exist_ok=True)
@@ -30,13 +30,12 @@ for url in [u.strip() for u in open("diag/urls_fuentes.txt") if u.strip()]:
     except Exception as e:  # noqa: BLE001
         estado, final, crudo, tipo = None, url, repr(e).encode(), "error"
     if url.lower().endswith(".pdf") or "pdf" in tipo:
-        open(f"fuentes/{nombre}.pdf", "wb").write(crudo)
         try:
-            texto = subprocess.run(["pdftotext", "-layout", f"fuentes/{nombre}.pdf", "-"], capture_output=True,
-                                   text=True, timeout=60).stdout
+            import io
+            from pypdf import PdfReader
+            texto = "\n".join((pg.extract_text() or "") for pg in PdfReader(io.BytesIO(crudo)).pages)
         except Exception as e:  # noqa: BLE001
-            texto = f"[no se pudo extraer texto del PDF: {e}]"
-        os.remove(f"fuentes/{nombre}.pdf")
+            texto = f"[no se pudo extraer texto del PDF: {e!r}]"
     elif url.lower().endswith(".doc"):
         texto = "[documento .doc no convertido]"
     else:

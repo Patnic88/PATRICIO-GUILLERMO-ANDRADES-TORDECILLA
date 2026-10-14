@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get install -y -q poppler-utils > /dev/null
+      - run: python3 -m pip install -q pypdf
       - run: python3 diag/fuentes_bhe.py
       - name: Guardar los textos en esta rama temporal
         run: |
