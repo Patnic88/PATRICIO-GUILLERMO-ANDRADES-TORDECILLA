@@ -471,7 +471,7 @@ function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alLi
     <label>Motivo<input type="text" class="bMot" value="${esc(motivo)}" placeholder="Ej.: importado en la empresa equivocada" aria-describedby="${id}q ${id}e"></label>
     <div class="row"><button class="btn danger bSi" type="button">Sí, borrar</button><button class="btn bCan" type="button">Cancelar</button></div><div class="bErr"></div></div>`;
   $(".bCan", cont).onclick = cerrar;
-  $(".confirm", cont).onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); cerrar(); } };
+  cont.onkeydown = ev => { if (ev.key === "Escape" && $(".confirm", cont)) { ev.preventDefault(); cerrar(); } };
   $(".bSi", cont).onclick = async () => {
     const b = $(".bSi", cont); b.disabled = true;
     try {
@@ -483,7 +483,7 @@ function confirmarBorrado(cont, { ids, texto, motivo = "", emp = S.empresa, alLi
       toast("Documentos borrados");
       $(".msg", cont).focus();
       if (alListo) await alListo(r);
-    } catch (e) { b.disabled = false; error($(".bErr", cont), e); }
+    } catch (e) { b.disabled = false; error($(".bErr", cont), e); $(".bMot", cont).focus(); }
   };
   // Enter confirma y Escape cancela. La confirmación puede estar dentro de otro formulario (la boleta a
   // mano): sin esto, Enter enviaría ese formulario.
@@ -879,7 +879,8 @@ async function libro(t, q) {
       const nom = { compra: "Compra", venta: "Venta", honorario_recibido: "Boleta recibida", honorario_emitido: "Boleta emitida" };
       const pillEst = e => e ? `<span class="pill ${e.nivel === "ok" ? "ok" : e.nivel === "revisar" ? "warn" : "bad"}" title="${esc(e.explicacion)} (consultado ${esc(e.consultado)}, ${e.ambiente === "produccion" ? "producción" : "ambiente de pruebas"})">${esc(e.estado || "error")}</span>` : `<span class="small muted">—</span>`;
       const hayFacturas = r.documentos.some(d => d.libro === "compra" || d.libro === "venta");
-      const periodo = q.split("=")[1], puede = !r.cerrado && !r.f29_asiento && r.documentos.length > 0;
+      const periodo = q.split("=")[1], puede = !r.cerrado && r.documentos.some(d => !d.en_f29);
+      const enF29 = r.documentos.filter(d => d.en_f29).length;
       el.innerHTML = (hayFacturas ? `<details class="panel" id="estSII"><summary><b>Consultar el estado de estas facturas en el SII</b></summary>
           <div class="stack"><p class="muted small">El SII indica si cada factura o nota fue recibida y si sus datos coinciden. Necesita su certificado digital; el archivo y la clave se usan solo en memoria. La consulta no modifica nada en el SII.</p>
           <div class="grid2">
@@ -890,9 +891,9 @@ async function libro(t, q) {
             <label for="eqLibro">Documentos<select id="eqLibro"><option value="">Compras y ventas</option><option value="compra">Solo compras</option><option value="venta">Solo ventas</option></select></label>
           </div>
           <div><button class="btn primary" type="button" id="eqBtn">Consultar en el SII</button></div><div id="eqRes"></div></div></details>` : "")
-        + (r.documentos.length ? `${puede ? "" : `<p class="small muted">${esc(r.cerrado ? "Este mes está cerrado: sus documentos no se pueden borrar." : `El F29 de este mes ya está registrado (N° ${r.f29_asiento}). Para borrar documentos, primero anule ese registro en «Pagos y cobros».`)}</p>`}
+        + (r.documentos.length ? `${r.cerrado ? `<p class="small muted">Este mes está cerrado: sus documentos no se pueden borrar.</p>` : enF29 ? `<p class="small muted">El F29 de este mes ya está registrado (N° ${esc(r.f29_asiento)}). Los ${enF29} documentos que entraron en él no se pueden borrar sin anular primero ese registro en «Pagos y cobros»${puede ? "; los importados después, sí" : ""}.</p>` : ""}
         <div class="tablewrap"><table><thead><tr>${puede ? `<th><input type="checkbox" id="docTodos" aria-label="Elegir todos los documentos"></th>` : ""}<th>Tipo</th><th>Documento</th><th>Fecha</th><th>RUT</th><th>Nombre</th><th class="num">Neto/Bruto</th><th class="num">IVA/Retención</th><th class="num">Total</th><th>Estado SII</th></tr></thead><tbody>
-        ${r.documentos.map(d => `<tr>${puede ? `<td><input type="checkbox" class="docSel" value="${d.id}" aria-label="Elegir ${esc(nom[d.libro])} N° ${esc(d.folio)}"></td>` : ""}<td>${nom[d.libro]}</td><td>${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td class="fecha">${d.fecha.split("-").reverse().join("-")}</td><td>${esc(d.rut_contraparte)}</td><td>${esc(d.razon_social)}</td>
+        ${r.documentos.map(d => `<tr>${puede ? `<td>${d.en_f29 ? `<span class="small muted" title="Entró en el F29 registrado del mes">F29</span>` : `<input type="checkbox" class="docSel" value="${d.id}" aria-label="Elegir ${esc(nom[d.libro])} N° ${esc(d.folio)}">`}</td>` : ""}<td>${nom[d.libro]}</td><td>${esc(r.tipos[d.tipo_dte] || "Boleta de honorarios")} N° ${esc(d.folio)}</td><td class="fecha">${d.fecha.split("-").reverse().join("-")}</td><td>${esc(d.rut_contraparte)}</td><td>${esc(d.razon_social)}</td>
           <td class="num">${peso(d.bruto || d.neto + d.exento)}</td><td class="num">${peso(d.retencion || d.iva)}</td><td class="num">${peso(d.total)}</td><td>${pillEst(est.estados[String(d.id)])}</td></tr>`).join("")}</tbody></table></div>
         ${puede ? `<div class="row"><button class="btn danger" type="button" id="docBorrar" disabled>Borrar los elegidos</button><span class="small muted" id="docCuenta"></span></div>` : ""}`
         : `<p class="muted">No hay documentos en este mes.</p>`)
@@ -909,6 +910,7 @@ async function libro(t, q) {
         };
         el.querySelectorAll(".docSel").forEach(x => x.onchange = contar);
         $("#docTodos").onchange = () => { el.querySelectorAll(".docSel").forEach(x => x.checked = $("#docTodos").checked); contar(); };
+        $("#docTodos").setAttribute("aria-label", enF29 ? "Elegir todos los que se pueden borrar" : "Elegir todos los documentos");
         $("#docBorrar").onclick = () => {
           const ids = sel();
           confirmarBorrado($("#docConf"), { ids, texto: `¿Borrar ${ids.length} documento(s) de ${nomMes(periodo)}?`, motivo: "Importado por error",

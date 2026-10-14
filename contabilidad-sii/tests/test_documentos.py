@@ -153,7 +153,11 @@ class TestEliminar(Base):
         rcv.importar(self.lib, VENTAS, "venta", "2026-10")
         n = impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
         r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")  # por error, después del F29
-        self.assertTrue(any(f"ya está registrado (N° {n})" in a for a in r.alertas), r.alertas)
+        self.assertTrue(any(f"ya está registrado (N° {n})" in a and "bórrelos" in a for a in r.alertas), r.alertas)
+        self.assertEqual({documentos.entro_en_f29(self.lib, x) for x in self.lib.con.execute(
+            "SELECT * FROM documento WHERE libro='compra'")}, {False})
+        self.assertEqual({documentos.entro_en_f29(self.lib, x) for x in self.lib.con.execute(
+            "SELECT * FROM documento WHERE libro='venta'")}, {True})
         res = documentos.eliminar(self.lib, r.documentos, "importación deshecha")
         self.assertEqual(res["eliminados"], 4)
         venta = self.lib.con.execute("SELECT id FROM documento WHERE libro='venta' LIMIT 1").fetchone()[0]
@@ -164,6 +168,35 @@ class TestEliminar(Base):
         r = rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
         self.assertTrue(any("ya está registrado" in a for a in r.alertas))
         self.assertEqual(documentos.eliminar(self.lib, r.documentos, "otra vez")["eliminados"], 4)
+
+    def test_pago_del_f29_posterior_avisa(self):
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        r = honorarios.importar(self.lib, HONORARIOS, "recibido", "2026-10", self.params)
+        operaciones.registrar_pago_f29(self.lib, "2026-11-12", "2026-10", {"retencion_honorarios": 122000})
+        res = documentos.eliminar(self.lib, r["documentos"], "x")
+        self.assertTrue(any("pago del F29" in a for a in res["alertas"]), res["alertas"])
+
+    def test_legado_con_centralizacion_no_salta_el_f29(self):
+        rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
+        d = self.doc("compra", "1001")["id"]
+        n = self.lib.con.execute("SELECT DISTINCT asiento FROM linea WHERE documento=?", (d,)).fetchone()[0]
+        self.lib.anular(n, "2026-10-03", "a mano, versión anterior")
+        rcv.importar(self.lib, VENTAS, "venta", "2026-10")
+        impuestos.contabilizar_f29(self.lib, impuestos.propuesta_f29(self.lib, self.params, "2026-10"))
+        otro = os.path.join(self.tmp.name, "otras.csv")
+        with open(COMPRAS, encoding="utf-8") as f:
+            lineas = f.read().splitlines()
+        with open(otro, "w", encoding="utf-8") as f:  # otras compras del mes, importadas centralizadas
+            f.write("\n".join([lineas[0]] + [l.replace(";1001;", ";9001;").replace(";2002;", ";9002;")
+                                               .replace(";303;", ";9303;").replace(";55;", ";9055;") for l in lineas[1:]]))
+        rcv.importar(self.lib, otro, "compra", "2026-10", modo="centralizado")
+        self.assertFalse(documentos.entro_en_f29(self.lib, self.doc("compra", "9001")))
+        self.assertTrue(documentos.entro_en_f29(self.lib, self.doc("compra", "1001")))
+        centralizados = [x[0] for x in self.lib.con.execute("SELECT id FROM documento WHERE folio LIKE '9%'")]
+        with self.assertRaises(ErrorContable):
+            documentos.eliminar(self.lib, centralizados + [d], "x")
+        self.assertEqual(documentos.eliminar(self.lib, centralizados, "x")["eliminados"], 4)
 
     def test_f29_con_anulacion_anulada_sigue_registrado(self):
         rcv.importar(self.lib, COMPRAS, "compra", "2026-10")
@@ -425,6 +458,8 @@ class TestCLI(Base):
                 codigo = cli.main(["--db", self.db, *args])
             return codigo, out.getvalue()
         self.assertEqual(correr("importar-rcv", COMPRAS, "--libro", "compra", "--periodo", "2026-10")[0], 0)
+        self.assertIn("Números internos (para borrar-documento): 1 2 3 4",
+                      correr("importar-rcv", VENTAS, "--libro", "venta", "--periodo", "2026-10")[1].replace("5 6 7 8", "1 2 3 4"))
         codigo, texto = correr("documentos", "2026-10")
         self.assertEqual(codigo, 0)
         primera = texto.strip().splitlines()[0]

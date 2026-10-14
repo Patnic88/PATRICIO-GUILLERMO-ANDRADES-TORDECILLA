@@ -63,6 +63,29 @@ def _periodo(lib: Libro, numero: int) -> str:
     return lib.con.execute("SELECT periodo FROM asiento WHERE numero=?", (numero,)).fetchone()[0]
 
 
+def _centralizacion_de(lib: Libro, libro: str, periodo: str) -> list:
+    origen = "honorarios" if libro.startswith("honorario") else f"rcv-{libro}"
+    return _vigentes(lib, "SELECT numero FROM asiento a WHERE origen=? AND periodo=? AND anula_a IS NULL AND "
+                          "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL)",
+                     (origen, periodo))
+
+
+def asientos_de(lib: Libro, d) -> list:
+    """Asientos vigentes que registran el documento: los propios o, si se importó centralizado, la
+    centralización de su libro y mes. Vacío si sus asientos propios ya estaban anulados."""
+    propios = _asientos_propios(lib, d["id"])
+    if propios:
+        return [n for n in propios if lib.anulado_por(n) is None]
+    return _centralizacion_de(lib, d["libro"], d["periodo"])
+
+
+def entro_en_f29(lib: Libro, d) -> bool:
+    """True si el F29 registrado del mes se calculó con este documento (su registro es anterior)."""
+    n = f29_registrado(lib, d["periodo"])
+    ref = asientos_de(lib, d)
+    return bool(n and (not ref or min(ref) < n))
+
+
 def motivo_no_anulable(lib: Libro, numero: int):
     """Por qué un asiento no se puede anular suelto, o None si se puede."""
     a = lib.con.execute("SELECT * FROM asiento WHERE numero=?", (numero,)).fetchone()
@@ -143,9 +166,8 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
     for d in docs:
         # El F29 registrado del mes se calculó con los documentos que ya estaban: esos no se borran sin
         # anularlo primero. Uno importado después (su asiento es posterior) no entró en él.
-        n = f29_registrado(lib, d["periodo"])
-        propios = vigentes_doc[d["id"]] or centralizaciones.get((d["libro"], d["periodo"]), [])
-        if n and (not propios or min(propios) < n):
+        if entro_en_f29(lib, d):
+            n = f29_registrado(lib, d["periodo"])
             raise ErrorContable(f"El F29 de {d['periodo']} ya está registrado en la contabilidad (asiento N° {n}) e "
                                 f"incluye la {_nombre(d)}. Si necesita corregirlo, anule primero ese registro y después "
                                 f"borre los documentos.")
@@ -180,7 +202,9 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
                 f"{d['id']}: {d['libro']} tipo {d['tipo_dte']} folio {d['folio']} RUT {d['rut_contraparte']} "
                 f"período {d['periodo']} total {d['total']} (asiento N° {anulado_por}): {motivo}")
 
-    alertas += _avisos_f29(lib, docs)
+    alertas += _avisos_f29(lib, docs, {d["id"]: min(vigentes_doc[d["id"]] or
+                                                     centralizaciones.get((d["libro"], d["periodo"]), [0]))
+                                       for d in docs})
     for rut in sorted({d["rut_contraparte"] for d in docs if d["rut_contraparte"]}):
         pagos = len(_vigentes(lib, "SELECT DISTINCT l.asiento FROM linea l JOIN asiento a ON a.numero=l.asiento "
                                    "WHERE l.rut_aux=? AND l.documento IS NULL AND a.anula_a IS NULL "
@@ -192,12 +216,19 @@ def eliminar(lib: Libro, ids, motivo) -> dict:
             "alertas": alertas}
 
 
-def _avisos_f29(lib: Libro, docs) -> list:
+def _avisos_f29(lib: Libro, docs, primer_asiento: dict) -> list:
     """El F29 del mes confirmado sin asiento, pagado, o los F29 siguientes que usaron su remanente."""
     out = []
     for per in sorted({d["periodo"] for d in docs}):
         if f29_registrado(lib, per):
-            continue  # se borraron documentos importados después de ese F29: el mes vuelve a lo registrado
+            # Se borraron documentos importados después de ese F29: el mes vuelve a lo registrado. Pero un
+            # pago del F29 posterior a ellos pudo incluir su retención (la toma del saldo de la cuenta).
+            pago = _pago_f29(lib, per)
+            desde = min(primer_asiento[d["id"]] for d in docs if d["periodo"] == per)
+            if pago and pago > desde:
+                out.append(f"El pago del F29 de {per} (N° {pago}) se registró después de importar estos documentos y "
+                           f"pudo incluir su retención o IVA retenido: revise ese pago.")
+            continue
         rem = lib.con.execute("SELECT monto FROM remanente_iva WHERE periodo=?", (per,)).fetchone()
         pago = _pago_f29(lib, per)
         if rem is not None or pago:
@@ -231,10 +262,7 @@ def _centralizaciones(lib: Libro, centralizados, elegidos: set) -> dict:
         if not todos <= elegidos:
             raise ErrorContable(f"Las {nombre} de {per} que se registraron en una centralización mensual "
                                 f"({len(todos)} documentos) se borran todas juntas: elíjalas todas.")
-        origen = "honorarios" if libro.startswith("honorario") else f"rcv-{libro}"
-        asientos = _vigentes(lib, "SELECT numero FROM asiento a WHERE origen=? AND periodo=? AND anula_a IS NULL AND "
-                                  "NOT EXISTS (SELECT 1 FROM linea l WHERE l.asiento=a.numero AND l.documento IS NOT NULL)",
-                             (origen, per))
+        asientos = _centralizacion_de(lib, libro, per)
         if not asientos:
             raise ErrorContable(f"No encuentro la centralización de {nombre} de {per}: revísela con su contador.")
         out[(libro, per)] = asientos
@@ -246,7 +274,8 @@ def avisos_importacion(lib: Libro, periodo: str) -> list:
     n = f29_registrado(lib, periodo)
     if n:
         return [f"El F29 de {periodo} ya está registrado (N° {n}) y no incluye estos documentos: su propuesta cambia. "
-                f"Si fue un error, use «Deshacer esta importación»; si no, corrija el F29."]
+                f"Si fue un error, bórrelos (no entraron en ese F29, así que se pueden borrar sin anularlo); si no, "
+                f"corrija el F29."]
     pago = _pago_f29(lib, periodo)
     if pago or lib.con.execute("SELECT 1 FROM remanente_iva WHERE periodo=?", (periodo,)).fetchone():
         return [f"El F29 de {periodo} ya se había confirmado: estos documentos cambian su propuesta. Vuelva a "

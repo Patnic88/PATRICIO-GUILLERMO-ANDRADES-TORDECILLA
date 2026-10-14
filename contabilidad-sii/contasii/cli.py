@@ -85,6 +85,8 @@ def cmd_importar_rcv(lib, a):
     r = _importar(lib, a.archivo, lambda ruta: rcv.importar(lib, ruta, a.libro, a.periodo, a.modo))
     print(f"RCV {a.libro}s {a.periodo}: {r.importados} documentos importados, {r.duplicados} duplicados omitidos, "
           f"{len(r.asientos)} asientos generados.")
+    if r.documentos:
+        print(f"Números internos (para borrar-documento): {' '.join(map(str, r.documentos))}")
     _alertas(r.alertas)
 
 
@@ -92,6 +94,8 @@ def cmd_importar_honorarios(lib, a):
     r = _importar(lib, a.archivo, lambda ruta: honorarios.importar(lib, ruta, a.sentido, a.periodo, _params(a.periodo)))
     print(f"Honorarios {a.sentido}s {a.periodo}: {r['importados']} boletas, {r['duplicados']} duplicadas, "
           f"{r['anuladas']} anuladas omitidas.")
+    if r["documentos"]:
+        print(f"Números internos (para borrar-documento): {' '.join(map(str, r['documentos']))}")
     _alertas(r["alertas"])
 
 
