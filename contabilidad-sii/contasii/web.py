@@ -903,11 +903,11 @@ def carpeta_por_defecto() -> str:
     return os.path.join(os.path.dirname(AQUI), "mis_empresas")
 
 
-def ya_abierto(puerto: int) -> bool:
+def ya_abierto(puerto: int, timeout: float = 1) -> bool:
     """True si ya hay un programa de contabilidad respondiendo en ese puerto."""
     import urllib.request
     try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/api/ping", timeout=1) as r:
+        with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/api/ping", timeout=timeout) as r:
             return json.loads(r.read()).get("app") == "contasii"
     except Exception:
         return False
@@ -945,7 +945,7 @@ def mostrar_abierto(puerto: int) -> dict:
         return {}
 
 
-def main(argv=None):
+def main(argv=None, _cedido=False):
     import argparse
     # El .exe no tiene consola (--windowed): sin salida estándar, lo impreso se descarta.
     if sys.stdout is None:
@@ -972,11 +972,13 @@ def main(argv=None):
         limite = time.monotonic() + 20
         while r.get("cerrando") and time.monotonic() < limite:
             time.sleep(0.25)
-            r = mostrar_abierto(a.puerto) if ya_abierto(a.puerto) else {}
+            r = mostrar_abierto(a.puerto) if ya_abierto(a.puerto) else {"libre": True}
         if a.no_abrir or r.get("mostrada"):
             print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
             return 0
-        if ya_abierto(a.puerto):
+        # Con el puerto libre se arranca normalmente, aunque otro doble clic lo tome justo ahora: más abajo se cede a
+        # ese programa (y se le pregunta) en vez de abrirle una ventana sin preguntar.
+        if not r.get("libre") and ya_abierto(a.puerto):
             try:
                 navegador.VentanaPrograma(f"http://127.0.0.1:{a.puerto}/")
             except navegador.ErrorNavegador as e:
@@ -995,11 +997,12 @@ def main(argv=None):
     except OSError as e:
         aviso(f"No se pudo abrir Mi Contabilidad: {e}")
         return 1
-    if p != a.puerto and ya_abierto(a.puerto):
+    if p != a.puerto and not _cedido and ya_abierto(a.puerto, timeout=3):
         # Dos doble clic al mismo tiempo: el otro tomó el puerto un instante antes. Se usa ese programa (muestra su
-        # ventana) en vez de dejar dos programas con los mismos datos.
+        # ventana) en vez de dejar dos programas con los mismos datos. Se le da más tiempo para responder: puede
+        # estar lanzando su Chrome antes de atender. Se cede una sola vez.
         srv.server_close()
-        return main(argv)
+        return main(argv, _cedido=True)
     atexit.register(srv.app.cerrar_portal)  # al salir se cierra la ventana del SII, si quedó abierta
     url = f"http://127.0.0.1:{p}/"
     print(f"Mi Contabilidad atendiendo en {url}. Datos en: {os.path.abspath(a.carpeta)}")

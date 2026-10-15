@@ -4,6 +4,7 @@ La prueba con navegador usa Chrome real sin ventana (CONTASII_NAVEGADOR permite 
 si el computador no lo tiene, se omite. Las demás reemplazan la ventana por una falsa.
 """
 
+import collections
 import json
 import os
 import shutil
@@ -188,9 +189,9 @@ class TestMain(unittest.TestCase):
         otra.arrancando = True
         real, vistas, propios = web.ya_abierto, [], []
 
-        def ya_abierto(p):
+        def ya_abierto(p, timeout=1):
             vistas.append(p)
-            return False if len(vistas) == 1 else real(p)  # la primera consulta llegó antes que el otro
+            return False if len(vistas) == 1 else real(p, timeout)  # la primera consulta llegó antes que el otro
 
         def servidor(*a, **k):
             propios.append(web_servidor(*a, **k))
@@ -204,6 +205,31 @@ class TestMain(unittest.TestCase):
         (propio, p), = propios
         self.assertNotEqual(p, puerto)
         self.assertEqual(propio.socket.fileno(), -1)  # y su servidor se cerró: no queda un segundo programa
+
+    def test_si_el_puerto_queda_libre_y_otro_lo_toma_se_le_pregunta(self):
+        # Dos esperan a que el anterior termine. Este ve el puerto libre, pero el otro lo toma un instante después
+        # (su Chrome recién arranca): no se le abre una ventana sin preguntar; se arranca, se cede y se le pregunta.
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.server_close)
+        self.addCleanup(srv.shutdown)
+        otra = srv.app.ventana = VentanaFalsa(f"http://127.0.0.1:{puerto}/")
+        otra.arrancando = True
+        real_ya, real_mostrar, n = web.ya_abierto, web.mostrar_abierto, collections.Counter()
+
+        def ya_abierto(p, timeout=1):
+            n["ya"] += 1
+            return False if n["ya"] == 2 else real_ya(p, timeout)  # 2.ª consulta: el anterior acaba de soltarlo
+
+        def mostrar(p):
+            n["mostrar"] += 1
+            return {"mostrada": False, "cerrando": True} if n["mostrar"] == 1 else real_mostrar(p)
+        with mock.patch.object(web, "ya_abierto", ya_abierto), mock.patch.object(web, "mostrar_abierto", mostrar), \
+                mock.patch.object(navegador, "buscar_navegador", return_value="chrome"), \
+                mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
+            self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto)]), 0)
+        self.assertEqual(VentanaFalsa.creadas, [otra])  # ninguna ventana más
+        self.assertEqual(n["mostrar"], 2)  # se le preguntó al programa que tomó el puerto
 
     def test_un_puerto_en_uso_no_se_comparte(self):
         # En Windows, SO_REUSEADDR permitía abrir un segundo servidor en el mismo puerto: dos programas a la vez.
@@ -290,6 +316,20 @@ class TestEsperarCierre(unittest.TestCase):
             self.assertFalse(self.ventana(1, 1).abriendo())  # Chrome se cayó: no viene ninguna ventana
         with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
             self.assertTrue(self.ventana(0, 1).abriendo())  # entregó la orden a otro Chrome con el perfil
+
+    def test_abriendo_sin_control(self):
+        # Chrome sin control (política del equipo; en Mac sigue vivo sin ventanas): la página nunca se verá, así que
+        # solo se espera unos segundos. Después, un doble clic vuelve a abrir la ventana.
+        self.assertTrue(self.ventana(None, 5).abriendo())
+        self.assertFalse(self.ventana(None, 11).abriendo())
+        v = self.ventana(None, 11)  # con control listo (escrito después del lanzamiento) se espera el plazo completo
+        with open(os.path.join(v.perfil, "DevToolsActivePort"), "w") as f:
+            f.write("9222\n/devtools/browser/x")
+        self.assertTrue(v.abriendo())
+        w = self.ventana(None, 30)  # sin control, lanzada hace 30 s: ya no está abriéndose
+        self.assertFalse(w.abriendo())
+        w.marcar_reapertura()  # otro doble clic pidió una ventana: desde ahí se cuentan de nuevo los segundos
+        self.assertTrue(w.abriendo())
 
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):
