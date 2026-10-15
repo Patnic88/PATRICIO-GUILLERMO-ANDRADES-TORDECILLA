@@ -985,6 +985,11 @@ def main(argv=None):
     except OSError as e:
         aviso(f"No se pudo abrir Mi Contabilidad: {e}")
         return 1
+    if p != a.puerto and ya_abierto(a.puerto):
+        # Dos doble clic al mismo tiempo: el otro tomó el puerto un instante antes. Se usa ese programa (muestra su
+        # ventana) en vez de dejar dos programas con los mismos datos.
+        srv.server_close()
+        return main(argv)
     atexit.register(srv.app.cerrar_portal)  # al salir se cierra la ventana del SII, si quedó abierta
     url = f"http://127.0.0.1:{p}/"
     print(f"Mi Contabilidad atendiendo en {url}. Datos en: {os.path.abspath(a.carpeta)}")

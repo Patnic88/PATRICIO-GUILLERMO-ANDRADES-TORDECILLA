@@ -177,6 +177,34 @@ class TestMain(unittest.TestCase):
         self.assertEqual(VentanaFalsa.creadas, [nueva])  # ninguna ventana más
         self.assertEqual(nueva.llamadas, [])  # ni se trajo al frente ni se dio por reabierta
 
+    def test_dos_doble_clic_simultaneos_dejan_un_solo_programa(self):
+        # Los dos vieron el puerto libre; el otro lo tomó primero y este quedó en el siguiente. Este no se queda
+        # abierto: usa el programa del otro, cuya ventana está apareciendo.
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.server_close)
+        self.addCleanup(srv.shutdown)
+        otra = srv.app.ventana = VentanaFalsa(f"http://127.0.0.1:{puerto}/")
+        otra.arrancando = True
+        real, vistas, propios = web.ya_abierto, [], []
+
+        def ya_abierto(p):
+            vistas.append(p)
+            return False if len(vistas) == 1 else real(p)  # la primera consulta llegó antes que el otro
+
+        def servidor(*a, **k):
+            propios.append(web_servidor(*a, **k))
+            return propios[-1]
+        web_servidor = web.servidor
+        with mock.patch.object(web, "ya_abierto", ya_abierto), mock.patch.object(web, "servidor", servidor), \
+                mock.patch.object(navegador, "buscar_navegador", return_value="chrome"), \
+                mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
+            self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto)]), 0)
+        self.assertEqual(VentanaFalsa.creadas, [otra])  # no se abrió una segunda ventana
+        (propio, p), = propios
+        self.assertNotEqual(p, puerto)
+        self.assertEqual(propio.socket.fileno(), -1)  # y su servidor se cerró: no queda un segundo programa
+
     def test_api_ventana_sin_ventana(self):
         srv, puerto = web.servidor(self.tmp.name, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()
