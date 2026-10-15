@@ -142,6 +142,29 @@ class VentanaPrograma:
             propio = False
         return self._t_fin - self.t_lanz < 10 and not propio
 
+    def _perfil_tomado(self) -> bool:
+        """True si un Chrome tiene tomado el perfil del programa (su candado de instancia única sigue activo).
+        En Windows, Chrome mantiene abierto «lockfile» sin permitir escritura [razonado con el código de Chromium,
+        no comprobado en Windows]; en Linux y Mac, «SingletonLock» apunta a «equipo-pid» del Chrome dueño."""
+        if sys.platform == "win32":
+            ruta = os.path.join(self.perfil, "lockfile")
+            if not os.path.exists(ruta):
+                return False
+            try:
+                fd = os.open(ruta, os.O_WRONLY)
+            except OSError:
+                return True
+            os.close(fd)
+            return False
+        try:
+            pid = int(os.readlink(os.path.join(self.perfil, "SingletonLock")).rsplit("-", 1)[1])
+            os.kill(pid, 0)
+            return True
+        except PermissionError:
+            return True
+        except (OSError, IndexError, ValueError):
+            return False
+
     def marcar_reapertura(self):
         """Otro doble clic va a abrir una ventana nueva: mientras aparece, la ventana no se da por cerrada."""
         self.reabierta = time.monotonic()
@@ -180,11 +203,12 @@ class VentanaPrograma:
                 fallos += 1
                 arrancando = not visto and time.monotonic() - t0 < inicio
                 # Si este Chrome solo entregó la orden a otro que no deja consultar sus páginas, su fin no dice
-                # nada de la ventana: no se da por cerrada (el programa sigue atendiendo).
-                termino = self.proc.poll() is not None and not self._entrego()
+                # nada de la ventana: mientras ese otro Chrome tenga tomado el perfil, no se da por cerrada. Si
+                # nadie lo tiene (Chrome se cayó o ya se cerró), sí.
+                termino = self.proc.poll() is not None and not (self._entrego() and self._perfil_tomado())
                 responde = hay is not None or visto or termino
                 if fallos >= 2 and not arrancando and responde:
-                    return
+                    return marca  # quien llama compara con self.reabierta: si cambió, hay una ventana en camino
             time.sleep(intervalo)
 
     def cerrar_navegador(self):

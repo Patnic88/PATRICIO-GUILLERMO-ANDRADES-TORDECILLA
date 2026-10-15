@@ -38,7 +38,7 @@ class VentanaFalsa:
     creadas = []
 
     def __init__(self, url, frente=True):
-        self.url, self.frente, self.llamadas = url, frente, []
+        self.url, self.frente, self.llamadas, self.reabierta = url, frente, [], 0.0
         VentanaFalsa.creadas.append(self)
 
     def marcar_reapertura(self):
@@ -51,6 +51,7 @@ class VentanaFalsa:
         # Mientras la ventana está abierta, el programa responde en su dirección.
         with urllib.request.urlopen(self.url + "api/ping", timeout=5) as r:
             self.llamadas.append(json.loads(r.read())["app"])
+        return self.reabierta
 
     def traer_al_frente(self):
         self.llamadas.append("frente")
@@ -103,7 +104,7 @@ class TestMain(unittest.TestCase):
         # comprobación y la segunda. El nuevo no deja una ventana sin programa: se abre normalmente.
         puerto = puerto_libre()
         with mock.patch.object(web, "ya_abierto", side_effect=[True, False]), \
-                mock.patch.object(web, "mostrar_abierto", return_value=False), \
+                mock.patch.object(web, "mostrar_abierto", return_value={}), \
                 mock.patch.object(navegador, "buscar_navegador", return_value="chrome"), \
                 mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
             self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto)]), 0)
@@ -127,12 +128,25 @@ class TestMain(unittest.TestCase):
         self.assertEqual(len(VentanaFalsa.creadas), 2)
         self.assertEqual(VentanaFalsa.creadas[1].url, f"http://127.0.0.1:{puerto}/")
 
+    def test_mientras_termina_el_segundo_doble_clic_espera_y_se_abre_normalmente(self):
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        srv.app.ventana, srv.app.cerrando = VentanaFalsa(f"http://127.0.0.1:{puerto}/"), True
+        self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": False, "cerrando": True})
+        threading.Timer(1.0, lambda: (srv.shutdown(), srv.server_close())).start()  # el programa termina
+        t0 = time.monotonic()
+        with mock.patch.object(navegador, "buscar_navegador", return_value="chrome"), \
+                mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
+            self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto)]), 0)
+        self.assertGreater(time.monotonic() - t0, 0.9)  # esperó que el anterior soltara el puerto
+        self.assertEqual(VentanaFalsa.creadas[-1].llamadas, ["contasii", "cerrar"])  # y atendió su ventana
+
     def test_api_ventana_sin_ventana(self):
         srv, puerto = web.servidor(self.tmp.name, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         self.addCleanup(srv.server_close)
         self.addCleanup(srv.shutdown)
-        self.assertFalse(web.mostrar_abierto(puerto))  # con --no-abrir no hay ventana que mostrar
+        self.assertFalse(web.mostrar_abierto(puerto).get("mostrada"))  # con --no-abrir no hay ventana que mostrar
         r = urllib.request.Request(f"http://127.0.0.1:{puerto}/api/ventana", data=b"{}", method="POST")
         with self.assertRaises(urllib.error.HTTPError) as e:  # sin la cabecera propia: rechazado
             urllib.request.urlopen(r, timeout=5)
@@ -166,9 +180,25 @@ class TestEsperarCierre(unittest.TestCase):
 
     def test_chrome_que_entrego_la_orden_a_otro_no_la_da_por_cerrada(self):
         # Ya había un Chrome con el perfil del programa (sin control): el lanzado terminó enseguida, sin dejar su
-        # control listo, y la ventana vive en el otro. El programa sigue atendiendo en vez de apagarse en uso.
-        for codigo in (0, 21):
-            self.assertFalse(self.esperar(self.ventana(codigo, 0), 1), codigo)
+        # control listo, y la ventana vive en el otro, que tiene tomado el perfil. El programa sigue atendiendo.
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
+            for codigo in (0, 21):
+                self.assertFalse(self.esperar(self.ventana(codigo, 0), 1), codigo)
+
+    def test_chrome_que_se_cayo_al_abrir_no_deja_el_programa_vivo(self):
+        # Terminó enseguida sin control y nadie tiene tomado el perfil: no hay ventana; el programa termina.
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
+            self.assertTrue(self.esperar(self.ventana(1, 0), 3))
+
+    @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
+    def test_candado_del_perfil(self):
+        v = self.ventana(0, 0)
+        self.assertFalse(v._perfil_tomado())
+        os.symlink(f"equipo-{os.getpid()}", os.path.join(v.perfil, "SingletonLock"))
+        self.assertTrue(v._perfil_tomado())  # el dueño del candado está vivo
+        os.remove(os.path.join(v.perfil, "SingletonLock"))
+        os.symlink("equipo-999999999", os.path.join(v.perfil, "SingletonLock"))
+        self.assertFalse(v._perfil_tomado())  # candado viejo de un Chrome que ya no existe
 
 
 @unittest.skipUnless(hay_chrome(), "no hay Google Chrome en este computador")
@@ -185,7 +215,7 @@ class TestVentanaReal(unittest.TestCase):
                 time.sleep(0.2)
             self.assertEqual([p["url"] for p in v.paginas()], [url])
             srv.app.ventana = v
-            self.assertTrue(web.mostrar_abierto(puerto))
+            self.assertTrue(web.mostrar_abierto(puerto).get("mostrada"))
             cerrada = threading.Event()
             threading.Thread(target=lambda: (v.esperar_cierre(intervalo=0.3, inicio=10), cerrada.set()),
                              daemon=True).start()
@@ -195,7 +225,7 @@ class TestVentanaReal(unittest.TestCase):
             for p in v.paginas():  # la persona cierra la ventana
                 urllib.request.urlopen(f"{base}/json/close/{p['id']}", timeout=5).read()
             # ...y vuelve a hacer doble clic enseguida: el nuevo proceso avisa que abrirá otra ventana.
-            self.assertFalse(web.mostrar_abierto(puerto))
+            self.assertFalse(web.mostrar_abierto(puerto).get("mostrada"))
             time.sleep(2)
             self.assertFalse(cerrada.is_set())  # mientras aparece la ventana nueva, el programa no se apaga
             urllib.request.urlopen(urllib.request.Request(f"{base}/json/new?{url}", method="PUT"), timeout=5).read()

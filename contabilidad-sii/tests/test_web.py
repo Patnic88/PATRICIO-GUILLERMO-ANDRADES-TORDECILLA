@@ -88,6 +88,8 @@ class TestWeb(unittest.TestCase):
         # Un mes sin parámetros del año igual abre su inicio
         st, r = self.req(e + "/resumen?periodo=2025-12")
         self.assertEqual((st, r["utm"], r["retencion_honorarios"]), (200, None, None))
+        st, data = self.req(e + "/excel?periodo=2025-12", crudo=True)
+        self.assertEqual((st, data[:2]), (200, b"PK"))  # sin la hoja del F29, pero se descarga
         # Opciones del F29 fuera de rango
         for k, v in (("factor_uso_comun", "605"), ("tasa_ppm", "-1"), ("impuesto_unico", "-5"), ("tasa_ppm", "x")):
             st, r = self.req(e + f"/f29?periodo=2026-10&{k}={v}")

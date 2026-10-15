@@ -363,7 +363,8 @@ window.addEventListener("popstate", () => {
 });
 // Al cerrar o recargar la ventana con datos sin registrar, Chrome pregunta antes (cerrar la ventana termina el programa).
 window.addEventListener("beforeunload", ev => {
-  if (sucio || document.querySelector("#cola .bImp")) { ev.preventDefault(); ev.returnValue = ""; }
+  const delSII = Object.values(pendientesSII).some(a => a && a.length);  // archivos del SII que esperan en otra empresa
+  if (sucio || delSII || document.querySelector("#cola .bImp")) { ev.preventDefault(); ev.returnValue = ""; }
 });
 function irRuta(h) {
   if (h === "#/ayuda" || h === "#/sii") { sinEmpresa(); return h === "#/ayuda" ? pantallaAyuda(true) : pantallaSII(true); }
@@ -991,7 +992,11 @@ function conectarMedio(inicial = "banco") {
 // previo: lo que se acaba de registrar ({numero, fecha, medio}). El formulario queda abierto para registrar
 // otro igual, con la misma fecha y medio de pago.
 // El F29 de un mes se paga en el mes siguiente: se propone hoy si ya se está en ese mes o después; si no, el día 1.
-function fechaPagoF29() { const d = mesMas(S.periodo, 1) + "-01"; return hoy() >= d ? hoy() : d; }
+function fechaPagoF29() {
+  const sig = mesMas(S.periodo, 1), h = hoy();
+  if (h.slice(0, 7) <= sig) return h;  // se paga ahora (o es el F29 del mes en curso): nunca una fecha futura
+  return sig + "-01";  // se registra un pago antiguo: un día del mes siguiente al declarado (corríjalo si fue otro)
+}
 function formMovimiento(op, previo = {}) {
   const c = S.catalogo, f = $("#form"), fecha = previo.fecha || (op === "pago_f29" ? fechaPagoF29() : fechaDefecto());
   const otroMes = previo.fecha && previo.fecha.slice(0, 7) !== S.periodo;
@@ -1054,8 +1059,11 @@ function formMovimiento(op, previo = {}) {
 async function enviarMov(op, cuerpo) {
   if (cuerpo.fecha && !FECHA_OK.test(cuerpo.fecha)) return error($("#mErr"), MAL_ANIO);
   // El pago del F29 se hace en un mes posterior al declarado: eso no es un error de fecha.
-  const posterior = op === "pago_f29" && cuerpo.fecha && cuerpo.fecha.slice(0, 7) > S.periodo;
-  if (cuerpo.fecha && cuerpo.fecha.slice(0, 7) !== S.periodo && !posterior) {
+  // El pago del F29 se hace en el mes siguiente al declarado (o, atrasado, en el que sigue): eso no es un error de
+  // fecha. Cualquier otra fecha (por ejemplo, un año mal escrito) se advierte una vez.
+  const sig = mesMas(S.periodo, 1);
+  const esperado = op === "pago_f29" && cuerpo.fecha && [sig, mesMas(sig, 1)].includes(cuerpo.fecha.slice(0, 7));
+  if (cuerpo.fecha && cuerpo.fecha.slice(0, 7) !== S.periodo && !esperado) {
     if (!$("#mErr").dataset.ok) { $("#mErr").dataset.ok = "1"; $("#mErr").innerHTML = `<div class="msg warn">La fecha es de ${esc(nomMes(cuerpo.fecha.slice(0, 7)))}, no de ${esc(nomMes(S.periodo))}. Si está bien, presione el botón otra vez.</div>`; return; }
   }
   const btn = $("#fMov button[type=submit]"), gen = siiGen;
@@ -1136,6 +1144,14 @@ function opcF29Guardadas() {
   return Object.fromEntries(OPC_F29.filter(k => typeof o[k] === "string" && o[k]).map(k => [k, o[k]]));
 }
 const pct = v => String(v).replace(".", ",") + " %";
+// Porcentaje de 0 a 100 con coma o punto decimal («0,8», «1.25», «60,5»): el texto con punto, "" si está vacío o
+// null si no es válido. Un campo numérico del navegador descartaría la coma («0,8» quedaría en 8).
+function porcentaje(v) {
+  const t = String(v ?? "").trim().replace(/\s*%$/, "").replace(",", ".");
+  if (!t) return "";
+  if (!/^\d{1,3}(\.\d+)?$/.test(t)) return null;
+  return +t <= 100 ? String(+t) : null;
+}
 const TEXTO_OPC = { impuesto_unico: v => `impuesto único ${peso(+v)}`, tasa_ppm: v => `tasa de PPM ${pct(v)}`,
   factor_uso_comun: v => `proporción de IVA de uso común ${pct(v)}`, remanente_anterior: v => `IVA a favor del mes anterior ${peso(+v)}`,
   papel: () => "no emite documentos electrónicos" };
@@ -1177,8 +1193,8 @@ async function pantallaF29(opc) {
         <p class="small muted">Lo que escriba aquí se recuerda para ${esc(nomMes(S.periodo))} de esta empresa y se muestra sobre el total.</p>
         <div class="grid2">
           ${campoMonto("oIU", "Impuesto único de trabajadores ($)", "Del libro de remuneraciones", opc.impuesto_unico || "")}
-          <label for="oPPM">Tasa de PPM (%)<span class="hint">Obligatoria en régimen 14 A. Ej.: 1</span><input id="oPPM" type="number" min="0" max="100" step="0.001" value="${esc(opc.tasa_ppm || "")}"></label>
-          <label for="oUC">Proporción IVA uso común (%)<input id="oUC" type="number" min="0" max="100" step="0.01" value="${esc(opc.factor_uso_comun || "")}"></label>
+          <label for="oPPM">Tasa de PPM (%)<span class="hint">Obligatoria en régimen 14 A. Ej.: 0,8 o 1,25</span><input id="oPPM" type="text" inputmode="decimal" autocomplete="off" value="${esc(String(opc.tasa_ppm || "").replace(".", ","))}"></label>
+          <label for="oUC">Proporción IVA uso común (%)<span class="hint">Ej.: 60,5</span><input id="oUC" type="text" inputmode="decimal" autocomplete="off" value="${esc(String(opc.factor_uso_comun || "").replace(".", ","))}"></label>
           ${campoMonto("oRem", "IVA a favor del mes anterior ($)", "Solo si no está registrado", opc.remanente_anterior || "")}
         </div>
         <label class="row" style="gap:8px;font-weight:400"><input type="checkbox" id="oPap" ${opc.papel ? "checked" : ""}> No emite documentos electrónicos (plazo hasta el día 12)</label>
@@ -1202,11 +1218,11 @@ async function pantallaF29(opc) {
     $("#fAv").onsubmit = ev => { ev.preventDefault();
       const iu = montoCL($("#oIU").value), rem = montoCL($("#oRem").value);
       if (isNaN(iu) || isNaN(rem)) return error($("#avErr"), MAL_MONTO);
-      const pct = id => $(id).value === "" || ($(id).validity.valid && +$(id).value >= 0 && +$(id).value <= 100);
-      if (!pct("#oPPM")) return error($("#avErr"), "La tasa de PPM debe ser un porcentaje entre 0 y 100 (con punto decimal, por ejemplo 1.25).");
-      if (!pct("#oUC")) return error($("#avErr"), "La proporción de IVA de uso común debe ser un porcentaje entre 0 y 100 (con punto decimal, por ejemplo 60.5).");
-      const o = {}; if ($("#oIU").value.trim()) o.impuesto_unico = String(iu); if ($("#oPPM").value) o.tasa_ppm = $("#oPPM").value;
-      if ($("#oUC").value) o.factor_uso_comun = $("#oUC").value; if ($("#oRem").value.trim()) o.remanente_anterior = String(rem); if ($("#oPap").checked) o.papel = "1";
+      const ppm = porcentaje($("#oPPM").value), uc = porcentaje($("#oUC").value);
+      if (ppm === null) return error($("#avErr"), "La tasa de PPM debe ser un porcentaje entre 0 y 100, por ejemplo 0,8 o 1,25.");
+      if (uc === null) return error($("#avErr"), "La proporción de IVA de uso común debe ser un porcentaje entre 0 y 100, por ejemplo 60,5.");
+      const o = {}; if ($("#oIU").value.trim()) o.impuesto_unico = String(iu); if (ppm) o.tasa_ppm = ppm;
+      if (uc) o.factor_uso_comun = uc; if ($("#oRem").value.trim()) o.remanente_anterior = String(rem); if ($("#oPap").checked) o.papel = "1";
       pantallaF29(o); };
     if (sinUtm) $("#utmG").onclick = async () => {
       const v = montoCL($("#utmV").value);
@@ -1587,6 +1603,9 @@ function pantallaAyuda(historial) {
   api("carpeta").then(r => { $("#carpetaDatos").textContent = r.carpeta; }).catch(() => {});
 }
 
+// «Ir al contenido» lleva el foco al contenido sin cambiar la dirección (no es una pantalla nueva ni una entrada
+// más en el historial).
+$(".saltar").onclick = ev => { ev.preventDefault(); $("#app").focus(); };
 $("#btnEmpresas").onclick = () => { if (puedeSalir()) pantallaEmpresas(); };
 $("#btnAyuda").onclick = () => { if (!puedeSalir()) return; S.empresa ? ir("ayuda") : pantallaAyuda(); };
 $("#brand").onclick = () => { if (!puedeSalir()) return; S.empresa ? ir("inicio") : pantallaEmpresas(); };

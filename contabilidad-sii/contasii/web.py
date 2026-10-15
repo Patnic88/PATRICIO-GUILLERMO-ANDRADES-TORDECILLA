@@ -22,6 +22,7 @@ import sqlite3
 import sys
 import tempfile
 import threading
+import time
 import traceback
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -129,6 +130,8 @@ class App:
         self._portal = portal
         self._lock_portal = threading.Lock()
         self.ventana = None  # navegador.VentanaPrograma, si el programa abrió su ventana
+        self.cerrando = False  # la persona cerró la ventana y el programa está terminando
+        self.lock_ventana = threading.Lock()
 
     @property
     def portal(self):
@@ -158,10 +161,13 @@ class App:
     def mostrar_ventana(self, q, b):
         """Doble clic con el programa ya abierto: muestra su ventana delante de las demás. Si ya no hay ventana
         del programa, quien llamó abrirá otra: mientras tanto, este programa no se da por cerrado."""
-        mostrada = bool(self.ventana and self.ventana.traer_al_frente())
-        if self.ventana and not mostrada:
-            self.ventana.marcar_reapertura()
-        return {"mostrada": mostrada}
+        with self.lock_ventana:
+            if self.cerrando:  # quien llama debe esperar a que este programa termine y abrirse normalmente
+                return {"mostrada": False, "cerrando": True}
+            mostrada = bool(self.ventana and self.ventana.traer_al_frente())
+            if self.ventana and not mostrada:
+                self.ventana.marcar_reapertura()
+            return {"mostrada": mostrada}
 
     # ---- empresas
     def empresas(self, q, b):
@@ -615,9 +621,14 @@ class App:
         desde, hasta = self._rango(q)
         prop = codigos = None
         if q.get("periodo"):
-            params = self.params(q["periodo"])
-            prop = impuestos.propuesta_f29(lib, params, q["periodo"])
-            codigos = {k: v.split(" ")[0] for k, v in impuestos.codigos_f29(params).items() if not k.startswith("_")}
+            # Sin los parámetros del año, el Excel sale igual, sin la hoja del F29.
+            try:
+                params = self.params(q["periodo"])
+            except ParametroFaltante:
+                params = None
+            if params:
+                prop = impuestos.propuesta_f29(lib, params, q["periodo"])
+                codigos = {k: v.split(" ")[0] for k, v in impuestos.codigos_f29(params).items() if not k.startswith("_")}
         fd, tmp = tempfile.mkstemp(suffix=".xlsx")
         os.close(fd)
         try:
@@ -900,8 +911,9 @@ def aviso(texto: str):
             pass
 
 
-def mostrar_abierto(puerto: int) -> bool:
-    """Pide al programa que ya está abierto que muestre su ventana. True si lo hizo."""
+def mostrar_abierto(puerto: int) -> dict:
+    """Pide al programa que ya está abierto que muestre su ventana: {"mostrada": True} si lo hizo,
+    {"cerrando": True} si está terminando, {} si no respondió."""
     import urllib.request
     if sys.platform == "win32":
         # Este proceso lo abrió el doble clic, así que puede pasar a primer plano; se cede ese permiso para que
@@ -915,9 +927,9 @@ def mostrar_abierto(puerto: int) -> bool:
                                     headers={"X-Contasii": "1", "Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(pedido, timeout=5) as r:
-            return bool(json.loads(r.read()).get("mostrada"))
+            return json.loads(r.read())
     except Exception:
-        return False
+        return {}
 
 
 def main(argv=None):
@@ -941,9 +953,14 @@ def main(argv=None):
     if ya_abierto(a.puerto):
         # Doble clic con el programa ya abierto: se muestra su ventana; si no tiene (se cerró hace un instante, o
         # se abrió con --no-abrir), se abre otra. Si el programa abierto terminó justo ahora, se abre de nuevo.
-        if a.no_abrir or mostrar_abierto(a.puerto):
+        r = {} if a.no_abrir else mostrar_abierto(a.puerto)
+        if a.no_abrir or r.get("mostrada"):
             print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
             return 0
+        if r.get("cerrando"):  # el programa abierto está terminando: se espera que suelte el puerto
+            limite = time.monotonic() + 20
+            while ya_abierto(a.puerto) and time.monotonic() < limite:
+                time.sleep(0.25)
         if ya_abierto(a.puerto):
             try:
                 navegador.VentanaPrograma(f"http://127.0.0.1:{a.puerto}/")
@@ -974,9 +991,15 @@ def main(argv=None):
         return 0
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     try:
-        srv.app.ventana = navegador.VentanaPrograma(url)
-        srv.app.ventana.esperar_cierre()  # el programa termina cuando la persona cierra su ventana
-        srv.app.ventana.cerrar_navegador()
+        v = srv.app.ventana = navegador.VentanaPrograma(url)
+        while True:  # el programa termina cuando la persona cierra su ventana
+            marca = v.esperar_cierre()
+            with srv.app.lock_ventana:
+                if v.reabierta == marca:
+                    srv.app.cerrando = True
+                    break
+            # Un doble clic pidió una ventana nueva justo cuando se daba por cerrada: se sigue esperando.
+        v.cerrar_navegador()
     except navegador.ErrorNavegador as e:
         aviso(str(e))
         return 1
