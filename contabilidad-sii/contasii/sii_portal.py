@@ -59,6 +59,10 @@ DOMINIOS_INGRESO = ("claveunica.gob.cl",)
 # CONTASII_NAVEGADOR, edge://downloads-hub/): no son del SII.
 ESQUEMAS_INTERNOS = ("devtools:", "edge:", "chrome:", "chrome-extension:", "about:")
 EXTENSIONES = (".csv", ".txt", ".xls", ".xlsx", ".htm", ".html")
+# Archivos que deja el propio Chrome en la carpeta de descargas, no el SII: en Windows de GitHub Actions apareció un
+# «downloads.htm» junto a lo descargado (14-10-2026; origen exacto no verificado: probablemente su página interna
+# de descargas). No se entregan como si la persona los hubiera descargado.
+PROPIOS_DEL_NAVEGADOR = ("downloads.htm", "downloads.html")
 MAX_ARCHIVO = 30 * 1024 * 1024
 
 # Se ejecuta dentro de la página del RCV, con la sesión de la persona. Si la página tiene cargado
@@ -358,6 +362,12 @@ class PortalSII:
         for nombre in sorted(os.listdir(self.carpeta)):
             ruta = os.path.join(self.carpeta, nombre)
             if not nombre.lower().endswith(EXTENSIONES) or not os.path.isfile(ruta):
+                continue
+            if nombre.lower() in PROPIOS_DEL_NAVEGADOR:
+                try:
+                    os.remove(ruta)
+                except OSError:
+                    pass
                 continue
             try:
                 st = os.stat(ruta)

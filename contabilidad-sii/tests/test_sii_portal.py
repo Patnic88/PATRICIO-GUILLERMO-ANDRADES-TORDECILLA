@@ -10,6 +10,7 @@ tiene Chrome, esas pruebas se omiten (CONTASII_NAVEGADOR permite indicar otro Ch
 import base64
 import json
 import os
+import shutil
 import tempfile
 import threading
 import time
@@ -352,6 +353,18 @@ class TestDesconectar(unittest.TestCase):
         self.assertTrue(nav.cerrado)
         self.assertIsNone(p.nav)
         self.assertIsNone(p.carpeta)
+
+
+class TestArchivosDescargados(unittest.TestCase):
+    def test_lo_que_deja_chrome_no_se_entrega(self):
+        p = sii_portal.PortalSII()
+        p.carpeta = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, p.carpeta, True)
+        for nombre in ("downloads.htm", "informeMensualREC.xls", "nota.pdf"):
+            with open(os.path.join(p.carpeta, nombre), "wb") as f:
+                f.write(b"<table></table>")
+        self.assertEqual([a["nombre"] for a in p._archivos_nuevos(todos=True)], ["informeMensualREC.xls"])
+        self.assertNotIn("downloads.htm", os.listdir(p.carpeta))
 
 
 class PortalFalso:
