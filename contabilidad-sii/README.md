@@ -61,6 +61,10 @@ vez también instala solo el complemento para Excel, lo que requiere internet. C
 forma de uso, los datos quedan en la carpeta `mis_empresas/`, junto al programa. También
 se necesita Google Chrome; el programa se cierra al cerrar su ventana.
 
+Algunos Python no permiten instalar complementos: el del sistema en Ubuntu 24.04 (comprobado) y,
+probablemente, el de Homebrew en Mac. Con ellos el programa abre igual, pero no puede
+descargar el Excel. Instale Python desde python.org, como indica el paso 1.
+
 ### Qué verá
 
 Cada mes se trabaja en **4 pasos**, en lenguaje simple:
@@ -572,6 +576,10 @@ Para un año nuevo, copie `2026.json` a `AAAA.json` y actualice cada valor con s
   casos los deja como alertas.
 - La lista exacta de columnas del CSV del RCV no fue verificada documentalmente. El
   importador valida que existan las columnas requeridas y se detiene si falta alguna.
+- Si la organización desactivó en Chrome la depuración remota (política
+  `RemoteDebuggingAllowed`), el programa no puede traer su ventana al frente: un doble clic
+  con la ventana ya abierta abre una segunda ventana del mismo programa. Comprobado
+  simulando la política, no con la política real instalada.
 
 ## Estructura
 
