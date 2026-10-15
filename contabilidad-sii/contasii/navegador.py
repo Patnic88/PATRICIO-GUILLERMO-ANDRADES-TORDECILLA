@@ -236,9 +236,13 @@ class VentanaPrograma:
             return False
         try:
             with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/activate/{destino['id']}", timeout=3):
-                return True
+                pass
         except OSError:
             return False
+        # Si la persona acaba de cerrar la ventana, Chrome puede activar una página que se está cerrando: se
+        # comprueba que siga ahí (si no, quien llamó abre otra ventana).
+        time.sleep(0.3)
+        return any(t.get("id") == destino["id"] for t in self.paginas() or [])
 
     def cerrar(self):
         try:

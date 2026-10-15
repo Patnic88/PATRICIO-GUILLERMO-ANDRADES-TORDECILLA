@@ -215,6 +215,12 @@ class TestEsperarCierre(unittest.TestCase):
 
 @unittest.skipUnless(hay_chrome(), "no hay Google Chrome en este computador")
 class TestVentanaReal(unittest.TestCase):
+    def sin_paginas(self, v, seg=15):
+        limite = time.monotonic() + seg
+        while v.paginas() and time.monotonic() < limite:
+            time.sleep(0.1)
+        self.assertEqual(v.paginas(), [])
+
     def test_abre_en_modo_aplicacion_y_detecta_el_cierre(self):
         tmp, perfil = tempfile.mkdtemp(), tempfile.mkdtemp()
         srv, puerto = web.servidor(tmp, puerto_libre())
@@ -229,19 +235,22 @@ class TestVentanaReal(unittest.TestCase):
             srv.app.ventana = v
             self.assertTrue(web.mostrar_abierto(puerto).get("mostrada"))
             cerrada = threading.Event()
-            threading.Thread(target=lambda: (v.esperar_cierre(intervalo=0.3, inicio=10), cerrada.set()),
+            # Consultas cada 2 s: hay tiempo para el segundo doble clic entre que la página se va y el programa
+            # decide que la ventana se cerró (dos consultas vacías seguidas).
+            threading.Thread(target=lambda: (v.esperar_cierre(intervalo=2, inicio=10), cerrada.set()),
                              daemon=True).start()
             time.sleep(1)
             self.assertFalse(cerrada.is_set())  # con la ventana abierta, el programa sigue
             base = f"http://127.0.0.1:{v._devtools()}"
             for p in v.paginas():  # la persona cierra la ventana
                 urllib.request.urlopen(f"{base}/json/close/{p['id']}", timeout=5).read()
+            self.sin_paginas(v)  # Chrome cierra la página después de responder «Target is closing»
             # ...y vuelve a hacer doble clic enseguida: el nuevo proceso avisa que abrirá otra ventana.
             self.assertFalse(web.mostrar_abierto(puerto).get("mostrada"))
             time.sleep(2)
             self.assertFalse(cerrada.is_set())  # mientras aparece la ventana nueva, el programa no se apaga
             urllib.request.urlopen(urllib.request.Request(f"{base}/json/new?{url}", method="PUT"), timeout=5).read()
-            time.sleep(1)
+            time.sleep(3)  # la ve en una consulta
             self.assertFalse(cerrada.is_set())
             for p in v.paginas():
                 urllib.request.urlopen(f"{base}/json/close/{p['id']}", timeout=5).read()
