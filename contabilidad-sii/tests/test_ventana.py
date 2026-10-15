@@ -393,6 +393,45 @@ class TestEsperarCierre(unittest.TestCase):
                 v.pagina_pedida()
                 v.abriendo()
 
+    def test_al_arrancar_consulta_el_puerto_nuevo(self):
+        # Al arrancar, la primera consulta de esperar_cierre pudo ir al puerto de una sesión anterior (en Windows,
+        # ~2 s en fallar) y dejar control=False. Si ya hay un puerto escrito después del lanzamiento, el doble clic
+        # lo consulta (responde al instante) y la ventana se trae al frente; uno viejo no se consulta.
+        v = self.ventana(None, 2)
+        v.pagina_pedida()
+        ruta = os.path.join(v.perfil, "DevToolsActivePort")
+        with open(ruta, "w") as f:
+            f.write("9222\n/devtools/browser/x")
+        consultas = []
+
+        def paginas(self):
+            consultas.append(1)
+            self.control = True
+            return []
+        with mock.patch.object(navegador.VentanaPrograma, "paginas", paginas):
+            self.assertFalse(v.abriendo())
+            self.assertEqual(len(consultas), 1)
+            w = self.ventana(None, 2)
+            w.pagina_pedida()
+            with open(os.path.join(w.perfil, "DevToolsActivePort"), "w") as f:
+                f.write("9222\n/devtools/browser/x")
+            viejo = time.time() - 3600  # de una sesión anterior
+            os.utime(os.path.join(w.perfil, "DevToolsActivePort"), (viejo, viejo))
+            self.assertTrue(w.abriendo())
+            self.assertEqual(len(consultas), 1)  # el puerto viejo no se consultó
+
+    def test_reapertura_pedida_absorbe_otro_doble_clic(self):
+        # La persona cerró la ventana (Chrome terminó, nadie tiene el perfil) y hace dos doble clic seguidos: el
+        # primero pidió otra ventana y todavía no lanza su Chrome. El segundo no abre otra más.
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
+            v = self.ventana(0, 30)
+            v.vista = time.monotonic() - 20
+            self.assertFalse(v.abriendo())  # cerrada: un doble clic pide otra ventana
+            v.marcar_reapertura()
+            self.assertTrue(v.abriendo())  # el siguiente, mientras esa aparece, no
+            v.reabierta = time.monotonic() - 11
+            self.assertFalse(v.abriendo())  # si pasado el momento no apareció, otro doble clic la vuelve a pedir
+
     def test_paginas_recuerda_si_el_control_respondio(self):
         v = self.ventana(None, 1)
         v.control = True
