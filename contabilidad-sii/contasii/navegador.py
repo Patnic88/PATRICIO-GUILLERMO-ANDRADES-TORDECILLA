@@ -127,6 +127,7 @@ class VentanaPrograma:
         except OSError as e:
             raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
         self.reabierta = 0.0
+        self.vista = None  # cuándo se vio por última vez una página en el perfil del programa
 
     def _entrego(self) -> bool:
         """True si este Chrome solo entregó la orden a otro Chrome que ya usaba el mismo perfil: terminó enseguida
@@ -169,6 +170,14 @@ class VentanaPrograma:
         """Otro doble clic va a abrir una ventana nueva: mientras aparece, la ventana no se da por cerrada."""
         self.reabierta = time.monotonic()
 
+    def abriendo(self, plazo: float = 60) -> bool:
+        """True si la ventana se lanzó (o se pidió otra) hace menos de `plazo` segundos y todavía no se ha visto su
+        página: Chrome está arrancando. Un doble clic en ese momento no debe abrir una segunda ventana."""
+        desde = max(self.t_lanz, self.reabierta)
+        if (self.vista is not None and self.vista >= desde) or time.monotonic() - desde >= plazo:
+            return False
+        return self.proc.poll() is None or self._perfil_tomado()  # si Chrome se cayó, no viene ninguna ventana
+
     def _devtools(self):
         try:
             with open(os.path.join(self.perfil, "DevToolsActivePort"), encoding="utf-8") as f:
@@ -183,9 +192,12 @@ class VentanaPrograma:
             return None
         try:
             with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/list", timeout=3) as r:
-                return [t for t in json.loads(r.read()) if t.get("type") == "page"]
+                hay = [t for t in json.loads(r.read()) if t.get("type") == "page"]
         except (OSError, ValueError):
             return None
+        if hay:
+            self.vista = time.monotonic()
+        return hay
 
     def esperar_cierre(self, intervalo: float = 1.5, inicio: float = 60):
         """Vuelve cuando la persona cerró la ventana: dos consultas seguidas sin páginas (no un parpadeo al

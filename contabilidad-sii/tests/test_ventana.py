@@ -38,8 +38,11 @@ class VentanaFalsa:
     creadas = []
 
     def __init__(self, url, frente=True):
-        self.url, self.frente, self.llamadas, self.reabierta = url, frente, [], 0.0
+        self.url, self.frente, self.llamadas, self.reabierta, self.arrancando = url, frente, [], 0.0, False
         VentanaFalsa.creadas.append(self)
+
+    def abriendo(self):
+        return self.arrancando
 
     def marcar_reapertura(self):
         self.llamadas.append("reapertura")
@@ -153,6 +156,27 @@ class TestMain(unittest.TestCase):
         self.assertLess(time.monotonic() - t0, 5)
         self.assertEqual(VentanaFalsa.creadas, [])
 
+    def test_doble_clic_mientras_la_ventana_aparece_no_abre_otra(self):
+        # El programa anterior terminaba (responde «cerrando»); otro doble clic ya lo abrió de nuevo y su Chrome
+        # todavía no muestra la página. Quien espera no abre una segunda ventana: la que arranca aparecerá sola.
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.server_close)
+        self.addCleanup(srv.shutdown)
+        nueva = srv.app.ventana = VentanaFalsa(f"http://127.0.0.1:{puerto}/")
+        nueva.arrancando = True
+        real, respuestas = web.mostrar_abierto, []
+
+        def mostrar(p):
+            respuestas.append({"mostrada": False, "cerrando": True} if not respuestas else real(p))
+            return respuestas[-1]
+        with mock.patch.object(web, "mostrar_abierto", mostrar), \
+                mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
+            self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto)]), 0)
+        self.assertEqual(respuestas[-1], {"mostrada": True, "abriendo": True})
+        self.assertEqual(VentanaFalsa.creadas, [nueva])  # ninguna ventana más
+        self.assertEqual(nueva.llamadas, [])  # ni se trajo al frente ni se dio por reabierta
+
     def test_api_ventana_sin_ventana(self):
         srv, puerto = web.servidor(self.tmp.name, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -176,7 +200,7 @@ class ProcesoFalso:
 class TestEsperarCierre(unittest.TestCase):
     def ventana(self, codigo, segundos_abierto):
         v = object.__new__(navegador.VentanaPrograma)
-        v.proc, v.reabierta, v.perfil = ProcesoFalso(codigo), 0.0, tempfile.mkdtemp()
+        v.proc, v.reabierta, v.vista, v.perfil = ProcesoFalso(codigo), 0.0, None, tempfile.mkdtemp()
         v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - segundos_abierto, time.time() - segundos_abierto, None
         self.addCleanup(shutil.rmtree, v.perfil, True)
         return v
@@ -202,6 +226,19 @@ class TestEsperarCierre(unittest.TestCase):
         with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
             self.assertTrue(self.esperar(self.ventana(1, 0), 3))
 
+    def test_abriendo(self):
+        v = self.ventana(None, 1)  # Chrome lanzado hace 1 s, sin página todavía
+        self.assertTrue(v.abriendo())
+        v.vista = time.monotonic()  # ya mostró su página
+        self.assertFalse(v.abriendo())
+        v.marcar_reapertura()  # otro doble clic abre una ventana nueva: mientras no se vea, está abriéndose
+        self.assertTrue(v.abriendo())
+        self.assertFalse(self.ventana(None, 61).abriendo())  # pasó el plazo de arranque
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
+            self.assertFalse(self.ventana(1, 1).abriendo())  # Chrome se cayó: no viene ninguna ventana
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
+            self.assertTrue(self.ventana(0, 1).abriendo())  # entregó la orden a otro Chrome con el perfil
+
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):
         v = self.ventana(0, 0)
@@ -226,14 +263,15 @@ class TestVentanaReal(unittest.TestCase):
         srv, puerto = web.servidor(tmp, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         url = f"http://127.0.0.1:{puerto}/"
-        v = navegador.VentanaPrograma(url, perfil=perfil, headless=True)
+        v = srv.app.ventana = navegador.VentanaPrograma(url, perfil=perfil, headless=True)
         try:
+            # Doble clic mientras Chrome recién arranca: el programa responde que la ventana está apareciendo.
+            self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
             limite = time.monotonic() + 60  # primera apertura de Chrome en frío
             while not v.paginas() and time.monotonic() < limite:
                 time.sleep(0.2)
             self.assertEqual([p["url"] for p in v.paginas()], [url])
-            srv.app.ventana = v
-            self.assertTrue(web.mostrar_abierto(puerto).get("mostrada"))
+            self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True})
             cerrada = threading.Event()
             # Consultas cada 2 s: hay tiempo para el segundo doble clic entre que la página se va y el programa
             # decide que la ventana se cerró (dos consultas vacías seguidas).
@@ -247,6 +285,8 @@ class TestVentanaReal(unittest.TestCase):
             self.sin_paginas(v)  # Chrome cierra la página después de responder «Target is closing»
             # ...y vuelve a hacer doble clic enseguida: el nuevo proceso avisa que abrirá otra ventana.
             self.assertFalse(web.mostrar_abierto(puerto).get("mostrada"))
+            # Un tercer doble clic mientras aparece esa ventana no pide otra más.
+            self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
             time.sleep(2)
             self.assertFalse(cerrada.is_set())  # mientras aparece la ventana nueva, el programa no se apaga
             urllib.request.urlopen(urllib.request.Request(f"{base}/json/new?{url}", method="PUT"), timeout=5).read()

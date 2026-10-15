@@ -332,6 +332,31 @@ document.addEventListener("click", ev => {
   S.periodo = b.dataset.irmes;
   ir(S.vista, { reemplazar: true });
 });
+// «Descargar Excel»: se pide al programa y se guarda sin salir de la pantalla. Si no se pudo armar, el motivo se
+// muestra junto al botón (un enlace de descarga directo haría que Chrome cancelara la descarga sin decir nada).
+document.addEventListener("click", async ev => {
+  const a = ev.target.closest("a[data-excel]");
+  if (!a) return;
+  ev.preventDefault();
+  if (a.dataset.pidiendo) return;  // un segundo clic mientras se arma no pide otro archivo igual
+  a.dataset.pidiendo = "1";
+  let m = a.parentElement.nextElementSibling;
+  if (!m || !m.classList.contains("xlsMsg")) { m = document.createElement("div"); m.className = "xlsMsg"; a.parentElement.after(m); }
+  m.innerHTML = "";
+  if (++cargas === 1) document.body.classList.add("cargando");
+  try {
+    let r;
+    try { r = await fetch(a.href); }
+    catch (e) { throw new Error("Se perdió la conexión con el programa. Cierre esta ventana y vuelva a abrir «Mi Contabilidad» con doble clic."); }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "No se pudo armar el Excel.");
+    const nombre = (/filename="([^"]+)"/.exec(r.headers.get("Content-Disposition") || "") || [])[1] || "contabilidad.xlsx";
+    const u = URL.createObjectURL(await r.blob()), t = document.createElement("a");
+    t.href = u; t.download = nombre; document.body.appendChild(t); t.click(); t.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 60000);
+    toast(`Descargando «${nombre}»`);
+  } catch (e) { error(m, e); }
+  finally { delete a.dataset.pidiendo; if (--cargas === 0) document.body.classList.remove("cargando"); }
+});
 
 const VISTAS = { inicio: () => pantallaInicio(), archivos: () => pantallaArchivos(), movimientos: () => pantallaMovimientos(),
   f29: () => pantallaF29(), cierre: () => pantallaCierre(), libros: () => pantallaLibros(), ayuda: () => pantallaAyuda(),
@@ -639,7 +664,7 @@ function pantallaInicio() {
         <div class="tile"><span class="k">Usted debe a proveedores</span><span class="v">${peso(i.por_pagar)}</span></div>
       </div></div>
     <div class="row"><button class="btn" type="button" data-ir="libros">Ver libros e informes</button>
-      <a class="btn" download href="/api/${E("excel")}?periodo=${S.periodo}">Descargar Excel del mes</a></div>`);
+      <a class="btn" data-excel download href="/api/${E("excel")}?periodo=${S.periodo}">Descargar Excel del mes</a></div>`);
 }
 function paso(n, vista, sub, estado, hecho, sig) {
   return `<button class="step${hecho ? " done" : ""}${vista === sig ? " next" : ""}" type="button" data-ir="${vista}"><span class="n">${hecho ? "✓" : n}</span>
@@ -1007,7 +1032,9 @@ function formMovimiento(op, previo = {}) {
   if (op === "pago_f29") {
     f.innerHTML = `${listo}<form class="panel" id="fMov" novalidate><h2>Pagué el impuesto mensual (F29)</h2>
       <p class="muted">Los montos vienen prellenados con lo que la contabilidad registra como pendiente de pago. Corríjalos si pagó otra cifra.</p>
-      <label for="mFecha">Fecha del pago<span class="hint">El día en que pagó en sii.cl, normalmente en ${esc(nomMes(mesMas(S.periodo, 1)))}. El pago queda en los registros de ese mes.</span><input id="mFecha" type="date" value="${fecha}" required></label>
+      <label for="mFecha">Fecha del pago<span class="hint">${(S.info.cerrados || []).includes(mesMas(S.periodo, 1))
+        ? `El día en que pagó en sii.cl. ${esc(nomMes(mesMas(S.periodo, 1)))} está cerrado: el pago queda en los registros del mes de la fecha que indique.`
+        : `El día en que pagó en sii.cl, normalmente en ${esc(nomMes(mesMas(S.periodo, 1)))}. El pago queda en los registros de ese mes.`}</span><input id="mFecha" type="date" value="${fecha}" required></label>
       <div class="grid2">${c.pago_f29.map(x => campoMonto("pf_" + x.clave, esc(x.nombre), "", x.pendiente || "")).join("")}</div>
       ${campoMedio("¿Cómo pagó?", previo.medio)}<div id="mErr"></div>
       <div class="row"><button class="btn primary" type="submit">Registrar el pago</button></div></form>`;
@@ -1059,11 +1086,12 @@ function formMovimiento(op, previo = {}) {
 }
 async function enviarMov(op, cuerpo) {
   if (cuerpo.fecha && !FECHA_OK.test(cuerpo.fecha)) return error($("#mErr"), MAL_ANIO);
-  // El pago del F29 se hace en un mes posterior al declarado: eso no es un error de fecha.
-  // El pago del F29 se hace en el mes siguiente al declarado (o, atrasado, en el que sigue): eso no es un error de
-  // fecha. Cualquier otra fecha (por ejemplo, un año mal escrito) se advierte una vez.
-  const sig = mesMas(S.periodo, 1);
-  const esperado = op === "pago_f29" && cuerpo.fecha && [sig, mesMas(sig, 1)].includes(cuerpo.fecha.slice(0, 7));
+  // El pago del F29 se hace en el mes siguiente al declarado (o, atrasado, en el que sigue); si ese mes ya está
+  // cerrado, en uno posterior hasta hoy (es lo que propone fechaPagoF29). Eso no es un error de fecha. Cualquier
+  // otra fecha (por ejemplo, un año mal escrito) se advierte una vez.
+  const sig = mesMas(S.periodo, 1), mes = (cuerpo.fecha || "").slice(0, 7);
+  const esperado = op === "pago_f29" && mes && ([sig, mesMas(sig, 1)].includes(mes)
+    || ((S.info.cerrados || []).includes(sig) && mes > sig && cuerpo.fecha <= hoy()));
   if (cuerpo.fecha && cuerpo.fecha.slice(0, 7) !== S.periodo && !esperado) {
     if (!$("#mErr").dataset.ok) { $("#mErr").dataset.ok = "1"; $("#mErr").innerHTML = `<div class="msg warn">La fecha es de ${esc(nomMes(cuerpo.fecha.slice(0, 7)))}, no de ${esc(nomMes(S.periodo))}. Si está bien, presione el botón otra vez.</div>`; return; }
   }
@@ -1317,7 +1345,7 @@ async function pantallaLibros() {
   modoCorregir = false;
   const a = render(`<div class="stack"><h1>Libros e informes</h1>
     <div class="row"><span>Mostrar:</span><div class="seg" role="group" id="alc" aria-label="Período"><button type="button" data-a="mes" aria-pressed="true">${esc(nomMes(S.periodo))}</button><button type="button" data-a="anio" aria-pressed="false">Todo ${S.periodo.slice(0, 4)}</button></div>
-    <a class="btn" id="xls" download href="#">Descargar Excel</a></div></div>
+    <a class="btn" id="xls" data-excel download href="#">Descargar Excel</a></div></div>
     <div class="stack" style="gap:6px"><div class="tabs" role="tablist" aria-label="Libros">${PESTANAS
       .map(k => `<button type="button" role="tab" id="tab-${k}" aria-controls="lib" data-t="${k}" aria-selected="${k === pestana}" tabindex="${k === pestana ? 0 : -1}">${NOMBRE_PEST[k]}</button>`).join("")}</div>
     <p class="small muted" id="pestDesc"></p></div><div id="lib" role="tabpanel"></div>`);

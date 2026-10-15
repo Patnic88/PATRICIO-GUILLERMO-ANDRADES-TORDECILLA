@@ -164,6 +164,8 @@ class App:
         with self.lock_ventana:
             if self.cerrando:  # quien llama debe esperar a que este programa termine y abrirse normalmente
                 return {"mostrada": False, "cerrando": True}
+            if self.ventana and self.ventana.abriendo():  # Chrome está arrancando: la ventana aparecerá sola
+                return {"mostrada": True, "abriendo": True}
             mostrada = bool(self.ventana and self.ventana.traer_al_frente())
             if self.ventana and not mostrada:
                 self.ventana.marcar_reapertura()
@@ -992,9 +994,16 @@ def main(argv=None):
         except KeyboardInterrupt:
             pass
         return 0
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    # La ventana se lanza antes de atender: un doble clic que pregunte desde el primer instante la encuentra
+    # arrancando (y no abre otra). Chrome espera la página en la cola del puerto, que ya está escuchando.
     try:
         v = srv.app.ventana = navegador.VentanaPrograma(url)
+    except navegador.ErrorNavegador as e:
+        srv.server_close()
+        aviso(str(e))
+        return 1
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
         while True:  # el programa termina cuando la persona cierra su ventana
             marca = v.esperar_cierre()
             with srv.app.lock_ventana:
