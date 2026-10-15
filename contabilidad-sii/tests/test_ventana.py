@@ -241,7 +241,8 @@ class TestMain(unittest.TestCase):
         self.addCleanup(srv.shutdown)
         v = object.__new__(navegador.VentanaPrograma)  # Chrome sin control: sin DevToolsActivePort
         v.url, v.perfil, v.proc, v.reabierta, v.vista = f"http://127.0.0.1:{puerto}/", self.tmp.name, ProcesoFalso(None), 0.0, None
-        v.t_lanz, v.t_reloj, v._t_fin = time.monotonic(), time.time(), None
+        # Lanzada hace 1 s: la página llega después del lanzamiento (en Windows el reloj avanza de a ~16 ms).
+        v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - 1, time.time() - 1, None
         srv.app.ventana = v
         self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
         with urllib.request.urlopen(v.url, timeout=5) as r:  # la ventana aparece y pide la página
