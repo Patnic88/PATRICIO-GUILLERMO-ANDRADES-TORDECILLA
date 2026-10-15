@@ -795,6 +795,8 @@ def crear_manejador(app: App, puerto_ref: list):
                 return self._enviar(403, b"forbidden", "text/plain")
             url = urlparse(self.path)
             if metodo == "GET" and url.path in ("/", "/index.html"):
+                if app.ventana:  # una ventana del programa acaba de abrirse (o recargarse)
+                    app.ventana.pagina_pedida()
                 with open(HTML, "rb") as f:
                     return self._enviar(200, f.read(), "text/html; charset=utf-8",
                                         {"Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; "

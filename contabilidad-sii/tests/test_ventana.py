@@ -45,6 +45,9 @@ class VentanaFalsa:
     def abriendo(self):
         return self.arrancando
 
+    def pagina_pedida(self):
+        self.arrancando = False
+
     def marcar_reapertura(self):
         self.llamadas.append("reapertura")
 
@@ -231,6 +234,21 @@ class TestMain(unittest.TestCase):
         self.assertEqual(VentanaFalsa.creadas, [otra])  # ninguna ventana más
         self.assertEqual(n["mostrar"], 2)  # se le preguntó al programa que tomó el puerto
 
+    def test_la_pagina_pedida_marca_la_ventana_como_aparecida(self):
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.server_close)
+        self.addCleanup(srv.shutdown)
+        v = object.__new__(navegador.VentanaPrograma)  # Chrome sin control: sin DevToolsActivePort
+        v.url, v.perfil, v.proc, v.reabierta, v.vista = f"http://127.0.0.1:{puerto}/", self.tmp.name, ProcesoFalso(None), 0.0, None
+        v.t_lanz, v.t_reloj, v._t_fin = time.monotonic(), time.time(), None
+        srv.app.ventana = v
+        self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
+        with urllib.request.urlopen(v.url, timeout=5) as r:  # la ventana aparece y pide la página
+            self.assertIn(b"<html", r.read()[:200].lower())
+        # Ya apareció: si no se puede traer al frente (sin control, o la persona la cerró), quien llamó abre otra.
+        self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": False})
+
     def test_un_puerto_en_uso_no_se_comparte(self):
         # En Windows, SO_REUSEADDR permitía abrir un segundo servidor en el mismo puerto: dos programas a la vez.
         primero, puerto = web.servidor(self.tmp.name, puerto_libre())
@@ -317,19 +335,18 @@ class TestEsperarCierre(unittest.TestCase):
         with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
             self.assertTrue(self.ventana(0, 1).abriendo())  # entregó la orden a otro Chrome con el perfil
 
-    def test_abriendo_sin_control(self):
-        # Chrome sin control (política del equipo; en Mac sigue vivo sin ventanas): la página nunca se verá, así que
-        # solo se espera unos segundos. Después, un doble clic vuelve a abrir la ventana.
-        self.assertTrue(self.ventana(None, 5).abriendo())
-        self.assertFalse(self.ventana(None, 11).abriendo())
-        v = self.ventana(None, 11)  # con control listo (escrito después del lanzamiento) se espera el plazo completo
-        with open(os.path.join(v.perfil, "DevToolsActivePort"), "w") as f:
-            f.write("9222\n/devtools/browser/x")
-        self.assertTrue(v.abriendo())
-        w = self.ventana(None, 30)  # sin control, lanzada hace 30 s: ya no está abriéndose
-        self.assertFalse(w.abriendo())
-        w.marcar_reapertura()  # otro doble clic pidió una ventana: desde ahí se cuentan de nuevo los segundos
-        self.assertTrue(w.abriendo())
+    def test_abriendo_hasta_que_se_pide_la_pagina(self):
+        # Sin control de Chrome (política del equipo) la página nunca aparece en su lista; la señal es que la ventana
+        # la pide al servidor. Un Chrome que arranca lento, en cambio, se sigue esperando el plazo completo.
+        for sistema in ("darwin", "win32", "linux"):
+            with mock.patch.object(navegador.sys, "platform", sistema):
+                v = self.ventana(None, 40)
+                self.assertTrue(v.abriendo(), sistema)
+                v.pagina_pedida()
+                self.assertFalse(v.abriendo(), sistema)
+                v.marcar_reapertura()  # en Mac, con Chrome vivo sin ventanas, otro doble clic pide una ventana
+                self.assertTrue(v.abriendo(), sistema)
+                self.assertFalse(self.ventana(None, 61).abriendo(), sistema)
 
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):

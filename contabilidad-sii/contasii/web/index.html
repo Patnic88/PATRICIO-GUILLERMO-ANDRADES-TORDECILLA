@@ -335,6 +335,9 @@ document.addEventListener("click", ev => {
 // «Descargar Excel»: se pide al programa y se guarda sin salir de la pantalla. Si no se pudo armar, el motivo se
 // muestra junto al botón (un enlace de descarga directo haría que Chrome cancelara la descarga sin decir nada).
 const excelEnCurso = new Set();  // direcciones que se están armando: un segundo clic igual no pide otro archivo
+// «Ocupado» para el lector de pantalla: según el período que el enlace muestra ahora (en Libros cambia de mes a año).
+const marcarExcel = () => document.querySelectorAll("a[data-excel]").forEach(a =>
+  excelEnCurso.has(a.href) ? a.setAttribute("aria-busy", "true") : a.removeAttribute("aria-busy"));
 document.addEventListener("click", async ev => {
   const a = ev.target.closest("a[data-excel]");
   if (!a) return;
@@ -342,11 +345,11 @@ document.addEventListener("click", async ev => {
   const href = a.href;  // en Libros cambia con «mes» / «todo el año»: cada período se pide por separado
   if (excelEnCurso.has(href)) return toast("Se está armando ese Excel; espere un momento.");
   excelEnCurso.add(href);
-  a.setAttribute("aria-busy", "true");
-  toast("Armando el Excel…");
+  marcarExcel();
   let m = a.parentElement.nextElementSibling;
   if (!m || !m.classList.contains("xlsMsg")) { m = document.createElement("div"); m.className = "xlsMsg"; a.parentElement.after(m); }
-  m.innerHTML = "";
+  // El avance va junto al botón: el error o la descarga lo reemplazan (un aviso flotante quedaría junto al error).
+  m.innerHTML = `<p class="small muted" role="status">Armando el Excel…</p>`;
   if (++cargas === 1) document.body.classList.add("cargando");
   try {
     let r;
@@ -357,11 +360,13 @@ document.addEventListener("click", async ev => {
     const u = URL.createObjectURL(await r.blob()), t = document.createElement("a");
     t.href = u; t.download = nombre; document.body.appendChild(t); t.click(); t.remove();
     setTimeout(() => URL.revokeObjectURL(u), 60000);
+    // Se quita «Armando el Excel…», salvo que otro período siga armándose o haya un error a la vista.
+    if (excelEnCurso.size === 1 && !m.querySelector(".bad")) m.innerHTML = "";
     toast(`Descargando «${nombre}»`);
   } catch (e) { error(m, e); }
   finally {
     excelEnCurso.delete(href);
-    if (!excelEnCurso.has(a.href)) a.removeAttribute("aria-busy");
+    marcarExcel();
     if (--cargas === 0) document.body.classList.remove("cargando");
   }
 });
@@ -1368,6 +1373,7 @@ async function pantallaLibros() {
   const q = () => alc === "mes" ? "periodo=" + S.periodo : "anio=" + S.periodo.slice(0, 4);
   const pintar = () => {
     $("#xls").href = `/api/${E("excel")}?${q()}`;
+    marcarExcel();
     $("#pestDesc").textContent = DESC_PEST[pestana];
     $("#lib").setAttribute("aria-labelledby", "tab-" + pestana);
     libro(pestana, q());
