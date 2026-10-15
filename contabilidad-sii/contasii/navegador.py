@@ -128,6 +128,7 @@ class VentanaPrograma:
             raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
         self.reabierta = 0.0
         self.vista = None  # cuándo se vio por última vez la página del programa
+        self.control = False  # si la última consulta al control de Chrome respondió (esperar_cierre la repite)
 
     def _perfil_tomado(self) -> bool:
         """True si un Chrome tiene tomado el perfil del programa (su candado de instancia única sigue activo).
@@ -169,13 +170,16 @@ class VentanaPrograma:
         Sin el control de Chrome (política del equipo) no se puede traer la ventana al frente ni ver si sigue
         abierta: la que acaba de pedir su página se da por recién abierta durante `recien` segundos, para que un
         doble clic repetido mientras aparece no abra otra. Solo mientras algún Chrome tenga el perfil: en Windows
-        y Linux, Chrome termina al cerrar su última ventana (en Mac sigue vivo y la espera se cumple igual)."""
+        y Linux, Chrome termina al cerrar su última ventana (en Mac sigue vivo y la espera se cumple igual).
+
+        No consulta el control: usa la última respuesta (esperar_cierre consulta cada 1,5 s). Se llama en cada doble
+        clic y con el programa ocupado en atenderlo, y en Windows un puerto de control viejo tarda ~2 s en fallar."""
         desde, ahora = max(self.t_lanz, self.reabierta), time.monotonic()
         # Estrictamente después: en Windows el reloj avanza de a ~16 ms, y la página que se vio justo antes de
         # pedir otra ventana (al buscarla para traerla al frente) puede quedar con la misma hora.
         if self.vista is not None and self.vista > desde:
             # Si el control responde (aunque sea de un Chrome abierto antes que este programa), se trae al frente.
-            if ahora - self.vista >= recien or self.paginas() is not None:
+            if ahora - self.vista >= recien or self.control:
                 return False
             return self.proc.poll() is None or self._perfil_tomado()
         if ahora - desde >= plazo:
@@ -193,12 +197,15 @@ class VentanaPrograma:
         """Páginas abiertas en el perfil del programa, o None si Chrome no responde."""
         puerto = self._devtools()
         if not puerto:
+            self.control = False
             return None
         try:
             with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/json/list", timeout=3) as r:
                 hay = [t for t in json.loads(r.read()) if t.get("type") == "page"]
         except (OSError, ValueError):
+            self.control = False
             return None
+        self.control = True
         if any(t.get("url", "").startswith(self.url) for t in hay):
             self.vista = time.monotonic()
         return hay

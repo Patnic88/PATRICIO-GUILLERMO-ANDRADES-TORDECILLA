@@ -241,6 +241,7 @@ class TestMain(unittest.TestCase):
         self.addCleanup(srv.shutdown)
         v = object.__new__(navegador.VentanaPrograma)  # Chrome sin control: sin DevToolsActivePort
         v.url, v.perfil, v.proc, v.reabierta, v.vista = f"http://127.0.0.1:{puerto}/", self.tmp.name, ProcesoFalso(None), 0.0, None
+        v.control = False
         # Lanzada hace 20 s: la página llega después del lanzamiento (en Windows el reloj avanza de a ~16 ms).
         v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - 20, time.time() - 20, None
         srv.app.ventana = v
@@ -299,6 +300,7 @@ class TestEsperarCierre(unittest.TestCase):
     def ventana(self, codigo, segundos_abierto):
         v = object.__new__(navegador.VentanaPrograma)
         v.proc, v.reabierta, v.vista, v.perfil = ProcesoFalso(codigo), 0.0, None, tempfile.mkdtemp()
+        v.control = False
         v.url = "http://127.0.0.1:1/"
         v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - segundos_abierto, time.time() - segundos_abierto, None
         self.addCleanup(shutil.rmtree, v.perfil, True)
@@ -336,9 +338,9 @@ class TestEsperarCierre(unittest.TestCase):
     def test_abriendo(self):
         v = self.ventana(None, 1)  # Chrome lanzado hace 1 s, sin página todavía
         self.assertTrue(v.abriendo())
-        v.vista = time.monotonic()  # ya mostró su página
-        with mock.patch.object(navegador.VentanaPrograma, "paginas", return_value=[]):  # y su control responde
-            self.assertFalse(v.abriendo())
+        v.vista, v.control = time.monotonic(), True  # ya mostró su página y su control responde
+        self.assertFalse(v.abriendo())
+        v.control = False
         v.marcar_reapertura()  # otro doble clic abre una ventana nueva: mientras no se vea, está abriéndose
         self.assertTrue(v.abriendo())
         v.vista = v.reabierta  # la página vieja se vio en el mismo instante del reloj (Windows mide de a ~16 ms)
@@ -376,8 +378,26 @@ class TestEsperarCierre(unittest.TestCase):
         # Con control (aunque sea de un Chrome abierto antes que el programa), la ventana se trae al frente.
         w = self.ventana(None, 2)
         w.pagina_pedida()
-        with mock.patch.object(navegador.VentanaPrograma, "paginas", return_value=[{"url": w.url, "type": "page"}]):
-            self.assertFalse(w.abriendo())
+        w.control = True  # la última consulta de esperar_cierre respondió
+        self.assertFalse(w.abriendo())
+
+    def test_abriendo_no_consulta_el_control(self):
+        # Se llama en cada doble clic con el programa ocupado en atenderlo: en Windows, un puerto de control viejo
+        # tarda ~2 s en fallar, y los doble clic se encolarían. Usa la última respuesta de esperar_cierre.
+        with mock.patch.object(navegador.VentanaPrograma, "paginas", side_effect=AssertionError("consultó")), \
+                mock.patch.object(navegador.VentanaPrograma, "_devtools", side_effect=AssertionError("consultó")):
+            for control in (False, True):
+                v = self.ventana(None, 20)
+                v.control = control
+                v.abriendo()
+                v.pagina_pedida()
+                v.abriendo()
+
+    def test_paginas_recuerda_si_el_control_respondio(self):
+        v = self.ventana(None, 1)
+        v.control = True
+        self.assertIsNone(v.paginas())  # sin DevToolsActivePort
+        self.assertFalse(v.control)
 
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):
