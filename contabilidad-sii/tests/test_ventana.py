@@ -241,13 +241,17 @@ class TestMain(unittest.TestCase):
         self.addCleanup(srv.shutdown)
         v = object.__new__(navegador.VentanaPrograma)  # Chrome sin control: sin DevToolsActivePort
         v.url, v.perfil, v.proc, v.reabierta, v.vista = f"http://127.0.0.1:{puerto}/", self.tmp.name, ProcesoFalso(None), 0.0, None
-        # Lanzada hace 1 s: la página llega después del lanzamiento (en Windows el reloj avanza de a ~16 ms).
-        v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - 1, time.time() - 1, None
+        # Lanzada hace 20 s: la página llega después del lanzamiento (en Windows el reloj avanza de a ~16 ms).
+        v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - 20, time.time() - 20, None
         srv.app.ventana = v
         self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
         with urllib.request.urlopen(v.url, timeout=5) as r:  # la ventana aparece y pide la página
             self.assertIn(b"<html", r.read()[:200].lower())
-        # Ya apareció: si no se puede traer al frente (sin control, o la persona la cerró), quien llamó abre otra.
+        self.assertEqual(v.vista is not None and v.vista > v.t_lanz, True)
+        # Sin control no se la puede traer al frente: recién aparecida, un doble clic repetido no abre otra...
+        self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": True, "abriendo": True})
+        # ...pasado ese momento (la persona pudo cerrarla), quien llamó abre otra.
+        v.vista -= 11
         self.assertEqual(web.mostrar_abierto(puerto), {"mostrada": False})
 
     def test_un_puerto_en_uso_no_se_comparte(self):
@@ -309,6 +313,14 @@ class TestEsperarCierre(unittest.TestCase):
         # Chrome sin control (una política del equipo lo desactiva) que estuvo abierto un rato y terminó.
         self.assertTrue(self.esperar(self.ventana(0, 600), 3))
 
+    def test_sin_control_la_ventana_reabierta_en_otro_chrome_mantiene_el_programa(self):
+        # Política sin control remoto, Windows o Linux: el Chrome lanzado terminó al cerrar la ventana y otro doble
+        # clic la reabrió en un Chrome nuevo con el mismo perfil. El programa sigue atendiendo mientras ese viva.
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
+            self.assertFalse(self.esperar(self.ventana(0, 600), 1))
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
+            self.assertTrue(self.esperar(self.ventana(0, 600), 3))  # cuando ese Chrome termina, el programa también
+
     def test_chrome_que_entrego_la_orden_a_otro_no_la_da_por_cerrada(self):
         # Ya había un Chrome con el perfil del programa (sin control): el lanzado terminó enseguida, sin dejar su
         # control listo, y la ventana vive en el otro, que tiene tomado el perfil. El programa sigue atendiendo.
@@ -323,6 +335,8 @@ class TestEsperarCierre(unittest.TestCase):
 
     def test_abriendo(self):
         v = self.ventana(None, 1)  # Chrome lanzado hace 1 s, sin página todavía
+        with open(os.path.join(v.perfil, "DevToolsActivePort"), "w") as f:  # con su control listo
+            f.write("9222\n/devtools/browser/x")
         self.assertTrue(v.abriendo())
         v.vista = time.monotonic()  # ya mostró su página
         self.assertFalse(v.abriendo())
@@ -343,11 +357,23 @@ class TestEsperarCierre(unittest.TestCase):
             with mock.patch.object(navegador.sys, "platform", sistema):
                 v = self.ventana(None, 40)
                 self.assertTrue(v.abriendo(), sistema)
-                v.pagina_pedida()
+                v.vista = time.monotonic() - 11  # pidió su página hace 11 s
                 self.assertFalse(v.abriendo(), sistema)
                 v.marcar_reapertura()  # en Mac, con Chrome vivo sin ventanas, otro doble clic pide una ventana
                 self.assertTrue(v.abriendo(), sistema)
                 self.assertFalse(self.ventana(None, 61).abriendo(), sistema)
+
+    def test_sin_control_la_ventana_recien_aparecida_absorbe_otro_doble_clic(self):
+        v = self.ventana(None, 20)
+        v.pagina_pedida()  # la ventana apareció, pero sin control no se la puede traer al frente
+        self.assertTrue(v.abriendo())  # un doble clic repetido mientras aparece no abre otra
+        v.vista = time.monotonic() - 11
+        self.assertFalse(v.abriendo())  # pasado el momento, un doble clic la vuelve a abrir (puede estar cerrada)
+        w = self.ventana(None, 2)  # con control, la ventana aparecida se trae al frente: no hace falta esperar
+        with open(os.path.join(w.perfil, "DevToolsActivePort"), "w") as f:
+            f.write("9222\n/devtools/browser/x")
+        w.pagina_pedida()
+        self.assertFalse(w.abriendo())
 
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):

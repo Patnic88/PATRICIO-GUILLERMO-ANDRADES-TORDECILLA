@@ -129,20 +129,11 @@ class VentanaPrograma:
         self.reabierta = 0.0
         self.vista = None  # cuándo se vio por última vez la página del programa
 
-    def _entrego(self) -> bool:
-        """True si este Chrome solo entregó la orden a otro Chrome que ya usaba el mismo perfil: terminó enseguida
-        sin dejar listo su propio control (DevToolsActivePort). La ventana vive entonces en ese otro proceso. El
-        código de salida no sirve para saberlo: en Linux con ventana fue 0 y sin ventana, 21."""
-        if self.proc.poll() is None:
-            return False
-        if self._t_fin is None:
-            self._t_fin = time.monotonic()
-        return self._t_fin - self.t_lanz < 10 and not self._control_propio()
-
     def _control_propio(self) -> bool:
         """True si el Chrome lanzado (u otro con el perfil, después) dejó listo su control: DevToolsActivePort escrito
         después del lanzamiento. Sin control (política del equipo, o la orden la tomó un Chrome abierto sin él), el
-        archivo no existe o es de una sesión anterior."""
+        archivo no existe o es de una sesión anterior. El código de salida de Chrome no sirve para saber si entregó
+        la orden a otro: en Linux con ventana fue 0 y sin ventana, 21."""
         try:
             return os.path.getmtime(os.path.join(self.perfil, "DevToolsActivePort")) >= self.t_reloj - 2
         except OSError:
@@ -180,14 +171,20 @@ class VentanaPrograma:
         (política del equipo), y no depende de cuánto tarde Chrome en arrancar."""
         self.vista = time.monotonic()
 
-    def abriendo(self, plazo: float = 60) -> bool:
+    def abriendo(self, plazo: float = 60, recien: float = 10) -> bool:
         """True si la ventana se lanzó (o se pidió otra) hace menos de `plazo` segundos y todavía no apareció su
         página (ni en el control de Chrome ni pedida al servidor): Chrome está arrancando. Un doble clic en ese
-        momento no debe abrir una segunda ventana."""
-        desde = max(self.t_lanz, self.reabierta)
+        momento no debe abrir una segunda ventana.
+
+        Sin el control de Chrome (política del equipo) no se puede traer la ventana al frente ni saber si sigue
+        abierta: la que acaba de pedir su página se da por recién abierta durante `recien` segundos, para que un
+        doble clic repetido mientras aparece no abra otra."""
+        desde, ahora = max(self.t_lanz, self.reabierta), time.monotonic()
         # Estrictamente después: en Windows el reloj avanza de a ~16 ms, y la página que se vio justo antes de
         # pedir otra ventana (al buscarla para traerla al frente) puede quedar con la misma hora.
-        if (self.vista is not None and self.vista > desde) or time.monotonic() - desde >= plazo:
+        if self.vista is not None and self.vista > desde:
+            return ahora - self.vista < recien and not self._control_propio()
+        if ahora - desde >= plazo:
             return False
         return self.proc.poll() is None or self._perfil_tomado()  # si Chrome se cayó, no viene ninguna ventana
 
@@ -215,8 +212,8 @@ class VentanaPrograma:
     def esperar_cierre(self, intervalo: float = 1.5, inicio: float = 60):
         """Vuelve cuando la persona cerró la ventana: dos consultas seguidas sin páginas (no un parpadeo al
         recargar). Mientras Chrome arranca (hasta `inicio` segundos) no se da por cerrada. Si Chrome no responde
-        y nunca mostró páginas (por ejemplo, una política del equipo desactiva el control), espera a que termine
-        el proceso de Chrome."""
+        y nunca mostró páginas (por ejemplo, una política del equipo desactiva el control), espera a que ningún
+        Chrome tenga tomado el perfil del programa."""
         visto, fallos, t0, marca = False, 0, time.monotonic(), self.reabierta
         while True:
             if self.reabierta != marca:  # se está abriendo otra ventana: se cuenta de nuevo como arranque
@@ -227,10 +224,10 @@ class VentanaPrograma:
             else:
                 fallos += 1
                 arrancando = not visto and time.monotonic() - t0 < inicio
-                # Si este Chrome solo entregó la orden a otro que no deja consultar sus páginas, su fin no dice
-                # nada de la ventana: mientras ese otro Chrome tenga tomado el perfil, no se da por cerrada. Si
-                # nadie lo tiene (Chrome se cayó o ya se cerró), sí.
-                termino = self.proc.poll() is not None and not (self._entrego() and self._perfil_tomado())
+                # Sin control, el fin de este Chrome no dice nada de la ventana: pudo entregar la orden a otro Chrome
+                # con el mismo perfil, o la ventana se reabrió en otro (la abrió otro doble clic). Mientras alguno
+                # tenga tomado el perfil, no se da por cerrada. Si nadie lo tiene (Chrome se cayó o ya se cerró), sí.
+                termino = self.proc.poll() is not None and not self._perfil_tomado()
                 responde = hay is not None or visto or termino
                 if fallos >= 2 and not arrancando and responde:
                     return marca  # quien llama compara con self.reabierta: si cambió, hay una ventana en camino
