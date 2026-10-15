@@ -141,6 +141,18 @@ class TestMain(unittest.TestCase):
         self.assertGreater(time.monotonic() - t0, 0.9)  # esperó que el anterior soltara el puerto
         self.assertEqual(VentanaFalsa.creadas[-1].llamadas, ["contasii", "cerrar"])  # y atendió su ventana
 
+    def test_si_otro_doble_clic_ya_lo_abrio_se_muestra_esa_ventana(self):
+        # Mientras el anterior termina, otro doble clic ya levantó el programa: se pide mostrar su ventana en vez
+        # de esperar 20 s y abrir una segunda.
+        with mock.patch.object(web, "ya_abierto", return_value=True), \
+                mock.patch.object(web, "mostrar_abierto", side_effect=[{"mostrada": False, "cerrando": True},
+                                                                       {"mostrada": True}]), \
+                mock.patch.object(navegador, "VentanaPrograma", VentanaFalsa):
+            t0 = time.monotonic()
+            self.assertEqual(web.main(["--carpeta", self.tmp.name, "--puerto", str(puerto_libre())]), 0)
+        self.assertLess(time.monotonic() - t0, 5)
+        self.assertEqual(VentanaFalsa.creadas, [])
+
     def test_api_ventana_sin_ventana(self):
         srv, puerto = web.servidor(self.tmp.name, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()

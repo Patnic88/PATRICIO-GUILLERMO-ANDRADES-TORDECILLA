@@ -639,7 +639,7 @@ function pantallaInicio() {
         <div class="tile"><span class="k">Usted debe a proveedores</span><span class="v">${peso(i.por_pagar)}</span></div>
       </div></div>
     <div class="row"><button class="btn" type="button" data-ir="libros">Ver libros e informes</button>
-      <a class="btn" href="/api/${E("excel")}?periodo=${S.periodo}">Descargar Excel del mes</a></div>`);
+      <a class="btn" download href="/api/${E("excel")}?periodo=${S.periodo}">Descargar Excel del mes</a></div>`);
 }
 function paso(n, vista, sub, estado, hecho, sig) {
   return `<button class="step${hecho ? " done" : ""}${vista === sig ? " next" : ""}" type="button" data-ir="${vista}"><span class="n">${hecho ? "✓" : n}</span>
@@ -995,7 +995,8 @@ function conectarMedio(inicial = "banco") {
 function fechaPagoF29() {
   const sig = mesMas(S.periodo, 1), h = hoy();
   if (h.slice(0, 7) <= sig) return h;  // se paga ahora (o es el F29 del mes en curso): nunca una fecha futura
-  return sig + "-01";  // se registra un pago antiguo: un día del mes siguiente al declarado (corríjalo si fue otro)
+  // Pago antiguo: un día del mes siguiente al declarado (corríjalo si fue otro), salvo que ese mes esté cerrado.
+  return (S.info.cerrados || []).includes(sig) ? h : sig + "-01";
 }
 function formMovimiento(op, previo = {}) {
   const c = S.catalogo, f = $("#form"), fecha = previo.fecha || (op === "pago_f29" ? fechaPagoF29() : fechaDefecto());
@@ -1316,7 +1317,7 @@ async function pantallaLibros() {
   modoCorregir = false;
   const a = render(`<div class="stack"><h1>Libros e informes</h1>
     <div class="row"><span>Mostrar:</span><div class="seg" role="group" id="alc" aria-label="Período"><button type="button" data-a="mes" aria-pressed="true">${esc(nomMes(S.periodo))}</button><button type="button" data-a="anio" aria-pressed="false">Todo ${S.periodo.slice(0, 4)}</button></div>
-    <a class="btn" id="xls" href="#">Descargar Excel</a></div></div>
+    <a class="btn" id="xls" download href="#">Descargar Excel</a></div></div>
     <div class="stack" style="gap:6px"><div class="tabs" role="tablist" aria-label="Libros">${PESTANAS
       .map(k => `<button type="button" role="tab" id="tab-${k}" aria-controls="lib" data-t="${k}" aria-selected="${k === pestana}" tabindex="${k === pestana ? 0 : -1}">${NOMBRE_PEST[k]}</button>`).join("")}</div>
     <p class="small muted" id="pestDesc"></p></div><div id="lib" role="tabpanel"></div>`);

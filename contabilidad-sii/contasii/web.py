@@ -327,6 +327,7 @@ class App:
             "banco": saldos.get(A("banco"), 0), "caja": saldos.get(A("caja"), 0),
             "por_cobrar": saldos.get(A("clientes"), 0), "por_pagar": -saldos.get(A("proveedores"), 0),
             "documentos": docs, "periodos": periodos, "cerrado": lib.periodo_cerrado(periodo) if periodo else False,
+            "cerrados": [r[0] for r in lib.con.execute("SELECT periodo FROM periodo WHERE cerrado ORDER BY periodo")],
             "asientos_mes": lib.con.execute("SELECT COUNT(*) FROM asiento WHERE periodo=?", (periodo,)).fetchone()[0]
             if periodo else 0,
             # Pagos, cobros y asientos que registró la persona (no los de facturas, boletas ni el F29, ni anulaciones).
@@ -954,13 +955,15 @@ def main(argv=None):
         # Doble clic con el programa ya abierto: se muestra su ventana; si no tiene (se cerró hace un instante, o
         # se abrió con --no-abrir), se abre otra. Si el programa abierto terminó justo ahora, se abre de nuevo.
         r = {} if a.no_abrir else mostrar_abierto(a.puerto)
+        # El programa abierto está terminando: se espera. Si mientras tanto otro doble clic ya lo abrió de nuevo,
+        # se le pide mostrar su ventana (no se abre una segunda); si el puerto quedó libre, se abre normalmente.
+        limite = time.monotonic() + 20
+        while r.get("cerrando") and time.monotonic() < limite:
+            time.sleep(0.25)
+            r = mostrar_abierto(a.puerto) if ya_abierto(a.puerto) else {}
         if a.no_abrir or r.get("mostrada"):
             print("Mi Contabilidad ya estaba abierta; se mostró su ventana.")
             return 0
-        if r.get("cerrando"):  # el programa abierto está terminando: se espera que suelte el puerto
-            limite = time.monotonic() + 20
-            while ya_abierto(a.puerto) and time.monotonic() < limite:
-                time.sleep(0.25)
         if ya_abierto(a.puerto):
             try:
                 navegador.VentanaPrograma(f"http://127.0.0.1:{a.puerto}/")

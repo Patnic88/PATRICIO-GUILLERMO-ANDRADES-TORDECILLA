@@ -119,6 +119,8 @@ class TestWeb(unittest.TestCase):
         self.assertTrue(all(c["ok"] for c in r["controles"]))
         st, r = self.req(e + "/cerrar", {"periodo": "2026-10"})
         self.assertEqual(st, 200)
+        st, r = self.req(e + "/resumen?periodo=2026-11")
+        self.assertEqual(r["cerrados"], ["2026-10"])
         st, r = self.req(e + "/movimiento", {"operacion": "retiro", "fecha": "2026-10-30", "monto": 1})
         self.assertEqual(st, 400)  # mes cerrado
 
