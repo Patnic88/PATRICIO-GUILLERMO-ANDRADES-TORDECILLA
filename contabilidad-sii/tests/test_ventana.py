@@ -201,6 +201,7 @@ class TestEsperarCierre(unittest.TestCase):
     def ventana(self, codigo, segundos_abierto):
         v = object.__new__(navegador.VentanaPrograma)
         v.proc, v.reabierta, v.vista, v.perfil = ProcesoFalso(codigo), 0.0, None, tempfile.mkdtemp()
+        v.url = "http://127.0.0.1:1/"
         v.t_lanz, v.t_reloj, v._t_fin = time.monotonic() - segundos_abierto, time.time() - segundos_abierto, None
         self.addCleanup(shutil.rmtree, v.perfil, True)
         return v
@@ -232,6 +233,8 @@ class TestEsperarCierre(unittest.TestCase):
         v.vista = time.monotonic()  # ya mostró su página
         self.assertFalse(v.abriendo())
         v.marcar_reapertura()  # otro doble clic abre una ventana nueva: mientras no se vea, está abriéndose
+        self.assertTrue(v.abriendo())
+        v.vista = v.reabierta  # la página vieja se vio en el mismo instante del reloj (Windows mide de a ~16 ms)
         self.assertTrue(v.abriendo())
         self.assertFalse(self.ventana(None, 61).abriendo())  # pasó el plazo de arranque
         with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):

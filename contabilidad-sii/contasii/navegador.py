@@ -127,7 +127,7 @@ class VentanaPrograma:
         except OSError as e:
             raise ErrorNavegador(f"No se pudo abrir Google Chrome ({self.ruta}): {e}")
         self.reabierta = 0.0
-        self.vista = None  # cuándo se vio por última vez una página en el perfil del programa
+        self.vista = None  # cuándo se vio por última vez la página del programa
 
     def _entrego(self) -> bool:
         """True si este Chrome solo entregó la orden a otro Chrome que ya usaba el mismo perfil: terminó enseguida
@@ -174,7 +174,9 @@ class VentanaPrograma:
         """True si la ventana se lanzó (o se pidió otra) hace menos de `plazo` segundos y todavía no se ha visto su
         página: Chrome está arrancando. Un doble clic en ese momento no debe abrir una segunda ventana."""
         desde = max(self.t_lanz, self.reabierta)
-        if (self.vista is not None and self.vista >= desde) or time.monotonic() - desde >= plazo:
+        # Estrictamente después: en Windows el reloj avanza de a ~16 ms, y la página que se vio justo antes de
+        # pedir otra ventana (al buscarla para traerla al frente) puede quedar con la misma hora.
+        if (self.vista is not None and self.vista > desde) or time.monotonic() - desde >= plazo:
             return False
         return self.proc.poll() is None or self._perfil_tomado()  # si Chrome se cayó, no viene ninguna ventana
 
@@ -195,7 +197,7 @@ class VentanaPrograma:
                 hay = [t for t in json.loads(r.read()) if t.get("type") == "page"]
         except (OSError, ValueError):
             return None
-        if hay:
+        if any(t.get("url", "").startswith(self.url) for t in hay):
             self.vista = time.monotonic()
         return hay
 
