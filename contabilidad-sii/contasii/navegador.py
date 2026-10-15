@@ -171,7 +171,7 @@ class VentanaPrograma:
         (política del equipo), y no depende de cuánto tarde Chrome en arrancar."""
         self.vista = time.monotonic()
 
-    def abriendo(self, plazo: float = 60, recien: float = 10) -> bool:
+    def abriendo(self, plazo: float = 60, recien: float = 10, reapertura: float = 3) -> bool:
         """True si la ventana se lanzó (o se pidió otra) hace menos de `plazo` segundos y todavía no apareció su
         página (ni en el control de Chrome ni pedida al servidor): Chrome está arrancando. Un doble clic en ese
         momento no debe abrir una segunda ventana.
@@ -184,24 +184,26 @@ class VentanaPrograma:
         Se llama en cada doble clic, con el programa ocupado en atenderlo: usa la última respuesta del control
         (esperar_cierre consulta cada 1,5 s). Si esa dice que no hay control, solo vuelve a consultar un puerto
         escrito después del lanzamiento, que responde al instante (al arrancar, la primera consulta pudo ir al
-        puerto de una sesión anterior, que en Windows tarda ~2 s en fallar)."""
+        puerto de una sesión anterior, que en Windows tarda ~2 s en fallar), y solo si algún Chrome tiene el perfil.
+
+        Tras pedir otra ventana (marcar_reapertura), el doble clic que la pidió tarda un instante en lanzar su
+        Chrome: durante `reapertura` segundos se da por abriéndose aunque ningún Chrome tenga todavía el perfil."""
         desde, ahora = max(self.t_lanz, self.reabierta), time.monotonic()
+        vivo = lambda: self.proc.poll() is None or self._perfil_tomado()
         # Estrictamente después: en Windows el reloj avanza de a ~16 ms, y la página que se vio justo antes de
         # pedir otra ventana (al buscarla para traerla al frente) puede quedar con la misma hora.
         if self.vista is not None and self.vista > desde:
-            # Si el control responde (aunque sea de un Chrome abierto antes que este programa), se trae al frente.
-            if ahora - self.vista >= recien:
+            if ahora - self.vista >= recien or not vivo():  # sin ningún Chrome con el perfil, la ventana se cerró
                 return False
             if not self.control and self._puerto_reciente():
                 self.paginas()  # actualiza self.control
-            if self.control:
-                return False
-            return self.proc.poll() is None or self._perfil_tomado()
+            # Si el control responde (aunque sea de un Chrome abierto antes que este programa), se trae al frente.
+            return not self.control
         if ahora - desde >= plazo:
             return False
-        if desde == self.reabierta and ahora - desde < recien:
+        if desde == self.reabierta and ahora - desde < reapertura:
             return True  # otro doble clic la está abriendo: su Chrome puede no haber arrancado todavía
-        return self.proc.poll() is None or self._perfil_tomado()  # si Chrome se cayó, no viene ninguna ventana
+        return vivo()  # si Chrome se cayó (o el lanzado no abrió ventana), no viene ninguna ventana
 
     def _devtools(self):
         try:

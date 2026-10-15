@@ -429,8 +429,23 @@ class TestEsperarCierre(unittest.TestCase):
             self.assertFalse(v.abriendo())  # cerrada: un doble clic pide otra ventana
             v.marcar_reapertura()
             self.assertTrue(v.abriendo())  # el siguiente, mientras esa aparece, no
-            v.reabierta = time.monotonic() - 11
-            self.assertFalse(v.abriendo())  # si pasado el momento no apareció, otro doble clic la vuelve a pedir
+            v.reabierta = time.monotonic() - 4
+            # Pasados unos segundos sin ningún Chrome con el perfil, el lanzado no abrió ventana (en Windows, uno
+            # lanzado mientras el anterior se cierra puede terminar sin abrirla): otro doble clic la vuelve a pedir.
+            self.assertFalse(v.abriendo())
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=True):
+            self.assertTrue(v.abriendo())  # el Chrome lanzado tiene el perfil: la ventana viene en camino
+
+    def test_no_consulta_el_puerto_de_un_chrome_que_termino(self):
+        # Chrome no borra DevToolsActivePort al terminar: el puerto sigue pareciendo reciente. Si ningún Chrome tiene
+        # el perfil, la ventana se cerró: se responde sin consultar (en Windows tardaría ~2 s en fallar).
+        v = self.ventana(0, 5)
+        v.pagina_pedida()
+        with open(os.path.join(v.perfil, "DevToolsActivePort"), "w") as f:
+            f.write("9222\n/devtools/browser/x")
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False), \
+                mock.patch.object(navegador.VentanaPrograma, "paginas", side_effect=AssertionError("consultó")):
+            self.assertFalse(v.abriendo())
 
     def test_paginas_recuerda_si_el_control_respondio(self):
         v = self.ventana(None, 1)
