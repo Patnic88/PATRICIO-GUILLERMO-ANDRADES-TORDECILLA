@@ -334,19 +334,23 @@ document.addEventListener("click", ev => {
 });
 // «Descargar Excel»: se pide al programa y se guarda sin salir de la pantalla. Si no se pudo armar, el motivo se
 // muestra junto al botón (un enlace de descarga directo haría que Chrome cancelara la descarga sin decir nada).
+const excelEnCurso = new Set();  // direcciones que se están armando: un segundo clic igual no pide otro archivo
 document.addEventListener("click", async ev => {
   const a = ev.target.closest("a[data-excel]");
   if (!a) return;
   ev.preventDefault();
-  if (a.dataset.pidiendo) return;  // un segundo clic mientras se arma no pide otro archivo igual
-  a.dataset.pidiendo = "1";
+  const href = a.href;  // en Libros cambia con «mes» / «todo el año»: cada período se pide por separado
+  if (excelEnCurso.has(href)) return toast("Se está armando ese Excel; espere un momento.");
+  excelEnCurso.add(href);
+  a.setAttribute("aria-busy", "true");
+  toast("Armando el Excel…");
   let m = a.parentElement.nextElementSibling;
   if (!m || !m.classList.contains("xlsMsg")) { m = document.createElement("div"); m.className = "xlsMsg"; a.parentElement.after(m); }
   m.innerHTML = "";
   if (++cargas === 1) document.body.classList.add("cargando");
   try {
     let r;
-    try { r = await fetch(a.href); }
+    try { r = await fetch(href); }
     catch (e) { throw new Error("Se perdió la conexión con el programa. Cierre esta ventana y vuelva a abrir «Mi Contabilidad» con doble clic."); }
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "No se pudo armar el Excel.");
     const nombre = (/filename="([^"]+)"/.exec(r.headers.get("Content-Disposition") || "") || [])[1] || "contabilidad.xlsx";
@@ -355,7 +359,11 @@ document.addEventListener("click", async ev => {
     setTimeout(() => URL.revokeObjectURL(u), 60000);
     toast(`Descargando «${nombre}»`);
   } catch (e) { error(m, e); }
-  finally { delete a.dataset.pidiendo; if (--cargas === 0) document.body.classList.remove("cargando"); }
+  finally {
+    excelEnCurso.delete(href);
+    if (!excelEnCurso.has(a.href)) a.removeAttribute("aria-busy");
+    if (--cargas === 0) document.body.classList.remove("cargando");
+  }
 });
 
 const VISTAS = { inicio: () => pantallaInicio(), archivos: () => pantallaArchivos(), movimientos: () => pantallaMovimientos(),
@@ -1079,6 +1087,8 @@ function formMovimiento(op, previo = {}) {
       enviarMov(op, { operacion: op, fecha: $("#mFecha").value, monto, medio: medio(), rut: $("#mRut")?.value || "", detalle: $("#mDet").value }); };
   }
   conectarMontos(f); conectarFechas(f);
+  // El aviso de fecha se confirma con un segundo clic: si se cambia la fecha, la nueva se revisa de nuevo.
+  $("#mFecha").addEventListener("input", () => { delete $("#mErr").dataset.ok; $("#mErr").innerHTML = ""; });
   if (previo.numero) $("#mAnular").onclick = () => confirmarAnular($("#mAnu"), previo.numero);
   else f.scrollIntoView({ behavior: suave(), block: "start" });
   const primero = $("#mMonto") || $("#fMov input.monto") || $("#mGlosa");
@@ -1089,11 +1099,16 @@ async function enviarMov(op, cuerpo) {
   // El pago del F29 se hace en el mes siguiente al declarado (o, atrasado, en el que sigue); si ese mes ya está
   // cerrado, en uno posterior hasta hoy (es lo que propone fechaPagoF29). Eso no es un error de fecha. Cualquier
   // otra fecha (por ejemplo, un año mal escrito) se advierte una vez.
-  const sig = mesMas(S.periodo, 1), mes = (cuerpo.fecha || "").slice(0, 7);
+  // Una fecha posterior a hoy también se advierte una vez, con su propio aviso.
+  const sig = mesMas(S.periodo, 1), mes = (cuerpo.fecha || "").slice(0, 7), futura = !!cuerpo.fecha && cuerpo.fecha > hoy();
   const esperado = op === "pago_f29" && mes && ([sig, mesMas(sig, 1)].includes(mes)
-    || ((S.info.cerrados || []).includes(sig) && mes > sig && cuerpo.fecha <= hoy()));
-  if (cuerpo.fecha && cuerpo.fecha.slice(0, 7) !== S.periodo && !esperado) {
-    if (!$("#mErr").dataset.ok) { $("#mErr").dataset.ok = "1"; $("#mErr").innerHTML = `<div class="msg warn">La fecha es de ${esc(nomMes(cuerpo.fecha.slice(0, 7)))}, no de ${esc(nomMes(S.periodo))}. Si está bien, presione el botón otra vez.</div>`; return; }
+    || ((S.info.cerrados || []).includes(sig) && mes > sig));
+  if (cuerpo.fecha && (futura || (mes !== S.periodo && !esperado)) && !$("#mErr").dataset.ok) {
+    $("#mErr").dataset.ok = "1";
+    $("#mErr").innerHTML = `<div class="msg warn">${futura
+      ? `La fecha (${esc(fechaCorta(cuerpo.fecha))}) es posterior a hoy.`
+      : `La fecha es de ${esc(nomMes(mes))}, no de ${esc(nomMes(S.periodo))}.`} Si está bien, presione el botón otra vez.</div>`;
+    return;
   }
   const btn = $("#fMov button[type=submit]"), gen = siiGen;
   btn.disabled = true;

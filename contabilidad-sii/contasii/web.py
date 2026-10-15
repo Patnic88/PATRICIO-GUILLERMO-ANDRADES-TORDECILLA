@@ -638,6 +638,10 @@ class App:
             reportes.exportar_excel(lib, tmp, desde, hasta, prop, codigos)
         except RuntimeError as e:
             os.unlink(tmp)
+            if isinstance(e.__cause__, ImportError):  # el mensaje de reportes es para la línea de comandos
+                raise ErrorUsuario("Falta el complemento para Excel (openpyxl). Cierre Mi Contabilidad y vuelva a "
+                                   "abrirlo con doble clic, con internet: al abrir se instala solo. Mientras tanto, "
+                                   "los libros se pueden ver en «Libros e informes».")
             raise ErrorUsuario(str(e))
         with open(tmp, "rb") as f:
             data = f.read()

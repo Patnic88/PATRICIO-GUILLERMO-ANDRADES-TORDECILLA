@@ -1,11 +1,13 @@
 import base64
 import json
 import os
+import sys
 import tempfile
 import threading
 import unittest
 import urllib.error
 import urllib.request
+from unittest import mock
 
 from contasii import web
 
@@ -127,6 +129,12 @@ class TestWeb(unittest.TestCase):
         st, data = self.req(e + "/excel?periodo=2026-10", crudo=True)
         self.assertEqual(st, 200)
         self.assertEqual(data[:2], b"PK")  # archivo xlsx (zip)
+        # Sin openpyxl, la ventana explica qué hacer (no el comando de la línea de comandos)
+        with mock.patch.dict(sys.modules, {"openpyxl": None}):
+            st, r = self.req(e + "/excel?periodo=2026-10")
+        self.assertEqual(st, 400)
+        self.assertIn("vuelva a abrirlo con doble clic", r["error"])
+        self.assertNotIn("pip", r["error"])
 
     def test_seguridad(self):
         st, _ = self.req("/api/empresa", {"rut": "1-9"}, {"X-Contasii": ""})
