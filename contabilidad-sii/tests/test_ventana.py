@@ -335,11 +335,10 @@ class TestEsperarCierre(unittest.TestCase):
 
     def test_abriendo(self):
         v = self.ventana(None, 1)  # Chrome lanzado hace 1 s, sin página todavía
-        with open(os.path.join(v.perfil, "DevToolsActivePort"), "w") as f:  # con su control listo
-            f.write("9222\n/devtools/browser/x")
         self.assertTrue(v.abriendo())
         v.vista = time.monotonic()  # ya mostró su página
-        self.assertFalse(v.abriendo())
+        with mock.patch.object(navegador.VentanaPrograma, "paginas", return_value=[]):  # y su control responde
+            self.assertFalse(v.abriendo())
         v.marcar_reapertura()  # otro doble clic abre una ventana nueva: mientras no se vea, está abriéndose
         self.assertTrue(v.abriendo())
         v.vista = v.reabierta  # la página vieja se vio en el mismo instante del reloj (Windows mide de a ~16 ms)
@@ -369,11 +368,16 @@ class TestEsperarCierre(unittest.TestCase):
         self.assertTrue(v.abriendo())  # un doble clic repetido mientras aparece no abre otra
         v.vista = time.monotonic() - 11
         self.assertFalse(v.abriendo())  # pasado el momento, un doble clic la vuelve a abrir (puede estar cerrada)
-        w = self.ventana(None, 2)  # con control, la ventana aparecida se trae al frente: no hace falta esperar
-        with open(os.path.join(w.perfil, "DevToolsActivePort"), "w") as f:
-            f.write("9222\n/devtools/browser/x")
+        # Windows o Linux: la persona cerró la ventana enseguida, Chrome terminó y nadie tiene el perfil: se reabre.
+        with mock.patch.object(navegador.VentanaPrograma, "_perfil_tomado", return_value=False):
+            cerrada = self.ventana(0, 20)
+            cerrada.pagina_pedida()
+            self.assertFalse(cerrada.abriendo())
+        # Con control (aunque sea de un Chrome abierto antes que el programa), la ventana se trae al frente.
+        w = self.ventana(None, 2)
         w.pagina_pedida()
-        self.assertFalse(w.abriendo())
+        with mock.patch.object(navegador.VentanaPrograma, "paginas", return_value=[{"url": w.url, "type": "page"}]):
+            self.assertFalse(w.abriendo())
 
     @unittest.skipIf(sys.platform == "win32", "el candado de Chrome en Windows es otro archivo")
     def test_candado_del_perfil(self):

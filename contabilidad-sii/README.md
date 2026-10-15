@@ -578,8 +578,10 @@ Para un año nuevo, copie `2026.json` a `AAAA.json` y actualice cada valor con s
   importador valida que existan las columnas requeridas y se detiene si falta alguna.
 - Si la organización desactivó en Chrome la depuración remota (política
   `RemoteDebuggingAllowed`), el programa no puede traer su ventana al frente: un doble clic
-  con la ventana ya abierta abre una segunda ventana del mismo programa. Comprobado
-  simulando la política, no con la política real instalada.
+  con la ventana ya abierta abre una segunda ventana del mismo programa. En Mac, si la
+  ventana se cierra en sus primeros 10 segundos, un doble clic inmediato no la abre: hay
+  que esperar esos segundos y repetirlo. Comprobado simulando la política, no con la
+  política real instalada.
 
 ## Estructura
 

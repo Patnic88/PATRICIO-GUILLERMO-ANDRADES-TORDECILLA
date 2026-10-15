@@ -129,16 +129,6 @@ class VentanaPrograma:
         self.reabierta = 0.0
         self.vista = None  # cuándo se vio por última vez la página del programa
 
-    def _control_propio(self) -> bool:
-        """True si el Chrome lanzado (u otro con el perfil, después) dejó listo su control: DevToolsActivePort escrito
-        después del lanzamiento. Sin control (política del equipo, o la orden la tomó un Chrome abierto sin él), el
-        archivo no existe o es de una sesión anterior. El código de salida de Chrome no sirve para saber si entregó
-        la orden a otro: en Linux con ventana fue 0 y sin ventana, 21."""
-        try:
-            return os.path.getmtime(os.path.join(self.perfil, "DevToolsActivePort")) >= self.t_reloj - 2
-        except OSError:
-            return False
-
     def _perfil_tomado(self) -> bool:
         """True si un Chrome tiene tomado el perfil del programa (su candado de instancia única sigue activo).
         En Windows, Chrome mantiene abierto «lockfile» sin permitir escritura [razonado con el código de Chromium,
@@ -176,14 +166,18 @@ class VentanaPrograma:
         página (ni en el control de Chrome ni pedida al servidor): Chrome está arrancando. Un doble clic en ese
         momento no debe abrir una segunda ventana.
 
-        Sin el control de Chrome (política del equipo) no se puede traer la ventana al frente ni saber si sigue
+        Sin el control de Chrome (política del equipo) no se puede traer la ventana al frente ni ver si sigue
         abierta: la que acaba de pedir su página se da por recién abierta durante `recien` segundos, para que un
-        doble clic repetido mientras aparece no abra otra."""
+        doble clic repetido mientras aparece no abra otra. Solo mientras algún Chrome tenga el perfil: en Windows
+        y Linux, Chrome termina al cerrar su última ventana (en Mac sigue vivo y la espera se cumple igual)."""
         desde, ahora = max(self.t_lanz, self.reabierta), time.monotonic()
         # Estrictamente después: en Windows el reloj avanza de a ~16 ms, y la página que se vio justo antes de
         # pedir otra ventana (al buscarla para traerla al frente) puede quedar con la misma hora.
         if self.vista is not None and self.vista > desde:
-            return ahora - self.vista < recien and not self._control_propio()
+            # Si el control responde (aunque sea de un Chrome abierto antes que este programa), se trae al frente.
+            if ahora - self.vista >= recien or self.paginas() is not None:
+                return False
+            return self.proc.poll() is None or self._perfil_tomado()
         if ahora - desde >= plazo:
             return False
         return self.proc.poll() is None or self._perfil_tomado()  # si Chrome se cayó, no viene ninguna ventana
