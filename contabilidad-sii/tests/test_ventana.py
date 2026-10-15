@@ -205,6 +205,27 @@ class TestMain(unittest.TestCase):
         self.assertNotEqual(p, puerto)
         self.assertEqual(propio.socket.fileno(), -1)  # y su servidor se cerró: no queda un segundo programa
 
+    def test_un_puerto_en_uso_no_se_comparte(self):
+        # En Windows, SO_REUSEADDR permitía abrir un segundo servidor en el mismo puerto: dos programas a la vez.
+        primero, puerto = web.servidor(self.tmp.name, puerto_libre())
+        self.addCleanup(primero.server_close)
+        segundo, otro = web.servidor(self.tmp.name, puerto)
+        self.addCleanup(segundo.server_close)
+        self.assertNotEqual(otro, puerto)
+
+    def test_al_reabrir_se_usa_el_mismo_puerto(self):
+        # Cerrar y volver a abrir enseguida usa el mismo puerto (las conexiones recién cerradas no lo bloquean), así
+        # la ventana conserva lo que recuerda (opciones del F29, último mes visto), que Chrome guarda por dirección.
+        srv, puerto = web.servidor(self.tmp.name, puerto_libre())
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        for _ in range(3):
+            self.assertTrue(web.ya_abierto(puerto))  # el servidor cierra cada conexión: quedan en TIME_WAIT
+        srv.shutdown()
+        srv.server_close()
+        nuevo, otro = web.servidor(self.tmp.name, puerto)
+        nuevo.server_close()
+        self.assertEqual(otro, puerto)
+
     def test_api_ventana_sin_ventana(self):
         srv, puerto = web.servidor(self.tmp.name, puerto_libre())
         threading.Thread(target=srv.serve_forever, daemon=True).start()

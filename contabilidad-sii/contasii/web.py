@@ -867,12 +867,18 @@ def crear_manejador(app: App, puerto_ref: list):
     return Manejador
 
 
+class Servidor(ThreadingHTTPServer):
+    # En Windows, SO_REUSEADDR (que HTTPServer activa) deja abrir un segundo servidor en un puerto que otro ya está
+    # escuchando, y no se sabe cuál recibe cada conexión. Ahí no se usa: un segundo programa pasa al puerto siguiente.
+    allow_reuse_address = sys.platform != "win32"
+
+
 def servidor(carpeta: str, puerto: int = 8765, portal=None):
     app = App(carpeta, portal)
     ref = [puerto]
     for p in range(puerto, puerto + 20):
         try:
-            srv = ThreadingHTTPServer(("127.0.0.1", p), crear_manejador(app, ref))
+            srv = Servidor(("127.0.0.1", p), crear_manejador(app, ref))
             ref[0] = p
             srv.app = app
             return srv, p
