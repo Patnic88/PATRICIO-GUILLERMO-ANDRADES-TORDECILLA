@@ -1,3 +1,14 @@
+# Apps de Patricio Andrades
+
+Este repositorio contiene dos aplicaciones web sin servidor:
+
+| App | Carpeta | Descripción |
+|---|---|---|
+| ❦ **Claude para Contadores** | [`claude-para-contadores/`](claude-para-contadores/) | App práctica para flujos de trabajo financieros: flujo de caja, investigación fiscal, proyecciones, documentos y auditoría. Abre `claude-para-contadores/index.html`. |
+| 📋 **Lista de Tareas** | raíz del repositorio | Lista de tareas conectada a Gmail (descrita a continuación). Abre `index.html`. |
+
+---
+
 # 📋 Lista de Tareas — Patricio Andrades
 
 Lista de tareas web, sin servidor, **conectada a tu correo de Gmail**. Las tareas

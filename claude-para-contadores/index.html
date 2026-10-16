@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude para Contadores — App práctica para flujos de trabajo financieros</title>
+  <meta name="description" content="App práctica para flujos de trabajo financieros: flujo de caja, investigación fiscal, proyecciones, documentos y auditoría.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23f7ece6'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' font-family='Georgia' fill='%234a2e26'%3E%E2%9D%A6%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-palette="#3f639e,#b0552a">
+
+  <!-- ══════════════ PORTADA (réplica del aviso) ══════════════ -->
+  <div id="portada">
+    <div class="marco portada-marco">
+      <span class="esquina eq-tl">❧</span><span class="esquina eq-tr">❧</span>
+      <span class="esquina eq-bl">❧</span><span class="esquina eq-br">❧</span>
+
+      <header class="portada-cabecera">
+        <h1 class="titulo-principal"><span class="floritura">❦</span> CLAUDE <span class="floritura">❦</span><br>PARA CONTADORES</h1>
+        <p class="rotulo subtitulo">App práctica para flujos de trabajo financieros</p>
+      </header>
+
+      <div class="portada-acceso">
+        <p class="rotulo">Acceso inmediato</p>
+        <button id="btn-acceso" class="btn-principal" type="button">QUIERO ACCESO</button>
+        <p class="empieza-hoy">Empieza hoy</p>
+        <div class="ornamento">✤</div>
+        <p class="rotulo version">Claude para Contadores 2.0</p>
+      </div>
+
+      <ul class="portada-modulos">
+        <li><a href="#/caja"><span class="mod-icono" aria-hidden="true">📈</span><span>Flujo de Caja</span></a></li>
+        <li><a href="#/fiscal"><span class="mod-icono" aria-hidden="true">🔎</span><span>Investigación Fiscal</span></a></li>
+        <li><a href="#/proyecciones"><span class="mod-icono" aria-hidden="true">📊</span><span>Proyecciones</span></a></li>
+        <li><a href="#/documentos"><span class="mod-icono" aria-hidden="true">📄</span><span>Documentos</span></a></li>
+        <li><a href="#/auditoria"><span class="mod-icono" aria-hidden="true">🖋️</span><span>Auditoría</span></a></li>
+      </ul>
+
+      <footer class="portada-pie rotulo">App práctica · Acceso de por vida</footer>
+    </div>
+  </div>
+
+  <!-- ══════════════ APLICACIÓN ══════════════ -->
+  <div id="app" hidden>
+    <header class="app-cabecera">
+      <a class="app-logo" href="#/">❦ Claude para Contadores</a>
+      <nav class="app-nav" aria-label="Módulos">
+        <a href="#/inicio" data-ruta="inicio">Inicio</a>
+        <a href="#/caja" data-ruta="caja">Flujo de Caja</a>
+        <a href="#/fiscal" data-ruta="fiscal">Investigación Fiscal</a>
+        <a href="#/proyecciones" data-ruta="proyecciones">Proyecciones</a>
+        <a href="#/documentos" data-ruta="documentos">Documentos</a>
+        <a href="#/auditoria" data-ruta="auditoria">Auditoría</a>
+      </nav>
+      <div class="barra-cliente">
+        <label for="sel-cliente">Cliente</label>
+        <select id="sel-cliente"></select>
+        <button class="btn btn-mini" id="btn-cliente-nuevo" type="button">＋ Nuevo</button>
+        <button class="btn btn-mini" id="btn-cliente-editar" type="button">Editar</button>
+        <form id="form-cliente" hidden>
+          <input type="text" id="cliente-nombre" placeholder="Razón social o nombre" maxlength="80" required>
+          <input type="text" id="cliente-rut" placeholder="RUT (76.123.456-7)" maxlength="14">
+          <button class="btn btn-mini btn-primario" type="submit">Guardar</button>
+          <button class="btn btn-mini" id="btn-cliente-cancelar" type="button">Cancelar</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="app-contenido">
+
+      <!-- ───────── INICIO ───────── -->
+      <section id="vista-inicio" class="vista" hidden>
+        <h2 class="titulo-vista">Escritorio</h2>
+        <p class="intro">Estado general de <strong id="inicio-cliente"></strong>.</p>
+        <div class="grilla-tarjetas" id="inicio-stats"></div>
+        <h3 class="titulo-seccion">Módulos</h3>
+        <div class="grilla-modulos">
+          <a class="tarjeta tarjeta-modulo" href="#/caja">
+            <span class="mod-icono">📈</span>
+            <strong>Flujo de Caja</strong>
+            <p>Registra ingresos y egresos, revisa saldos y el gráfico mensual.</p>
+          </a>
+          <a class="tarjeta tarjeta-modulo" href="#/fiscal">
+            <span class="mod-icono">🔎</span>
+            <strong>Investigación Fiscal</strong>
+            <p>Base de consulta tributaria chilena y apuntes propios.</p>
+          </a>
+          <a class="tarjeta tarjeta-modulo" href="#/proyecciones">
+            <span class="mod-icono">📊</span>
+            <strong>Proyecciones</strong>
+            <p>Proyecta ingresos, egresos y resultado a 3–24 meses.</p>
+          </a>
+          <a class="tarjeta tarjeta-modulo" href="#/documentos">
+            <span class="mod-icono">📄</span>
+            <strong>Documentos</strong>
+            <p>Genera informes, propuestas y recordatorios para clientes.</p>
+          </a>
+          <a class="tarjeta tarjeta-modulo" href="#/auditoria">
+            <span class="mod-icono">🖋️</span>
+            <strong>Auditoría</strong>
+            <p>Listas de control del cierre mensual y la Operación Renta.</p>
+          </a>
+        </div>
+        <h3 class="titulo-seccion">Cartera de clientes</h3>
+        <div class="tarjeta">
+          <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-clientes">
+              <thead><tr><th>Cliente</th><th>RUT</th><th class="col-num">Movimientos</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="nota">Cada cliente guarda por separado su caja, documentos y auditoría. Haz clic en un nombre para trabajar con ese cliente, o usa el selector del encabezado.</p>
+        </div>
+        <h3 class="titulo-seccion">Respaldo de datos</h3>
+        <div class="tarjeta">
+          <p>Todos los datos se guardan solo en este navegador. Exporta un respaldo periódicamente.</p>
+          <div class="fila-botones">
+            <button class="btn" id="btn-exportar-json" type="button">Exportar respaldo (.json)</button>
+            <label class="btn" for="input-importar-json">Importar respaldo</label>
+            <input type="file" id="input-importar-json" accept=".json,application/json" hidden>
+            <button class="btn btn-peligro" id="btn-borrar-todo" type="button">Borrar todos los datos</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── FLUJO DE CAJA ───────── -->
+      <section id="vista-caja" class="vista" hidden>
+        <h2 class="titulo-vista">Flujo de Caja</h2>
+        <div class="fila-controles">
+          <label>Mes
+            <input type="month" id="caja-mes">
+          </label>
+          <label class="btn" for="input-rcv" title="Importa el CSV del Registro de Compras y Ventas descargado de sii.cl">Importar RCV (SII)</label>
+          <input type="file" id="input-rcv" accept=".csv,text/csv,text/plain" hidden>
+          <button class="btn" id="btn-exportar-csv" type="button">Exportar CSV</button>
+        </div>
+        <div class="tarjeta" id="rcv-previa" hidden>
+          <h3 class="titulo-seccion sin-margen">Importación de datos</h3>
+          <p id="rcv-resumen"></p>
+          <div class="fila-botones">
+            <button class="btn btn-primario" id="btn-rcv-confirmar" type="button">Importar</button>
+            <button class="btn" id="btn-rcv-cancelar" type="button">Cancelar</button>
+          </div>
+        </div>
+        <div class="grilla-tarjetas" id="caja-stats"></div>
+
+        <div class="tarjeta">
+          <h3 class="titulo-seccion sin-margen">Ingresos y egresos — últimos 6 meses</h3>
+          <div class="leyenda" id="caja-leyenda">
+            <span class="leyenda-item"><span class="muestra muestra-ingreso"></span>Ingresos</span>
+            <span class="leyenda-item"><span class="muestra muestra-egreso"></span>Egresos</span>
+          </div>
+          <div class="lienzo" id="caja-grafico" role="img" aria-label="Gráfico de barras de ingresos y egresos de los últimos seis meses"></div>
+        </div>
+
+        <div class="dos-columnas">
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Nuevo movimiento</h3>
+            <form id="form-mov" class="formulario">
+              <label>Fecha
+                <input type="date" name="fecha" required>
+              </label>
+              <label>Tipo
+                <select name="tipo" id="mov-tipo">
+                  <option value="ingreso">Ingreso</option>
+                  <option value="egreso">Egreso</option>
+                </select>
+              </label>
+              <label>Categoría
+                <select name="categoria" id="mov-categoria"></select>
+              </label>
+              <label>Descripción
+                <input type="text" name="descripcion" maxlength="120" placeholder="Ej.: Honorarios cliente ABC" required>
+              </label>
+              <label>Monto (CLP)
+                <input type="number" name="monto" min="1" step="1" placeholder="0" required>
+              </label>
+              <button class="btn btn-primario" type="submit">Registrar</button>
+            </form>
+          </div>
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Movimientos del mes</h3>
+            <div class="tabla-envoltura">
+              <table class="tabla" id="tabla-movs">
+                <thead>
+                  <tr><th>Fecha</th><th>Detalle</th><th class="col-num">Monto</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="vacio" id="caja-vacio" hidden>
+              Aún no hay movimientos en este mes.
+              <button class="btn" id="btn-demo" type="button">Cargar datos de ejemplo</button>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── INVESTIGACIÓN FISCAL ───────── -->
+      <section id="vista-fiscal" class="vista" hidden>
+        <h2 class="titulo-vista">Investigación Fiscal</h2>
+        <p class="intro">Referencia rápida de tributación chilena. Es material general: verifica siempre tasas y plazos vigentes en <a href="https://www.sii.cl" target="_blank" rel="noopener">sii.cl</a>.</p>
+        <div class="fila-controles">
+          <input type="search" id="fiscal-busqueda" placeholder="Buscar: F29, IVA, retención, Pro Pyme…" aria-label="Buscar en la base fiscal">
+        </div>
+        <div class="chips" id="fiscal-chips"></div>
+        <div id="fiscal-resultados" class="lista-fichas"></div>
+
+        <h3 class="titulo-seccion">Mis apuntes de investigación</h3>
+        <div class="tarjeta">
+          <textarea id="fiscal-apuntes" rows="8" placeholder="Anota aquí criterios, oficios, circulares o casos que estés investigando… Se guarda automáticamente."></textarea>
+          <p class="nota" id="fiscal-apuntes-estado">&nbsp;</p>
+        </div>
+      </section>
+
+      <!-- ───────── PROYECCIONES ───────── -->
+      <section id="vista-proyecciones" class="vista" hidden>
+        <h2 class="titulo-vista">Proyecciones</h2>
+        <div class="dos-columnas">
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Supuestos</h3>
+            <form id="form-proy" class="formulario">
+              <label>Ingreso mensual base (CLP)
+                <input type="number" name="ingresoBase" min="0" step="1" value="1000000" required>
+              </label>
+              <label>Crecimiento mensual de ingresos (%)
+                <input type="number" name="crecIngreso" step="0.1" value="2" required>
+              </label>
+              <label>Egreso mensual base (CLP)
+                <input type="number" name="egresoBase" min="0" step="1" value="700000" required>
+              </label>
+              <label>Variación mensual de egresos (%)
+                <input type="number" name="crecEgreso" step="0.1" value="1" required>
+              </label>
+              <label>Horizonte (meses)
+                <input type="number" name="horizonte" min="3" max="24" step="1" value="12" required>
+              </label>
+              <div class="fila-botones">
+                <button class="btn btn-primario" type="submit">Proyectar</button>
+                <button class="btn" id="btn-proy-desde-caja" type="button" title="Usa el promedio de los últimos 3 meses del Flujo de Caja">Usar promedio de mi caja</button>
+              </div>
+            </form>
+          </div>
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Resultado acumulado proyectado</h3>
+            <div class="lienzo" id="proy-grafico" role="img" aria-label="Gráfico de línea del resultado acumulado proyectado"></div>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <h3 class="titulo-seccion sin-margen">Detalle mensual</h3>
+          <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-proy">
+              <thead>
+                <tr><th>Mes</th><th class="col-num">Ingresos</th><th class="col-num">Egresos</th><th class="col-num">Resultado</th><th class="col-num">Acumulado</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── DOCUMENTOS ───────── -->
+      <section id="vista-documentos" class="vista" hidden>
+        <h2 class="titulo-vista">Documentos</h2>
+        <div class="dos-columnas">
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Generar documento</h3>
+            <form id="form-doc" class="formulario">
+              <label>Plantilla
+                <select id="doc-plantilla"></select>
+              </label>
+              <label>Firma (profesional o estudio)
+                <input type="text" id="doc-emisor" maxlength="80" placeholder="Ej.: A&amp;A Asesorías Contables">
+              </label>
+              <div id="doc-campos"></div>
+              <button class="btn btn-primario" type="submit">Generar</button>
+            </form>
+            <h3 class="titulo-seccion">Historial</h3>
+            <ul class="lista-docs" id="doc-historial"></ul>
+          </div>
+          <div class="tarjeta">
+            <h3 class="titulo-seccion sin-margen">Vista previa</h3>
+            <div class="doc-papel" id="doc-preview"><p class="vacio">Completa la plantilla y presiona «Generar».</p></div>
+            <div class="fila-botones">
+              <button class="btn" id="btn-doc-copiar" type="button" disabled>Copiar texto</button>
+              <button class="btn" id="btn-doc-imprimir" type="button" disabled>Imprimir / PDF</button>
+              <button class="btn" id="btn-doc-descargar" type="button" disabled>Descargar .txt</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────── AUDITORÍA ───────── -->
+      <section id="vista-auditoria" class="vista" hidden>
+        <h2 class="titulo-vista">Auditoría</h2>
+        <p class="intro">Listas de control del período. El avance se guarda por mes.</p>
+        <div class="fila-controles">
+          <label>Período
+            <input type="month" id="audit-periodo">
+          </label>
+          <div class="tarjeta tarjeta-avance">
+            <span class="rotulo">Avance del período</span>
+            <div class="barra-avance"><div id="audit-avance-barra"></div></div>
+            <strong id="audit-avance-texto">0%</strong>
+          </div>
+        </div>
+        <div id="audit-listas" class="grilla-checklists"></div>
+      </section>
+
+    </main>
+
+    <footer class="app-pie rotulo">Claude para Contadores 2.0 · App práctica · Los datos viven en tu navegador</footer>
+  </div>
+
+  <div id="tooltip" role="status" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
