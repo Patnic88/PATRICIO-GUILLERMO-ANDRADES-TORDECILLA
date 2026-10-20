@@ -250,6 +250,123 @@ Corre dos suites:
 
 ---
 
+## 📰 Agente: Diario Oficial
+
+`diario-oficial.gs` es un **Google Apps Script** que revisa cada mañana la
+[edición electrónica del Diario Oficial](https://www.diariooficial.interior.gob.cl/edicionelectronica/)
+y envía un reporte a **`pandrades23@gmail.com`**, con copia a
+`andradestordecilla.abogado@gmail.com`. Corre en tu propia cuenta de Google,
+en un proyecto **distinto** al del Estado Diario: no hay servidores ni
+contraseñas.
+
+### Qué trae el correo
+
+1. **⭐ Destacadas por tema**: publicaciones de cualquier sección que
+   mencionan tus temas, con la palabra que coincidió y el enlace al PDF (CVE):
+   - Los Vilos / Choapa / Coquimbo
+   - Municipal (incluye Ley 18.695)
+   - Laboral / funcionarios (Código del Trabajo, Estatuto Administrativo,
+     leyes 18.834 y 18.883, remuneraciones, Ley Karin 21.643)
+   - Contraloría / probidad (Contraloría, transparencia, Ley 20.285,
+     probidad, compras públicas)
+   - Tributario (SII, tributario, impuestos, Tesorería General)
+2. **Normas Generales** completas, agrupadas por ministerio y organismo.
+3. **Avisos destacados** completos.
+4. **Normas Particulares** y **Publicaciones Judiciales**: sólo las
+   publicaciones que coinciden con tus temas (por ejemplo, "1 de 37").
+
+Los títulos se copian **literalmente** desde el sitio: el agente no resume
+ni interpreta. Si una sección no se pudo leer, el correo lo dice con el
+motivo y un enlace para revisarla a mano. Nada se omite en silencio.
+
+### Cuándo llega
+
+El activador corre **cada hora**. Desde las **08:00** (hora de Chile)
+intenta leer la edición del día. Apenas la encuentra, envía el reporte **una
+sola vez**. Si a las **14:00** no hay edición con fecha de hoy, o el sitio no
+respondió, envía un **aviso breve** para revisar a mano. Puedes desactivar
+ese aviso con `DO_AVISAR_SIN_EDICION = false`.
+
+### Instalación (una sola vez, ~5 minutos)
+
+1. Entra a <https://script.google.com> y crea un **Nuevo proyecto**.
+2. Pega **todo** el contenido de `diario-oficial.gs`.
+3. Elige la función **`diagnosticarDiarioOficial`**, pulsa **Ejecutar** y
+   autoriza los permisos. Google los detecta solo y son tres: conectarse a
+   un servicio externo, enviar correo como tú y gestionar activadores.
+   En el **Registro de ejecución**, cada sección debería decir
+   `estado: ok`.
+4. Ejecuta **`instalarAgente`**. Esto deja programado el activador horario.
+5. (Opcional) Ejecuta **`enviarReporteAhora`** para recibir el reporte de
+   hoy al instante.
+
+Si prefieres clasp (requiere los mismos dos pasos previos del Estado
+Diario):
+
+```bash
+bash scripts/deploy-diario-oficial.sh
+```
+
+Sube el código a su propio proyecto Apps Script y te muestra el enlace al
+editor. Ahí ejecutas `diagnosticarDiarioOficial` y `instalarAgente` una vez.
+
+### Configuración
+
+Todo está en las constantes al inicio de `diario-oficial.gs`:
+
+| Constante | Para qué |
+|---|---|
+| `DO_TEMAS` | Temas y palabras clave. Un `*` final acepta cualquier terminación (`municipal*`). Los números de ley van sin puntos (`18695`). |
+| `DO_SECCIONES` | Secciones revisadas y su modo: `completa` o `filtrada`. |
+| `DIGEST_TO`, `DIGEST_CC` | Destinatario y copia. |
+| `DO_HORA_INICIO`, `DO_HORA_LIMITE` | Ventana de envío (hora de Chile). |
+| `DO_MAX_ITEMS_SECCION`, `DO_MAX_DESTACADAS_TEMA` | Topes para que Gmail no recorte el correo. |
+
+Si `municipal*` trae demasiadas Normas Particulares de otras comunas,
+cámbialo por términos más acotados, por ejemplo `"municipalidad de los vilos"`.
+
+### Funciones del script
+
+| Función | Qué hace |
+|---|---|
+| `revisarDiarioOficial` | La ejecuta el activador cada hora. |
+| `instalarAgente` / `desinstalarAgente` | Crea o borra el activador. |
+| `enviarReporteAhora` | Envía el reporte de inmediato. |
+| `diagnosticarDiarioOficial` | Registra qué devuelve el sitio y qué entiende el parser. No envía correos. |
+
+### Limitaciones (léelas antes de confiar en el reporte)
+
+- **Estructura del sitio sin verificar en vivo.** El parser se escribió
+  según la estructura que documenta el repositorio público
+  [`stefanoseggio/diario-oficial-cl-monitor`](https://github.com/stefanoseggio/diario-oficial-cl-monitor),
+  una fuente secundaria. Desde el entorno donde se programó no había acceso
+  al Diario Oficial. Lo único verificado es el patrón de las rutas de los PDF
+  (`/publicaciones/AAAA/MM/DD/EDICIÓN/…/CVE.pdf`). El primer
+  `diagnosticarDiarioOficial` en tu cuenta es la verificación real.
+- **Posible bloqueo.** El sitio podría responder con una página de
+  verificación anti-bots a los servidores de Google. En ese caso el agente
+  avisa ("no se pudo leer el sitio"); no inventa contenido.
+- **Fuera de alcance**: ediciones extraordinarias y las secciones de marcas
+  y patentes, empresas y cooperativas y BOM.
+- **Destacar no es analizar.** La coincidencia es por palabra clave: el
+  reporte sirve de radar. Antes de citar una norma, revisa el texto íntegro
+  en el PDF (CVE).
+
+### Pruebas
+
+`tests/diario-oficial.test.mjs` corre dentro de `bash tests/run.sh`. Usa
+HTML **sintético** (`tests/fixtures/diario-oficial/*.sintetico.html`, con
+datos ficticios). Cubre:
+
+- el parser: jerarquía, CVE, respaldos, página sin publicaciones y página
+  desconocida;
+- las coincidencias por tema;
+- el armado del correo;
+- el flujo horario: envía una vez, espera si la edición no es de hoy y avisa
+  a las 14:00.
+
+---
+
 ## 🎯 Radar Dropshipping
 
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
