@@ -252,12 +252,60 @@ Corre dos suites:
 
 ## 📰 Agente: Diario Oficial
 
-`diario-oficial.gs` es un **Google Apps Script** que revisa cada mañana la
+Revisa cada mañana la
 [edición electrónica del Diario Oficial](https://www.diariooficial.interior.gob.cl/edicionelectronica/)
 y envía un reporte a **`pandrades23@gmail.com`**, con copia a
-`andradestordecilla.abogado@gmail.com`. Corre en tu propia cuenta de Google,
-en un proyecto **distinto** al del Estado Diario: no hay servidores ni
-contraseñas.
+`andradestordecilla.abogado@gmail.com`.
+
+La lógica está en un solo archivo, `diario-oficial.gs`, y se puede usar de
+dos formas:
+
+- **Rutina diaria de Claude (forma principal, automática).** Claude la
+  ejecuta todos los días con `agente-diario-oficial/reporte.mjs` y envía el
+  correo con tu Gmail. No hay que instalar nada en Google.
+- **Google Apps Script (alternativa).** Corre en tu propia cuenta de
+  Google. Ver "Alternativa: Apps Script" más abajo.
+
+### Rutina diaria de Claude
+
+- **Nombre:** "Reporte Diario Oficial".
+- **Horario:** todos los días a las **07:55**, hora de Chile.
+- **Funcionamiento:** cada ejecución abre una sesión nueva de Claude, corre
+  `node agente-diario-oficial/reporte.mjs`, que lee el sitio y deja el correo
+  listo en `reporte.html` y `reporte.txt`, y envía ese contenido **sin
+  modificarlo** con el conector de Gmail. Las instrucciones exactas que sigue
+  Claude están en `agente-diario-oficial/SKILL.md`.
+- **Si la edición de hoy aún no aparece:** el ejecutor reintenta dos veces,
+  con 4 minutos entre intentos. Si sigue sin aparecer, o el sitio no
+  responde, envía un **aviso** en vez del reporte.
+- **Requisito, una sola vez:** permitir el sitio en la red del entorno de
+  Claude. En el menú del entorno (barra de título de la sesión) → **Edit** →
+  **Network access**, agrega `www.diariooficial.interior.gob.cl` y
+  `diariooficial.interior.gob.cl` en **Allowed domains**.
+  Instrucciones: <https://code.claude.com/docs/en/cloud-environments#network-access>.
+  Mientras no lo hagas, cada mañana llegará el aviso "no se pudo leer el
+  sitio", que indica el bloqueo de red.
+- **Pausar o borrar:** desde la lista de Routines de Claude, o pidiéndoselo a
+  Claude.
+- **Costo:** cada ejecución consume uso de Claude.
+
+### Agente descargable (skill de Claude)
+
+```bash
+bash scripts/empaquetar-agente-diario-oficial.sh
+```
+
+Genera `dist/agente-diario-oficial.zip`, con `SKILL.md`, `reporte.mjs` y
+`diario-oficial.gs`. Para instalarlo: claude.ai → **Configuración →
+Capacidades → Skills** → subir el `.zip`. Desde entonces puedes pedirle a
+Claude "revisa el Diario Oficial" cuando quieras. Funciona donde Claude
+tenga acceso de red al Diario Oficial y el conector de Gmail.
+
+### Alternativa: Apps Script
+
+`diario-oficial.gs` también funciona como **Google Apps Script** en tu
+propia cuenta de Google, en un proyecto **distinto** al del Estado Diario,
+sin servidores ni contraseñas.
 
 ### Qué trae el correo
 
@@ -279,7 +327,7 @@ Los títulos se copian **literalmente** desde el sitio: el agente no resume
 ni interpreta. Si una sección no se pudo leer, el correo lo dice con el
 motivo y un enlace para revisarla a mano. Nada se omite en silencio.
 
-### Cuándo llega
+### Cuándo llega (Apps Script)
 
 El activador corre **cada hora**. Desde las **08:00** (hora de Chile)
 intenta leer la edición del día. Apenas la encuentra, envía el reporte **una
@@ -287,7 +335,7 @@ sola vez**. Si a las **14:00** no hay edición con fecha de hoy, o el sitio no
 respondió, envía un **aviso breve** para revisar a mano. Puedes desactivar
 ese aviso con `DO_AVISAR_SIN_EDICION = false`.
 
-### Instalación (una sola vez, ~5 minutos)
+### Instalación del Apps Script (una sola vez, ~5 minutos)
 
 1. Entra a <https://script.google.com> y crea un **Nuevo proyecto**.
 2. Pega **todo** el contenido de `diario-oficial.gs`.
@@ -325,7 +373,7 @@ Todo está en las constantes al inicio de `diario-oficial.gs`:
 Si `municipal*` trae demasiadas Normas Particulares de otras comunas,
 cámbialo por términos más acotados, por ejemplo `"municipalidad de los vilos"`.
 
-### Funciones del script
+### Funciones del Apps Script
 
 | Función | Qué hace |
 |---|---|
@@ -341,11 +389,15 @@ cámbialo por términos más acotados, por ejemplo `"municipalidad de los vilos"
   [`stefanoseggio/diario-oficial-cl-monitor`](https://github.com/stefanoseggio/diario-oficial-cl-monitor),
   una fuente secundaria. Desde el entorno donde se programó no había acceso
   al Diario Oficial. Lo único verificado es el patrón de las rutas de los PDF
-  (`/publicaciones/AAAA/MM/DD/EDICIÓN/…/CVE.pdf`). El primer
-  `diagnosticarDiarioOficial` en tu cuenta es la verificación real.
+  (`/publicaciones/AAAA/MM/DD/EDICIÓN/…/CVE.pdf`). La primera ejecución con
+  acceso al sitio (la rutina de Claude con el dominio permitido, o
+  `diagnosticarDiarioOficial` en Apps Script) es la verificación real.
 - **Posible bloqueo.** El sitio podría responder con una página de
-  verificación anti-bots a los servidores de Google. En ese caso el agente
-  avisa ("no se pudo leer el sitio"); no inventa contenido.
+  verificación anti-bots a servidores de Google o de Claude. En ese caso el
+  agente avisa ("no se pudo leer el sitio"); no inventa contenido.
+- **Copia del correo en la rutina.** Claude envía por Gmail el contenido de
+  `reporte.html`; sus instrucciones exigen copiarlo sin cambios, pero no hay
+  una verificación automática byte a byte.
 - **Fuera de alcance**: ediciones extraordinarias y las secciones de marcas
   y patentes, empresas y cooperativas y BOM.
 - **Destacar no es analizar.** La coincidencia es por palabra clave: el
@@ -364,6 +416,16 @@ datos ficticios). Cubre:
 - el armado del correo;
 - el flujo horario: envía una vez, espera si la edición no es de hoy y avisa
   a las 14:00.
+
+`tests/agente-diario-oficial.test.mjs` prueba el ejecutor de Claude. Corre
+el CLI real contra un servidor local con los mismos fixtures y cubre:
+
+- reporte;
+- sección caída;
+- sitio con 403;
+- edición de otro día;
+- reintento hasta que aparece la edición;
+- el `.zip` descargable, descomprimido y ejecutado.
 
 ---
 

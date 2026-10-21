@@ -100,6 +100,11 @@ var DO_MAX_DESTACADAS_TEMA = 40;
 var DO_REINTENTOS = 3;
 var DO_PROP_ULTIMO_ENVIO = "diarioOficial.ultimoEnvio";
 
+// Textos que dependen de dónde corre el agente. El ejecutor de Claude
+// (agente-diario-oficial/reporte.mjs) los reemplaza por los suyos.
+var DO_FIRMA = "Generado por diario-oficial.gs ejecutándose en tu cuenta de Google.";
+var DO_AYUDA_FALLA = "Si se repite, ejecuta diagnosticarDiarioOficial en el editor de Apps Script.";
+
 // ---------------------------------------------------------------------------
 // Job programado: el activador lo ejecuta cada hora.
 // ---------------------------------------------------------------------------
@@ -666,7 +671,7 @@ function construirReporte(resultados, hoy) {
     + "automática y no constituyen análisis jurídico. Antes de citar, verifica el texto íntegro en el PDF (CVE).";
   P.push("—", pie);
   H.push('<p style="margin:24px 0 0;font-size:11px;color:#a0a8b3;">' + escapeHtml(pie)
-    + '<br>Generado por diario-oficial.gs ejecutándose en tu cuenta de Google.</p>');
+    + '<br>' + escapeHtml(DO_FIRMA) + '</p>');
   H.push('</div>');
 
   return { subject: subject, plain: P.join("\n"), html: H.join("") };
@@ -691,8 +696,7 @@ function construirAviso(principal, hoy) {
       + (principal && principal.http && !/^HTTP /.test(principal.error || "")
         ? " (HTTP " + principal.http + ")" : "") + ".";
   }
-  var cierre = "Revisa manualmente: " + DO_BASE_URL
-    + " — si se repite, ejecuta diagnosticarDiarioOficial en el editor de Apps Script.";
+  var cierre = "Revisa manualmente: " + DO_BASE_URL + " — " + DO_AYUDA_FALLA;
   return {
     subject: subject,
     plain: detalle + "\n\n" + cierre,
@@ -700,7 +704,7 @@ function construirAviso(principal, hoy) {
       + '<h2 style="margin:0 0 12px;color:#1b5e9b;">📰 Diario Oficial · ' + escapeHtml(hoy) + '</h2>'
       + '<p>' + escapeHtml(detalle) + '</p>'
       + '<p><a href="' + escapeHtml(DO_BASE_URL) + '" style="color:#1b5e9b;">Revisar la edición electrónica</a>. '
-      + 'Si se repite, ejecuta <code>diagnosticarDiarioOficial</code> en el editor de Apps Script.</p></div>'
+      + escapeHtml(DO_AYUDA_FALLA) + '</p></div>'
   };
 }
 

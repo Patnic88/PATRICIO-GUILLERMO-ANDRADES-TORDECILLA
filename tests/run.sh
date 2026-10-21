@@ -20,6 +20,7 @@ export E2E_BASE="http://127.0.0.1:${PORT}"
 echo "→ Unit tests"
 $NODE tests/extract.test.mjs
 $NODE tests/diario-oficial.test.mjs
+$NODE tests/agente-diario-oficial.test.mjs
 
 # 2. Servidor local
 if ! curl -sf -o /dev/null "$E2E_BASE/index.html" 2>/dev/null; then
