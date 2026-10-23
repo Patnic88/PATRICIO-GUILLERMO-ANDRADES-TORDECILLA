@@ -1,0 +1,171 @@
+{
+  "descripcion": "Base de conocimiento inicial. Estados: aprobado (el agente puede informarlo), pendiente (falta el dato; el agente deriva), borrador (texto propuesto que Patricio debe revisar y aprobar). Al iniciar, el servicio solo agrega entradas nuevas: nunca sobrescribe lo editado en el panel.",
+  "entradas": [
+    {
+      "clave": "oficina.identificacion",
+      "categoria": "oficina",
+      "titulo": "Quiénes somos",
+      "contenido": "A & A jurídico y contable es la oficina de Patricio Guillermo Andrades Tordecilla, abogado y contador.",
+      "estado": "aprobado",
+      "nota_interna": "Texto tomado de la descripción entregada por Patricio (22-10-2026). Revisar redacción."
+    },
+    {
+      "clave": "servicios.areas",
+      "categoria": "servicios",
+      "titulo": "Servicios y materias que atiende la oficina",
+      "contenido": "La oficina atiende consultas jurídicas y contables de personas y empresas en Chile, en materias civiles, laborales, migratorias, administrativas, municipales y tributarias, además de la constitución de empresas.",
+      "estado": "aprobado",
+      "nota_interna": "Texto tomado de la descripción entregada por Patricio (22-10-2026). Agregar o quitar materias según corresponda."
+    },
+    {
+      "clave": "atencion.asistente_virtual",
+      "categoria": "atencion",
+      "titulo": "Cómo funciona este canal",
+      "contenido": "Este canal de WhatsApp es atendido por un asistente virtual que registra su consulta, sus antecedentes y sus documentos. Las respuestas profesionales y la aceptación de encargos corresponden a Patricio.",
+      "estado": "aprobado"
+    },
+    {
+      "clave": "oficina.direccion",
+      "categoria": "oficina",
+      "titulo": "Dirección de la oficina",
+      "contenido": "[PENDIENTE: dirección de atención presencial, comuna y referencias]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "oficina.horario",
+      "categoria": "oficina",
+      "titulo": "Horario de atención",
+      "contenido": "[PENDIENTE: días y horario de atención presencial y por WhatsApp]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "oficina.contacto",
+      "categoria": "oficina",
+      "titulo": "Otros canales de contacto",
+      "contenido": "[PENDIENTE: teléfono, correo electrónico u otros canales oficiales]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "atencion.cobertura",
+      "categoria": "atencion",
+      "titulo": "Cobertura geográfica",
+      "contenido": "[PENDIENTE: comunas o regiones donde se atiende, y si hay atención remota]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "atencion.tiempo_respuesta",
+      "categoria": "atencion",
+      "titulo": "Tiempo de respuesta de Patricio",
+      "contenido": "[PENDIENTE: plazo habitual en que Patricio revisa y responde las consultas registradas]",
+      "estado": "pendiente",
+      "nota_interna": "Mientras esté pendiente, el agente no promete plazos de respuesta."
+    },
+    {
+      "clave": "honorarios.consulta_inicial",
+      "categoria": "honorarios",
+      "titulo": "Valor de la consulta inicial",
+      "contenido": "[PENDIENTE: valor de la primera consulta, si tiene costo, y si se descuenta de honorarios posteriores]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "honorarios.por_materia",
+      "categoria": "honorarios",
+      "titulo": "Honorarios por materia",
+      "contenido": "[PENDIENTE: cómo se cotizan los honorarios en cada materia (valores fijos, rangos o cotización caso a caso)]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "pagos.medios",
+      "categoria": "pagos",
+      "titulo": "Medios de pago aceptados",
+      "contenido": "[PENDIENTE: medios de pago aceptados (transferencia, efectivo, tarjeta, etc.)]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "pagos.datos_transferencia",
+      "categoria": "pagos",
+      "titulo": "Datos para transferencia",
+      "contenido": "[PENDIENTE: banco, tipo y número de cuenta, titular, RUT y correo para comprobantes]",
+      "estado": "pendiente",
+      "nota_interna": "Recomendación: además de publicarlos aquí, indicar al cliente que confirme los datos por un segundo canal oficial, para prevenir fraudes."
+    },
+    {
+      "clave": "contratacion.condiciones",
+      "categoria": "contratacion",
+      "titulo": "Cómo se formaliza un encargo",
+      "contenido": "[PENDIENTE: pasos para contratar (reunión, propuesta de honorarios, contrato, anticipo)]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "citas.modalidades",
+      "categoria": "citas",
+      "titulo": "Modalidades y duración de las citas",
+      "contenido": "[PENDIENTE: modalidades (presencial, videollamada, teléfono), duración y si la primera reunión tiene costo]",
+      "estado": "pendiente"
+    },
+    {
+      "clave": "privacidad.datos",
+      "categoria": "privacidad",
+      "titulo": "Tratamiento de datos personales",
+      "contenido": "[PENDIENTE: aviso de tratamiento de datos personales revisado por Patricio]",
+      "estado": "pendiente",
+      "nota_interna": "Revisar las obligaciones aplicables en materia de datos personales [VERIFICAR vigencia de la Ley 21.719 en BCN antes de citarla]."
+    },
+    {
+      "clave": "documentos.laboral",
+      "categoria": "documentos",
+      "titulo": "Documentos útiles en una consulta laboral",
+      "contenido": "Para una consulta laboral suele ser útil contar con el contrato de trabajo y sus anexos, las últimas liquidaciones de sueldo, la carta de despido o aviso si existe, el finiquito si se firmó y el certificado de cotizaciones.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar en el panel para que el agente lo use."
+    },
+    {
+      "clave": "documentos.civil",
+      "categoria": "documentos",
+      "titulo": "Documentos útiles en una consulta civil",
+      "contenido": "Para una consulta civil suele ser útil contar con los contratos, comprobantes y comunicaciones relacionados, y con las notificaciones o resoluciones recibidas, si las hay.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    },
+    {
+      "clave": "documentos.migratoria",
+      "categoria": "documentos",
+      "titulo": "Documentos útiles en una consulta migratoria",
+      "contenido": "Para una consulta migratoria suele ser útil contar con el pasaporte o documento de identidad, los comprobantes de las solicitudes presentadas y las resoluciones o notificaciones recibidas.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    },
+    {
+      "clave": "documentos.tributaria",
+      "categoria": "documentos",
+      "titulo": "Documentos útiles en una consulta tributaria o contable",
+      "contenido": "Para una consulta tributaria o contable suele ser útil contar con las notificaciones o citaciones recibidas, las declaraciones presentadas, los registros contables y los documentos tributarios relacionados.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    },
+    {
+      "clave": "documentos.constitucion_empresa",
+      "categoria": "documentos",
+      "titulo": "Antecedentes para constituir una empresa",
+      "contenido": "Para evaluar la constitución de una empresa suele ser útil contar con la identificación de los socios, el nombre propuesto, la actividad o giro, el capital y el domicilio previstos.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    },
+    {
+      "clave": "documentos.administrativa_municipal",
+      "categoria": "documentos",
+      "titulo": "Documentos útiles en una consulta administrativa o municipal",
+      "contenido": "Para una consulta administrativa o municipal suele ser útil contar con las notificaciones, resoluciones, decretos u oficios recibidos y con la documentación del trámite.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    },
+    {
+      "clave": "documentos.judicial",
+      "categoria": "documentos",
+      "titulo": "Datos útiles si existe una causa judicial",
+      "contenido": "Si existe una causa judicial, ayuda contar con el nombre del tribunal, el rol o RIT, la última resolución notificada y la fecha de notificación.",
+      "estado": "borrador",
+      "nota_interna": "Borrador: revisar y aprobar."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{$DOMINIO} {
+	encode gzip
+	# Webhook de WhatsApp y panel. Para restringir el panel a ciertas IP,
+	# descomente el bloque siguiente y ajuste las direcciones.
+	# @panel_externo {
+	# 	path /panel*
+	# 	not remote_ip 200.0.0.0/8
+	# }
+	# respond @panel_externo 403
+	reverse_proxy agente:3000
+}

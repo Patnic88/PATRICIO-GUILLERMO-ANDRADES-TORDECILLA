@@ -1,0 +1,35 @@
+# Servicio permanente con HTTPS automático (Caddy obtiene el certificado).
+# Uso: complete .env y DOMINIO, luego `docker compose up -d --build`.
+services:
+  agente:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      DIR_DATOS: /datos
+      COOKIE_SEGURA: "true"
+    volumes:
+      - datos:/datos
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - agente
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMINIO: ${DOMINIO:?Defina DOMINIO, por ejemplo agente.midominio.cl}
+    volumes:
+      - ./despliegue/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  datos:
+  caddy_data:
+  caddy_config:

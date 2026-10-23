@@ -444,3 +444,26 @@ sitio para ofrecer la constitución de SpA, E.I.R.L. y Ltda. vía Registro de
 Empresas y Sociedades: formulario guiado para el cliente, plan de firma de
 cada socio y envío de la solicitud por WhatsApp o correo. Ver su README
 (incluye las fuentes legales y lo pendiente de verificar).
+
+---
+
+## 💬 Agente de WhatsApp — A & A jurídico y contable
+
+Carpeta [`agente-whatsapp/`](agente-whatsapp/README.md). Asistente virtual de
+atención por WhatsApp (API oficial de Meta) con IA configurable (Claude, de
+Anthropic): conversa con clientes, recuerda antecedentes por cliente y asunto,
+verifica identidad antes de hablar de expedientes o pagos, recibe documentos y
+comprobantes, agenda citas sin duplicados y alerta a Patricio de audiencias,
+notificaciones, vencimientos y remates. Incluye panel de administración,
+simulador y 65 pruebas automáticas.
+
+Arranca en **modo prueba**: nada se envía a clientes reales hasta activarlo.
+
+```bash
+cd agente-whatsapp && npm install && npm test && npm run demo
+```
+
+- Guía de configuración y puesta en marcha: [`agente-whatsapp/README.md`](agente-whatsapp/README.md)
+- Instrucciones del agente: [`agente-whatsapp/instrucciones/agente.md`](agente-whatsapp/instrucciones/agente.md)
+- Demostración revisable: [`agente-whatsapp/docs/demostracion.md`](agente-whatsapp/docs/demostracion.md)
+- Costos y fuentes: [`agente-whatsapp/docs/costos.md`](agente-whatsapp/docs/costos.md)
