@@ -1,7 +1,7 @@
 # Pruebas
 
 ```bash
-npm test        # 65 pruebas automáticas, sin red ni claves (≈ 2 segundos)
+npm test        # 80 pruebas automáticas, sin red ni claves (≈ 2 segundos)
 npm run demo    # demostración revisable → docs/demostracion.md
 ```
 
@@ -82,6 +82,18 @@ Las pruebas usan una base de datos en memoria, un WhatsApp falso que registra lo
 ### Proveedor de IA — `tests/anthropic.test.js`
 - Forma exacta de la solicitud enviada a la API de Anthropic (caché, contexto al final, esfuerzo, respaldo, historial solo agregado), contra un servidor local.
 - Un error de la API no expone la clave.
+
+### Regresiones de la revisión de seguridad — `tests/regresiones.test.js`
+- Una URL malformada responde 400 y el servidor sigue funcionando.
+- El simulador nunca envía por WhatsApp, aun en producción; un mensaje real convierte en real una conversación del simulador (y deja de poder borrarse desde el simulador).
+- Al revocar o vencer la verificación, lo conversado con identidad verificada deja de mostrarse al agente.
+- Controles de salida: diez afirmaciones falsas que antes pasaban ahora se bloquean; diez frases legítimas no se bloquean; las excepciones dependen del resultado concreto de la herramienta.
+- `agendar_cita` solo acepta el valor exacto ofrecido; no se aceptan citas que se solapan.
+- Intentos fallidos contra un mismo RUT desde varios números bloquean la ficha.
+- El código intentado no queda en mensajes ni en alertas.
+- El límite de ingreso al panel detrás de un proxy es por IP real (un tercero no puede bloquear a Patricio).
+- Webhook sin `phone_number_id` se descarta; los estados de entrega no retroceden.
+- Un nombre de archivo malicioso queda como dato escapado en el contexto.
 
 ### Unidades — `tests/unidades.test.js`
 - RUT, controles de salida, configuración de producción, validación de entradas, y envío en modo prueba (respuestas automáticas solo a `NUMEROS_PRUEBA`; mensajes manuales de Patricio siempre), con la forma exacta de la solicitud a la Cloud API.

@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ahora, leerAjuste, guardarAjuste } from "../db.js";
-import { h, html, json, redirigir, enviar, leerCuerpo, leerCookies, ipCliente, ErrorHttp } from "../http-util.js";
+import { h, html, json, redirigir, enviar, leerCuerpo, leerCookies, ErrorHttp } from "../http-util.js";
 import { verificarClave, igualesSeguro, tokenAleatorio, sha256, hashClave, generarPin } from "../servicios/seguridad.js";
 import { auditar } from "../servicios/auditoria.js";
 import { resolverAlerta } from "../servicios/alertas.js";
@@ -39,6 +39,16 @@ function crearSesion(app, usuario) {
   const atributos = [`${COOKIE}=${token}`, "HttpOnly", "SameSite=Strict", "Path=/panel", `Max-Age=${app.cfg.admin.sesionHoras * 3600}`];
   if (app.cfg.admin.cookieSegura) atributos.push("Secure");
   return atributos.join("; ");
+}
+
+// IP del cliente. Detrás de Caddy (CONFIAR_PROXY=true) se usa la última
+// entrada de X-Forwarded-For, la que agrega el propio proxy.
+function ipCliente(app, req) {
+  if (app.cfg.admin.confiarProxy) {
+    const xff = String(req.headers["x-forwarded-for"] || "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (xff.length) return xff[xff.length - 1];
+  }
+  return req.socket.remoteAddress || "desconocida";
 }
 
 function limiteLogin(ip) {
@@ -459,12 +469,12 @@ export async function manejarPanel(app, req, res, url) {
 
   if (partes[0] === "login") {
     if (req.method === "POST") {
-      const ip = ipCliente(req);
+      const ip = ipCliente(app, req);
       if (limiteLogin(ip)) return html(res, layout({ titulo: "Ingreso", cuerpo: login("Demasiados intentos. Espere 15 minutos."), cfg: app.cfg }), 429);
       const f = await formularioDe(req, 10_000);
       const ok = !!app.cfg.admin.claveHash && igualesSeguro(f.usuario || "", app.cfg.admin.usuario) && verificarClave(f.clave || "", app.cfg.admin.claveHash);
       auditar(app.db, { actor: "panel", accion: "panel.login", resultado: ok ? "ok" : "rechazado", detalle: { ip } });
-      if (!ok) { falloLogin(ip); return html(res, layout({ titulo: "Ingreso", cuerpo: login(app.cfg.admin.claveHash ? "Usuario o clave incorrectos." : "El panel no tiene clave configurada (ADMIN_CLAVE_HASH)."), cfg: app.cfg }), 401); }
+      if (!ok) { falloLogin(ip); await new Promise((r) => setTimeout(r, 400)); return html(res, layout({ titulo: "Ingreso", cuerpo: login(app.cfg.admin.claveHash ? "Usuario o clave incorrectos." : "El panel no tiene clave configurada (ADMIN_CLAVE_HASH)."), cfg: app.cfg }), 401); }
       intentosLogin.delete(ip);
       return redirigir(res, "/panel", { "Set-Cookie": crearSesion(app, f.usuario) });
     }

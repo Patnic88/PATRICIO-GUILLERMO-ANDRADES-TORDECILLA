@@ -64,6 +64,8 @@ export function leerConfig(env = process.env) {
       usuario: env.ADMIN_USUARIO || "patricio",
       claveHash: env.ADMIN_CLAVE_HASH || "",
       cookieSegura: booleano(env.COOKIE_SEGURA, modo === "produccion"),
+      // Detrás de un proxy (Caddy) la IP real viene en X-Forwarded-For.
+      confiarProxy: booleano(env.CONFIAR_PROXY, false),
       sesionHoras: entero(env.SESION_HORAS, 12)
     },
 
@@ -75,6 +77,8 @@ export function leerConfig(env = process.env) {
       memoriaSesionHoras: entero(env.MEMORIA_SESION_HORAS, 72),
       verificacionHoras: entero(env.VERIFICACION_HORAS, 12),
       intentosVerificacion: entero(env.INTENTOS_VERIFICACION, 3),
+      // Intentos fallidos contra un mismo RUT, sumando todos los números.
+      intentosPorCliente: entero(env.INTENTOS_POR_CLIENTE, 5),
       bloqueoMinutos: entero(env.BLOQUEO_MINUTOS, 30),
       avisoFalloMinutos: entero(env.AVISO_FALLO_MINUTOS, 30),
       // Tope de respuestas automáticas por conversación y hora (abuso / costos).

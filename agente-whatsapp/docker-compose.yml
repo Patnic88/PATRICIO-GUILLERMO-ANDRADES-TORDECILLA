@@ -9,6 +9,7 @@ services:
       HOST: 0.0.0.0
       DIR_DATOS: /datos
       COOKIE_SEGURA: "true"
+      CONFIAR_PROXY: "true"
     volumes:
       - datos:/datos
     expose:

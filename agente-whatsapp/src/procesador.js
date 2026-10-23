@@ -8,7 +8,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { ahora, transaccion, leerAjuste } from "./db.js";
-import { leerConversacion, leerContacto, obtenerConversacion, registrarEntrante, fijarModo, normalizarTelefono } from "./servicios/conversaciones.js";
+import { leerConversacion, leerContacto, obtenerConversacion, registrarEntrante, fijarModo, normalizarTelefono, sesionVerificada } from "./servicios/conversaciones.js";
 import { crearAlerta } from "./servicios/alertas.js";
 import { auditar, log } from "./servicios/auditoria.js";
 import { tokenAleatorio } from "./servicios/seguridad.js";
@@ -65,29 +65,36 @@ export function crearProcesador(app) {
 
   // ---- Envío --------------------------------------------------------------
 
-  async function enviar(conversacionId, texto, { enRespuestaA = null, autor = "agente" } = {}) {
+  async function enviar(conversacionId, texto, { enRespuestaA = null, autor = "agente", confidencial = false } = {}) {
     const conv = leerConversacion(db, conversacionId);
     const contacto = leerContacto(db, conv.contacto_id);
     let id;
     try {
       id = Number(db.prepare(
-        `INSERT INTO mensajes (conversacion_id, direccion, autor, tipo, texto, estado, en_respuesta_a, creado, actualizado) VALUES (?, 'saliente', ?, 'texto', ?, 'enviando', ?, ?, ?)`
-      ).run(conversacionId, autor, texto, enRespuestaA, ahora(), ahora()).lastInsertRowid);
+        `INSERT INTO mensajes (conversacion_id, direccion, autor, tipo, texto, estado, en_respuesta_a, confidencial, creado, actualizado) VALUES (?, 'saliente', ?, 'texto', ?, 'enviando', ?, ?, ?, ?)`
+      ).run(conversacionId, autor, texto, enRespuestaA, confidencial ? 1 : 0, ahora(), ahora()).lastInsertRowid);
     } catch (e) {
       if (/UNIQUE/i.test(String(e.message))) return { duplicado: true };
       throw e;
     }
+    // Las conversaciones del simulador nunca salen por WhatsApp, ni siquiera en producción.
+    let r;
     try {
-      const r = await app.whatsapp.enviarTexto(contacto.telefono, texto, { manual: autor === "patricio" });
-      db.prepare("UPDATE mensajes SET estado = ?, wa_id = ?, actualizado = ? WHERE id = ?").run(r.simulado ? "simulado" : "enviado", r.id, ahora(), id);
-      auditar(db, { actor: autor, accion: "mensaje.enviar", conversacionId, resultado: r.simulado ? "simulado" : "ok", detalle: { mensaje_id: id } });
-      return { id, simulado: r.simulado };
+      r = conv.es_prueba ? { simulado: true, id: null } : await app.whatsapp.enviarTexto(contacto.telefono, texto, { manual: autor === "patricio" });
     } catch (e) {
       db.prepare("UPDATE mensajes SET estado = 'fallido', error = ?, actualizado = ? WHERE id = ?").run(String(e.message).slice(0, 300), ahora(), id);
       crearAlerta(db, { tipo: "envio_fallido", prioridad: "alta", conversacionId, descripcion: `No se pudo enviar un mensaje por WhatsApp: ${String(e.message).slice(0, 200)}. El cliente NO recibió la respuesta.` });
       auditar(db, { actor: autor, accion: "mensaje.enviar", conversacionId, resultado: "error", detalle: { mensaje_id: id, error: String(e.message).slice(0, 200) } });
       return { id, error: String(e.message) };
     }
+    // El envío ya ocurrió: un error al registrarlo no debe presentarse como falla de envío.
+    try {
+      db.prepare("UPDATE mensajes SET estado = ?, wa_id = ?, actualizado = ? WHERE id = ?").run(r.simulado ? "simulado" : "enviado", r.id, ahora(), id);
+      auditar(db, { actor: autor, accion: "mensaje.enviar", conversacionId, resultado: r.simulado ? "simulado" : "ok", detalle: { mensaje_id: id } });
+    } catch (e) {
+      log("error", "mensaje enviado pero no registrado", { conversacionId, mensaje_id: id, error: String(e.message) });
+    }
+    return { id, simulado: r.simulado };
   }
 
   // Mensaje manual de Patricio desde el panel: solo dentro de las 24 horas
@@ -98,7 +105,7 @@ export function crearProcesador(app) {
       return { error: "fuera_de_ventana", detalle: "Han pasado más de 24 horas desde el último mensaje del cliente. WhatsApp exige una plantilla aprobada para escribirle." };
     }
     fijarModo(db, conversacionId, "humano", "Patricio respondió desde el panel", actor);
-    return enviar(conversacionId, texto, { autor: "patricio" });
+    return enviar(conversacionId, texto, { autor: "patricio", confidencial: sesionVerificada(conv) });
   }
 
   // ---- Procesamiento ------------------------------------------------------
@@ -134,7 +141,11 @@ export function crearProcesador(app) {
       }
       const turno = await procesarTurno(app, conversacionId, nuevos.map((m) => db.prepare("SELECT * FROM mensajes WHERE id = ?").get(m.id)));
       marcar(turno.error ? "error" : "procesado", turno.error);
-      const envio = turno.texto ? await enviar(conversacionId, turno.texto, { enRespuestaA: ids[ids.length - 1] }) : null;
+      // Lo conversado con identidad verificada no vuelve a mostrarse al
+      // agente si después la verificación vence o se revoca.
+      const confidencial = !!turno.estado?.verificado || sesionVerificada(leerConversacion(db, conversacionId));
+      if (confidencial) for (const id of ids) db.prepare("UPDATE mensajes SET confidencial = 1 WHERE id = ?").run(id);
+      const envio = turno.texto ? await enviar(conversacionId, turno.texto, { enRespuestaA: ids[ids.length - 1], confidencial }) : null;
       return { turno, envio };
     } catch (e) {
       log("error", "fallo procesando conversación", { conversacionId, error: String(e.stack || e) });
@@ -160,14 +171,19 @@ export function crearProcesador(app) {
     for (const m of ev.mensajes) {
       const { contacto, conversacion } = obtenerConversacion(db, m.de, { nombrePerfil: m.nombrePerfil });
       if (db.prepare("SELECT 1 FROM mensajes WHERE wa_id = ?").get(m.waId)) { duplicados++; continue; }
+      // Un mensaje real convierte en real una conversación creada en el simulador.
+      if (conversacion.es_prueba) db.prepare("UPDATE conversaciones SET es_prueba = 0 WHERE id = ?").run(conversacion.id);
       const documentoId = m.media ? crearDocumento({ conversacionId: conversacion.id, contactoId: contacto.id, tipo: m.tipo, nombre: m.media.nombre, mime: m.media.mime, mediaId: m.media.id }) : null;
       const r = registrarEntrante(db, { conversacionId: conversacion.id, waId: m.waId, tipo: m.media ? m.tipo : "texto", texto: m.texto, mediaId: m.media?.id ?? null, documentoId });
       if (r.duplicado) { duplicados++; if (documentoId) db.prepare("DELETE FROM documentos WHERE id = ?").run(documentoId); } else nuevos++;
     }
+    const mapa = { sent: "enviado", delivered: "entregado", read: "leido", failed: "fallido" };
+    const orden = { enviando: 0, incierto: 0, simulado: 0, enviado: 1, entregado: 2, leido: 3 };
     for (const s of ev.estados) {
-      const mapa = { sent: "enviado", delivered: "entregado", read: "leido", failed: "fallido" };
       const fila = db.prepare("SELECT id, conversacion_id, estado FROM mensajes WHERE wa_id = ? AND direccion = 'saliente'").get(s.waId);
       if (!fila || !mapa[s.estado]) continue;
+      // Los estados llegan desordenados: nunca retroceder (leído → entregado).
+      if (s.estado !== "failed" && (orden[mapa[s.estado]] ?? 0) <= (orden[fila.estado] ?? 0)) continue;
       db.prepare("UPDATE mensajes SET estado = ?, error = ?, actualizado = ? WHERE id = ?").run(mapa[s.estado], s.errores ? JSON.stringify(s.errores).slice(0, 300) : null, ahora(), fila.id);
       if (s.estado === "failed") crearAlerta(db, { tipo: "envio_fallido", prioridad: "alta", conversacionId: fila.conversacion_id, descripcion: `WhatsApp informó que un mensaje no fue entregado: ${JSON.stringify(s.errores || []).slice(0, 200)}`, claveDedupe: `entrega-${s.waId}` });
     }

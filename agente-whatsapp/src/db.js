@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS clientes (
   email TEXT,
   notas TEXT,
   pin_hash TEXT,
+  intentos_fallidos INTEGER NOT NULL DEFAULT 0,
+  bloqueado_hasta TEXT,
   creado TEXT NOT NULL,
   actualizado TEXT NOT NULL
 );
@@ -59,6 +61,7 @@ CREATE TABLE IF NOT EXISTS mensajes (
   documento_id INTEGER REFERENCES documentos(id),
   estado TEXT NOT NULL,
   en_respuesta_a INTEGER UNIQUE REFERENCES mensajes(id),
+  confidencial INTEGER NOT NULL DEFAULT 0,
   error TEXT,
   creado TEXT NOT NULL,
   actualizado TEXT NOT NULL
@@ -236,12 +239,24 @@ CREATE TABLE IF NOT EXISTS sesiones_admin (
 );
 `;
 
+// Columnas agregadas después de la primera versión: se crean si faltan en
+// una base existente.
+const COLUMNAS_NUEVAS = [
+  ["mensajes", "confidencial", "INTEGER NOT NULL DEFAULT 0"],
+  ["clientes", "intentos_fallidos", "INTEGER NOT NULL DEFAULT 0"],
+  ["clientes", "bloqueado_hasta", "TEXT"]
+];
+
 export function abrirDb(ruta) {
   if (ruta !== ":memory:") mkdirSync(dirname(ruta), { recursive: true });
   const db = new DatabaseSync(ruta);
   if (ruta !== ":memory:") db.exec("PRAGMA journal_mode = WAL;");
   db.exec("PRAGMA busy_timeout = 5000;");
   db.exec(ESQUEMA);
+  for (const [tabla, columna, def] of COLUMNAS_NUEVAS) {
+    const existe = db.prepare(`PRAGMA table_info(${tabla})`).all().some((c) => c.name === columna);
+    if (!existe) db.exec(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${def}`);
+  }
   return db;
 }
 

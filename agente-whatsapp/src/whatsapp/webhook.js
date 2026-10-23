@@ -52,7 +52,7 @@ export function extraerEventos(payload, phoneNumberId) {
   for (const entry of payload.entry || []) {
     for (const change of entry.changes || []) {
       const v = change.value || {};
-      if (phoneNumberId && v.metadata?.phone_number_id && v.metadata.phone_number_id !== phoneNumberId) { salida.descartados++; continue; }
+      if (phoneNumberId && v.metadata?.phone_number_id !== phoneNumberId) { salida.descartados++; continue; }
       if (change.field === "messages") {
         const perfiles = new Map((v.contacts || []).map((c) => [c.wa_id, c.profile?.name || null]));
         for (const m of v.messages || []) { const n = normalizarMensaje(m, perfiles); if (n) salida.mensajes.push(n); }

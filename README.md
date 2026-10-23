@@ -455,7 +455,7 @@ Anthropic): conversa con clientes, recuerda antecedentes por cliente y asunto,
 verifica identidad antes de hablar de expedientes o pagos, recibe documentos y
 comprobantes, agenda citas sin duplicados y alerta a Patricio de audiencias,
 notificaciones, vencimientos y remates. Incluye panel de administración,
-simulador y 65 pruebas automáticas.
+simulador y 80 pruebas automáticas.
 
 Arranca en **modo prueba**: nada se envía a clientes reales hasta activarlo.
 

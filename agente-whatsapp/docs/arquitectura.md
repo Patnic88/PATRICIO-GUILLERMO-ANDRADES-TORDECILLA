@@ -64,7 +64,9 @@ Un solo proceso Node.js (22.13+) sin framework web. La única dependencia extern
 - Todo lo que el agente ve se consulta por el id de **la conversación actual**; no existe consulta que cruce conversaciones o clientes.
 - **Sin identidad verificada**, el agente solo recuerda lo que ese número dijo en las últimas `MEMORIA_SESION_HORAS` (72 h por defecto) y nunca recibe datos de la ficha del cliente, ni siquiera el nombre. Así, si un número cambia de dueño, el nuevo titular no accede a lo anterior.
 - **Con identidad verificada** (RUT + código personal, o verificación manual de Patricio), el agente ve los asuntos del cliente y puede usar `consultar_expediente`. La verificación dura `VERIFICACION_HORAS` (12 h).
-- El código se compara con un hash scrypt; tras tres intentos fallidos la verificación se bloquea 30 minutos y se alerta a Patricio. Al verificarse, el código se borra del historial guardado.
+- El código se compara con un hash scrypt. Tras tres intentos fallidos en una conversación, o cinco contra una misma ficha desde cualquier número, la verificación se bloquea 30 minutos y se alerta a Patricio. El código intentado (correcto o no) se borra del historial guardado y no se copia en alertas.
+- Lo conversado mientras la identidad estuvo verificada se marca como confidencial: si la verificación vence o se revoca, el agente deja de verlo (también las solicitudes, documentos y citas ligados a la ficha).
+- Los datos aportados por el cliente que entran al contexto del sistema (nombre de perfil, nombres de archivo, campos de la solicitud) van escapados y entre «», declarados como datos.
 - Estas reglas están en el código de las herramientas: aunque el modelo intente consultar un expediente sin verificación, la herramienta lo rechaza.
 
 ## Defensa contra instrucciones maliciosas
@@ -87,6 +89,9 @@ Un solo proceso Node.js (22.13+) sin framework web. La única dependencia extern
 | Falla de envío por WhatsApp | Mensaje `fallido`, alerta, sin reenvío automático. |
 | Abuso o costos descontrolados | Tope de `MAX_TURNOS_HORA` respuestas por conversación y hora. |
 | Patricio toma la conversación | Modo `humano`: el agente no responde en ese chat hasta que se devuelva. Pausa global disponible. |
+| Simulador usado en producción | Las conversaciones del simulador nunca salen por WhatsApp. Si un número real escribe, su conversación deja de ser de prueba. |
+| Petición HTTP malformada | Respuesta 400; los errores no previstos se registran sin detener el servicio. |
+| Reservas solapadas o con hora ambigua | Solo se acepta el valor exacto ofrecido y se rechaza cualquier superposición con otra cita. |
 
 ## Integración con Claude
 
@@ -102,7 +107,7 @@ Para usar otro proveedor de IA basta con un módulo que implemente `generar({ sy
 ## Panel de administración
 
 - Usuario único (Patricio), clave con hash scrypt en `ADMIN_CLAVE_HASH`, cookie `HttpOnly`, `SameSite=Strict` y `Secure` en producción, sesiones de `SESION_HORAS`.
-- Token CSRF en toda acción; límite de 5 intentos de ingreso cada 15 minutos por IP.
+- Token CSRF en toda acción; límite de 5 intentos de ingreso cada 15 minutos por IP real (detrás de Caddy se toma de `X-Forwarded-For` con `CONFIAR_PROXY=true`) y una pausa breve tras cada intento fallido.
 - Cabeceras: `Content-Security-Policy` sin scripts en línea, `X-Frame-Options: DENY`, `nosniff`, `no-store`.
 - Los documentos solo se descargan con sesión y se guardan con nombres generados (nunca con el nombre enviado por el cliente) y permisos `600`.
 
@@ -118,4 +123,5 @@ Los mensajes y el contexto se envían a los proveedores (Meta y Anthropic) para 
 - Las fechas se registran literalmente ("mañana", "15 de noviembre"); no se convierten ni se calculan plazos.
 - Agenda propia del sistema; no sincroniza con Google Calendar.
 - Un solo proceso: no está pensado para varios servidores en paralelo (no lo necesita para el volumen de una oficina).
+- Si el servicio se reinicia justo después de derivar una conversación a Patricio y antes de enviar el aviso al cliente, ese aviso no se envía; la alerta de derivación sí queda en el panel.
 - El proveedor simulado sirve para revisar el sistema, no la calidad conversacional.

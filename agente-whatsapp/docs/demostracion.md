@@ -1,6 +1,6 @@
 # Demostración del agente de WhatsApp — A & A jurídico y contable
 
-Generada el 22-10-2026, 9:10:13 p. m. con el proveedor **simulado** (reglas fijas de demostración, no es inteligencia artificial: sirve para revisar el funcionamiento del sistema, no la calidad de redacción).
+Generada el 22-10-2026, 9:24:36 p. m. con el proveedor **simulado** (reglas fijas de demostración, no es inteligencia artificial: sirve para revisar el funcionamiento del sistema, no la calidad de redacción).
 
 Cada escena pasa por el mismo proceso que un mensaje real de WhatsApp: cola persistente, memoria, herramientas, alertas y controles de salida. Ningún mensaje se envió a un teléfono.
 
@@ -253,7 +253,7 @@ El número está asociado a la ficha de un cliente, pero eso no basta: se exige 
 
 <details><summary>Herramientas usadas</summary>
 
-- `verificar_identidad` → `{"ok":true,"nombre":"Juan Soto","valida_hasta":"2026-10-23T12:10:13.314Z"}`
+- `verificar_identidad` → `{"ok":true,"nombre":"Juan Soto","valida_hasta":"2026-10-23T12:24:36.336Z"}`
 - `consultar_expediente` → `{"ok":true,"asuntos":[{"id":1,"titulo":"Demanda laboral Soto con Comercial Norte","materia":"laboral","estado":"en_curso","tribunal":null,"rol":null,"siguiente_accion":"esperar la audiencia preparatoria","resumen_cliente`
 
 </details>
@@ -263,7 +263,7 @@ El número está asociado a la ficha de un cliente, pero eso no basta: se exige 
 **Agente:**
 > No puedo atender esa solicitud. Puedo ayudarle con información sobre nuestros servicios o con su propia consulta.
 
-**Verificación:** el código quedó guardado como «Perdón, el código es [código de verificación omitido]».
+**Verificación:** el código quedó guardado como «Mi RUT es 12.345.678-5 y el código es [código de verificación omitido]».
 
 ---
 

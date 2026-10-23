@@ -24,7 +24,7 @@ export function bloquesLibres(db, tz, { referencia = new Date(), dias } = {}) {
   const ag = leerAgenda(db);
   if (!ag.configurada) return { configurada: false, bloques: [] };
   const minimo = referencia.getTime() + ag.anticipacionHoras * 3600_000;
-  const ocupados = new Set(db.prepare("SELECT inicio FROM citas WHERE estado = 'confirmada' AND inicio >= ?").all(new Date(referencia).toISOString()).map((c) => c.inicio));
+  const ocupadas = db.prepare("SELECT inicio, fin FROM citas WHERE estado = 'confirmada' AND fin > ?").all(new Date(referencia).toISOString());
   const hoy = fechaLocal(referencia, tz);
   const libres = [];
   for (let i = 0; i <= (dias ?? ag.diasVista); i++) {
@@ -36,8 +36,8 @@ export function bloquesLibres(db, tz, { referencia = new Date(), dias } = {}) {
       const inicio = localAUtc(dia, h, tz);
       if (inicio.getTime() < minimo) continue;
       const iso = inicio.toISOString();
-      if (ocupados.has(iso)) continue;
       const fin = new Date(inicio.getTime() + ag.duracionMinutos * 60_000);
+      if (ocupadas.some((c) => c.inicio < fin.toISOString() && c.fin > iso)) continue;
       libres.push({ inicio: iso, fin: fin.toISOString(), texto: describir(inicio, tz) });
     }
   }
@@ -50,13 +50,17 @@ export function bloquesLibres(db, tz, { referencia = new Date(), dias } = {}) {
 export function reservarCita(db, tz, { contactoId, conversacionId, clienteId = null, solicitudId = null, inicio, modalidad = null, motivo = null, nombre = null }) {
   const ag = leerAgenda(db);
   if (!ag.configurada) return { ok: false, motivo: "agenda_no_configurada" };
-  const inicioIso = new Date(inicio).toISOString();
+  // Solo se acepta el valor exacto ofrecido (ISO en UTC). Una hora sin zona
+  // horaria se interpretaría de otra forma y reservaría otro bloque.
+  const inicioIso = String(inicio);
   return transaccion(db, () => {
     const existente = db.prepare("SELECT id, inicio FROM citas WHERE contacto_id = ? AND estado = 'confirmada' AND inicio >= ? ORDER BY inicio LIMIT 1").get(contactoId, ahora());
     if (existente) return { ok: false, motivo: "ya_tiene_cita", cita_id: existente.id, inicio: existente.inicio, texto: describir(new Date(existente.inicio), tz) };
     const libre = bloquesLibres(db, tz).bloques.find((b) => b.inicio === inicioIso);
     if (!libre) return { ok: false, motivo: "bloque_no_disponible" };
     if (modalidad && ag.modalidades.length && !ag.modalidades.includes(modalidad)) return { ok: false, motivo: "modalidad_no_disponible", modalidades: ag.modalidades };
+    const solapa = db.prepare("SELECT id FROM citas WHERE estado = 'confirmada' AND inicio < ? AND fin > ?").get(libre.fin, libre.inicio);
+    if (solapa) return { ok: false, motivo: "bloque_no_disponible" };
     try {
       const r = db.prepare(
         `INSERT INTO citas (contacto_id, conversacion_id, cliente_id, solicitud_id, inicio, fin, modalidad, motivo, nombre, estado, creado, actualizado)

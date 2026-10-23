@@ -49,9 +49,11 @@ export function registrarEntrante(db, { conversacionId, waId = null, tipo = "tex
 // aún se procesan y las respuestas que nunca llegaron al cliente.
 const VISIBLES = "estado NOT IN ('pendiente','procesando') AND NOT (direccion = 'saliente' AND estado IN ('enviando','fallido'))";
 
+// Sin identidad verificada (desde != null) se excluye además lo conversado
+// mientras la identidad estuvo verificada (mensajes confidenciales).
 export function historial(db, conversacionId, { limite = 30, desde = null } = {}) {
   const filas = desde
-    ? db.prepare(`SELECT * FROM mensajes WHERE conversacion_id = ? AND creado >= ? AND ${VISIBLES} ORDER BY id DESC LIMIT ?`).all(conversacionId, desde, limite)
+    ? db.prepare(`SELECT * FROM mensajes WHERE conversacion_id = ? AND creado >= ? AND confidencial = 0 AND ${VISIBLES} ORDER BY id DESC LIMIT ?`).all(conversacionId, desde, limite)
     : db.prepare(`SELECT * FROM mensajes WHERE conversacion_id = ? AND ${VISIBLES} ORDER BY id DESC LIMIT ?`).all(conversacionId, limite);
   return filas.reverse();
 }
@@ -74,12 +76,20 @@ export function sesionVerificada(conv, referencia = new Date()) {
 export function verificarIdentidad(db, cfgAgente, conversacionId, { rut, codigo }) {
   const conv = leerConversacion(db, conversacionId);
   const t = new Date();
+  const codigoTxt = String(codigo || "").trim();
+  // El código intentado (correcto o no) no queda guardado en texto plano.
+  if (/^\d{4,8}$/.test(codigoTxt)) ocultarCodigo(db, conversacionId, codigoTxt);
   if (conv.bloqueado_hasta && new Date(conv.bloqueado_hasta) > t) {
     return { ok: false, motivo: "bloqueado_temporalmente", hasta: conv.bloqueado_hasta };
   }
   const rutN = normalizarRut(rut);
   const cliente = rutN ? db.prepare("SELECT * FROM clientes WHERE rut = ?").get(rutN) : null;
-  const correcto = !!(cliente && cliente.pin_hash && /^\d{4,8}$/.test(String(codigo || "").trim()) && verificarClave(String(codigo).trim(), cliente.pin_hash));
+  // Bloqueo por cliente: impide adivinar el código desde muchos números.
+  if (cliente?.bloqueado_hasta && new Date(cliente.bloqueado_hasta) > t) {
+    auditar(db, { actor: "agente", accion: "identidad.verificar", conversacionId, resultado: "rechazado", detalle: { motivo: "cliente_bloqueado" } });
+    return { ok: false, motivo: "bloqueado_temporalmente" };
+  }
+  const correcto = !!(cliente && cliente.pin_hash && /^\d{4,8}$/.test(codigoTxt) && verificarClave(codigoTxt, cliente.pin_hash));
   if (!correcto) {
     const intentos = conv.intentos_fallidos + 1;
     let bloqueo = null;
@@ -93,6 +103,12 @@ export function verificarIdentidad(db, cfgAgente, conversacionId, { rut, codigo 
     }
     db.prepare("UPDATE conversaciones SET intentos_fallidos = ?, bloqueado_hasta = ?, actualizado = ? WHERE id = ?")
       .run(bloqueo ? 0 : intentos, bloqueo, ahora(), conversacionId);
+    if (cliente) {
+      const n = cliente.intentos_fallidos + 1;
+      const hasta = n >= cfgAgente.intentosPorCliente ? new Date(t.getTime() + cfgAgente.bloqueoMinutos * 60_000).toISOString() : null;
+      db.prepare("UPDATE clientes SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id = ?").run(hasta ? 0 : n, hasta, cliente.id);
+      if (hasta) crearAlerta(db, { tipo: "seguridad", prioridad: "alta", conversacionId, descripcion: `${n} intentos fallidos de verificación contra la ficha #${cliente.id}. Verificación de esa ficha bloqueada hasta ${hasta}. Si no fue el cliente, considere generar un código nuevo.`, claveDedupe: `verif-cliente-${cliente.id}-${hasta.slice(0, 13)}` });
+    }
     auditar(db, { actor: "agente", accion: "identidad.verificar", conversacionId, resultado: "rechazado", detalle: { intentos } });
     return { ok: false, motivo: bloqueo ? "bloqueado_temporalmente" : "datos_no_coinciden", intentos_restantes: bloqueo ? 0 : cfgAgente.intentosVerificacion - intentos };
   }
@@ -100,8 +116,7 @@ export function verificarIdentidad(db, cfgAgente, conversacionId, { rut, codigo 
   db.prepare(
     "UPDATE conversaciones SET verificado_cliente_id = ?, verificado_hasta = ?, verificado_por = 'rut_codigo', intentos_fallidos = 0, bloqueado_hasta = NULL, actualizado = ? WHERE id = ?"
   ).run(cliente.id, hasta, ahora(), conversacionId);
-  // El código no debe quedar guardado en texto plano en el historial.
-  ocultarCodigo(db, conversacionId, String(codigo).trim());
+  db.prepare("UPDATE clientes SET intentos_fallidos = 0 WHERE id = ?").run(cliente.id);
   auditar(db, { actor: "agente", accion: "identidad.verificar", conversacionId, resultado: "ok", detalle: { cliente_id: cliente.id, hasta } });
   return { ok: true, cliente_id: cliente.id, nombre: cliente.nombre, valida_hasta: hasta };
 }

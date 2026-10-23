@@ -31,8 +31,9 @@ function ventanaDesde(ctx) {
 export function solicitudVigente(ctx) {
   const conv = leerConversacion(ctx.db, ctx.conversacionId);
   const verificado = sesionVerificada(conv);
+  // Sin verificación no se reutiliza una solicitud ligada a una ficha de cliente.
   return ctx.db.prepare(
-    `SELECT * FROM solicitudes WHERE conversacion_id = ? AND estado = 'abierta' ${verificado ? "" : "AND actualizado >= ?"} ORDER BY id DESC LIMIT 1`
+    `SELECT * FROM solicitudes WHERE conversacion_id = ? AND estado = 'abierta' ${verificado ? "" : "AND actualizado >= ? AND cliente_id IS NULL"} ORDER BY id DESC LIMIT 1`
   ).get(...(verificado ? [ctx.conversacionId] : [ctx.conversacionId, ventanaDesde(ctx)]));
 }
 
@@ -224,7 +225,7 @@ export const HERRAMIENTAS = {
       required: ["inicio", "nombre", "motivo"], additionalProperties: false
     },
     ejecutar(ctx, e) {
-      if (Number.isNaN(Date.parse(e.inicio))) return { ok: false, error: "inicio_invalido" };
+      if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(e.inicio)) return { ok: false, error: "inicio_invalido", instruccion: "Use exactamente un valor 'inicio' devuelto por consultar_disponibilidad." };
       const conv = leerConversacion(ctx.db, ctx.conversacionId);
       const s = solicitudVigente(ctx);
       const r = reservarCita(ctx.db, ctx.cfg.zonaHoraria, {
@@ -235,7 +236,8 @@ export const HERRAMIENTAS = {
         if (s) ctx.db.prepare("UPDATE solicitudes SET siguiente_accion = 'revision_patricio', actualizado = ? WHERE id = ?").run(ahora(), s.id);
         crearAlerta(ctx.db, { tipo: "cita", prioridad: "media", conversacionId: ctx.conversacionId, solicitudId: s?.id ?? null, actor: "agente", descripcion: `Cita agendada para ${r.texto} (${e.nombre}): ${e.motivo}`, claveDedupe: `cita-${r.cita_id}` });
       }
-      if (r.motivo === "ya_tiene_cita") ctx.turno.citaVigente = true;
+      if (r.motivo === "ya_tiene_cita") ctx.turno.citaConfirmadaPorHerramienta = true;
+      else if (!r.ok) ctx.turno.reservaFallida = true;
       return r;
     }
   },
@@ -338,7 +340,8 @@ export const HERRAMIENTAS = {
       const citas = db.prepare("SELECT id, inicio, modalidad, estado FROM citas WHERE cliente_id = ? AND estado = 'confirmada' AND inicio >= ? ORDER BY inicio").all(clienteId, ahora());
       const antecedentes = db.prepare("SELECT campo, valor, origen FROM antecedentes WHERE cliente_id = ? ORDER BY id DESC LIMIT 20").all(clienteId);
       if (pagos.some((p) => p.estado === "verificado")) ctx.turno.pagoVerificadoInformado = true;
-      if (citas.length) ctx.turno.citaVigente = true;
+      if (citas.length) ctx.turno.citaConfirmadaPorHerramienta = true;
+      ctx.turno.textoRespaldo += " " + JSON.stringify(pagos);
       auditar(db, { actor: "agente", accion: "expediente.consulta", conversacionId: ctx.conversacionId, detalle: { cliente_id: clienteId, asuntos: asuntos.map((a) => a.id) } });
       return { ok: true, asuntos, documentos, pagos, citas_futuras: citas, antecedentes, nota: "Antecedentes 'declarado' = dichos por el cliente; 'documental' = constan en un documento; 'verificado' = confirmados por la oficina. Pagos 'pendiente_verificacion' NO están confirmados." };
     }
@@ -379,6 +382,7 @@ export async function ejecutarHerramienta(ctx, nombre, entrada) {
   } catch (err) {
     const r = { error: "fallo_interno", instruccion: "La herramienta falló. Informa que no se pudo completar esta gestión y que se avisó a Patricio. No afirmes que se realizó." };
     registrar("error", { error: String(err?.message || err) });
+    if (nombre === "agendar_cita") ctx.turno.reservaFallida = true;
     crearAlerta(ctx.db, { tipo: "fallo_herramienta", prioridad: "alta", conversacionId: ctx.conversacionId, descripcion: `Falló la herramienta ${nombre}: ${String(err?.message || err).slice(0, 300)}`, claveDedupe: `fallo-${ctx.conversacionId}-${nombre}-${ahora().slice(0, 13)}` });
     return r;
   }

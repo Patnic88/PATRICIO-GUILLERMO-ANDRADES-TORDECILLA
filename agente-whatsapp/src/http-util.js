@@ -39,13 +39,10 @@ export function leerCookies(req) {
   const salida = {};
   for (const par of (req.headers.cookie || "").split(";")) {
     const i = par.indexOf("=");
-    if (i > 0) salida[par.slice(0, i).trim()] = decodeURIComponent(par.slice(i + 1).trim());
+    if (i <= 0) continue;
+    try { salida[par.slice(0, i).trim()] = decodeURIComponent(par.slice(i + 1).trim()); } catch { /* cookie malformada: se ignora */ }
   }
   return salida;
 }
 
 export const h = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-
-export function ipCliente(req) {
-  return req.socket.remoteAddress || "desconocida";
-}

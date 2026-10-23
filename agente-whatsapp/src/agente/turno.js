@@ -18,6 +18,9 @@ const LIMITE_WHATSAPP = 4000;
 
 export class ErrorAgente extends Error {}
 
+// En las alertas no se copian números que podrían ser códigos de verificación.
+const sinCodigos = (s) => String(s).replace(/(?<![\d./-])\d{4,8}(?![\d./-])/g, "[número omitido]");
+
 const textoDe = (content) => content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
 
 async function ejecutarAgente(app, ctx, mensajes, estado) {
@@ -61,7 +64,7 @@ export async function procesarTurno(app, conversacionId, nuevos) {
   if (senales.senales.length) {
     senales.alertaNueva = crearAlerta(db, {
       tipo: "urgencia", prioridad: senales.urgencia === "urgente" ? "alta" : "media", conversacionId,
-      descripcion: `Señales detectadas: ${senales.senales.map((s) => s.etiqueta).join(", ")}. Mensaje: "${textoNuevo.slice(0, 300)}"${senales.fechasLiterales.length ? `. Fechas mencionadas (literal): ${senales.fechasLiterales.join(", ")}` : ""}. Ningún plazo fue calculado.`,
+      descripcion: `Señales detectadas: ${senales.senales.map((s) => s.etiqueta).join(", ")}. Mensaje: "${sinCodigos(textoNuevo.slice(0, 300))}"${senales.fechasLiterales.length ? `. Fechas mencionadas (literal): ${senales.fechasLiterales.join(", ")}` : ""}. Ningún plazo fue calculado.`,
       fechaInformada: senales.fechasLiterales.join(", ") || null,
       claveDedupe: `senal-${conversacionId}-${senales.senales.map((s) => s.tipo).sort().join("+")}-${fechaLocal(new Date(), cfg.zonaHoraria)}`
     }).nueva;
@@ -72,7 +75,11 @@ export async function procesarTurno(app, conversacionId, nuevos) {
   const { mensajes } = construirMensajes(app, conv, nuevos, estado);
   const ctx = {
     db, cfg, conversacionId, contactoId: contacto.id, herramientas: app.herramientas || HERRAMIENTAS,
-    turno: { exito: new Set(), acciones: [], textoConocimiento: "", citaVigente: estado.citas.length > 0, pagoVerificadoInformado: false, senales, uso: {}, llamadas: 0, modelo: null }
+    turno: {
+      exito: new Set(), acciones: [], textoConocimiento: "", textoRespaldo: textoNuevo,
+      citaVigente: estado.citas.length > 0, citaConfirmadaPorHerramienta: false, reservaFallida: false,
+      pagoVerificadoInformado: false, senales, uso: {}, llamadas: 0, modelo: null
+    }
   };
 
   // 3. Modelo + herramientas.

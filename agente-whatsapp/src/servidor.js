@@ -11,8 +11,13 @@ import { ErrorHttp, leerCuerpo, cabecerasSeguridad, enviar, json, redirigir } fr
 
 export function crearServidor(app) {
   return http.createServer(async (req, res) => {
-    const url = new URL(req.url, "http://localhost");
     cabecerasSeguridad(res);
+    let url;
+    try {
+      url = new URL(req.url, "http://localhost");
+    } catch {
+      return enviar(res, 400, "url_invalida");
+    }
     try {
       if (url.pathname === "/salud") {
         return json(res, { ok: true, modo: app.cfg.modo, proveedor_ia: app.ia.nombre, whatsapp_configurado: app.whatsapp.credenciales });
@@ -65,6 +70,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     log("info", "servicio iniciado", { url: `http://${cfg.host}:${cfg.puerto}`, modo: cfg.modo, proveedor_ia: app.ia.nombre, whatsapp_real: app.whatsapp.credenciales });
     if (cfg.modo === "prueba") log("info", "MODO PRUEBA: solo se envían mensajes reales a NUMEROS_PRUEBA; el resto queda simulado.");
   });
+  // Un error no previsto se registra; no debe detener el servicio.
+  process.on("unhandledRejection", (e) => log("error", "promesa rechazada sin manejar", { error: String(e?.stack || e) }));
   const cerrar = () => { app.procesador.detener(); servidor.close(() => { app.db.close(); process.exit(0); }); };
   process.on("SIGTERM", cerrar);
   process.on("SIGINT", cerrar);

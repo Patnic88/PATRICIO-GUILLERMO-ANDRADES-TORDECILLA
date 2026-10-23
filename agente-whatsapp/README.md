@@ -12,7 +12,7 @@ El servicio **arranca en modo prueba**: ningún mensaje llega a clientes reales 
 | Envío de respuestas por la API oficial (Cloud API) | Implementado. Probado contra un WhatsApp falso; **no se probó contra Meta** (sin credenciales ni acceso de red desde este entorno). |
 | Agente con IA (Claude, de Anthropic) y sus 12 herramientas | Implementado. La forma de la solicitud se probó contra un servidor local. **Requiere** `ANTHROPIC_API_KEY` para funcionar con IA real. |
 | Proveedor "simulado" | Reglas fijas que imitan al agente para revisar el sistema sin costo. **No es inteligencia artificial**; su redacción es básica. |
-| Memoria por cliente y asunto, verificación de identidad, citas, comprobantes, alertas, derivación, controles de salida | Implementado y probado (65 pruebas automáticas). |
+| Memoria por cliente y asunto, verificación de identidad, citas, comprobantes, alertas, derivación, controles de salida | Implementado y probado (80 pruebas automáticas). |
 | Panel de administración (conversaciones, alertas, clientes, asuntos, citas, pagos, base de conocimiento, registro, simulador) | Implementado y revisado en navegador. |
 | Avisos a Patricio por WhatsApp | Implementado. **Requiere** una plantilla aprobada por Meta. Mientras tanto, las alertas se ven en el panel. |
 | Sincronización con Google Calendar | **No implementado.** La agenda es propia del sistema y se administra en el panel. |
@@ -32,11 +32,11 @@ npm run clave          # crea la clave del panel; pegue la línea que muestra en
 npm start
 ```
 
-Abra <http://127.0.0.1:3000/panel>, ingrese con el usuario `patricio` y su clave, y vaya a **Simulador**: escriba como si fuera un cliente. A la derecha verá qué herramientas usó el agente y qué alertas creó.
+Abra <http://127.0.0.1:3000/panel>, ingrese con el usuario `patricio` y su clave, y vaya a **Simulador**: escriba como si fuera un cliente. A la derecha verá qué herramientas usó el agente y qué alertas creó. Las conversaciones del simulador nunca se envían por WhatsApp, ni siquiera en producción.
 
 Otras formas de revisar:
 
-- `npm test` — ejecuta las 65 pruebas automáticas (ver [docs/pruebas.md](docs/pruebas.md)).
+- `npm test` — ejecuta las 80 pruebas automáticas (ver [docs/pruebas.md](docs/pruebas.md)).
 - `npm run demo` — regenera [docs/demostracion.md](docs/demostracion.md): diez conversaciones de ejemplo (consulta nueva, honorarios, citas, urgencias, confidencialidad, comprobantes, fallas y derivación).
 
 ## 2. Dejar lista la información de la oficina (panel)
@@ -120,7 +120,8 @@ Todas están descritas en [.env.example](.env.example). Las más importantes:
 | `IA_PROVEEDOR`, `ANTHROPIC_API_KEY`, `IA_MODELO`, `IA_ESFUERZO` | Proveedor y modelo de IA. |
 | `IA_CONTEXTO_COMO_SISTEMA` | Envía el contexto interno como mensaje de sistema intermedio (por defecto). Póngalo en `false` si elige un modelo que no lo admite. |
 | `MEMORIA_SESION_HORAS` | Cuánto recuerda el agente de un contacto **no verificado** (por defecto 72 h). |
-| `VERIFICACION_HORAS`, `INTENTOS_VERIFICACION`, `BLOQUEO_MINUTOS` | Duración de la verificación de identidad y bloqueo por intentos fallidos. |
+| `VERIFICACION_HORAS`, `INTENTOS_VERIFICACION`, `INTENTOS_POR_CLIENTE`, `BLOQUEO_MINUTOS` | Duración de la verificación de identidad y bloqueos por intentos fallidos (por conversación y por ficha de cliente). |
+| `CONFIAR_PROXY` | `true` cuando hay un proxy HTTPS delante (Docker ya lo activa); permite limitar los intentos de ingreso al panel por la IP real. |
 | `MAX_TURNOS_HORA` | Tope de respuestas automáticas por conversación y hora. |
 | `NUMERO_PATRICIO`, `PLANTILLA_ALERTA` | Aviso por WhatsApp de alertas de prioridad alta (opcional). |
 
