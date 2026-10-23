@@ -270,11 +270,21 @@ dos formas:
 
 - **Nombre:** "Reporte Diario Oficial".
 - **Horario:** todos los días a las **07:55**, hora de Chile.
-- **Funcionamiento:** cada ejecución abre una sesión nueva de Claude, corre
-  `node agente-diario-oficial/reporte.mjs`, que lee el sitio y deja el correo
-  listo en `reporte.html` y `reporte.txt`, y envía ese contenido **sin
-  modificarlo** con el conector de Gmail. Las instrucciones exactas que sigue
-  Claude están en `agente-diario-oficial/SKILL.md`.
+- **Funcionamiento:** la rutina se ejecuta en la **misma sesión de Claude
+  donde se configuró**, porque esa sesión tiene el conector de Gmail. Las
+  rutinas que abren una sesión nueva no traen conectores en esta cuenta.
+  Cada mañana Claude corre `node agente-diario-oficial/reporte.mjs`, que lee
+  el sitio y deja el correo listo en `reporte.html` y `reporte.txt`, y envía
+  ese contenido **sin modificarlo** con Gmail. Las instrucciones exactas que
+  sigue Claude están en `agente-diario-oficial/SKILL.md`.
+- **No archives esa sesión:** si se archiva, la rutina deja de tener dónde
+  ejecutarse. La conversación crece un poco cada día; Claude la resume sola.
+- **Alternativa con sesión limpia cada día:** crea la rutina tú mismo desde la
+  pantalla de Routines de claude.ai, **con el conector de Gmail adjunto**.
+  Usa como instrucción: "Ejecuta el agente del Diario Oficial siguiendo
+  agente-diario-oficial/SKILL.md del repositorio
+  Patnic88/PATRICIO-GUILLERMO-ANDRADES-TORDECILLA y envía un solo correo con
+  Gmail".
 - **Si la edición de hoy aún no aparece:** el ejecutor reintenta dos veces,
   con 4 minutos entre intentos. Si sigue sin aparecer, o el sitio no
   responde, envía un **aviso** en vez del reporte.
