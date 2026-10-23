@@ -1,0 +1,4 @@
+DATOS FICTICIOS DE PRUEBA. Ningún RUT, folio ni monto corresponde a contribuyentes reales.
+Los encabezados imitan el CSV de "Descargar detalles" del RCV de sii.cl; la lista exacta de
+columnas del SII no fue verificada documentalmente: el importador reconoce las columnas por
+nombre y se detiene si falta alguna requerida.
