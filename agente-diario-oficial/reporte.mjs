@@ -22,6 +22,10 @@ import { tmpdir } from "node:os";
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 
+// El sitio rechaza (403) el User-Agent por defecto de curl; el agente se
+// identifica con su propio nombre.
+const USER_AGENT = "AgenteDiarioOficial/1.0 (reporte diario personal)";
+
 const FIRMA = "Generado por el agente Diario Oficial (rutina diaria de Claude).";
 const AYUDA_FALLA = "Si se repite, revisa que www.diariooficial.interior.gob.cl esté permitido "
   + "en la red del entorno de Claude (Network access → Allowed domains).";
@@ -56,7 +60,8 @@ function fetchConCurl(url) {
     let code;
     try {
       code = execFileSync("curl", [
-        "-sS", "-L", "--max-time", "60", "-o", cuerpo, "-D", cabeceras, "-w", "%{http_code}", url
+        "-sS", "-L", "--max-time", "60", "-A", USER_AGENT,
+        "-o", cuerpo, "-D", cabeceras, "-w", "%{http_code}", url
       ], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     } catch (err) {
       const detalle = String(err.stderr || err.message).trim();
@@ -98,7 +103,7 @@ export function cargarAgente() {
   return new Function(
     "Utilities", "UrlFetchApp", "Logger", "MailApp", "PropertiesService", "ScriptApp",
     codigo +
-    "\nreturn { leerSeccion: leerSeccion, construirReporte: construirReporte," +
+    "\nreturn { leerSeccion: leerSeccion, leerEdicion: leerEdicion, construirReporte: construirReporte," +
     " construirAviso: construirAviso, edicionEsDeHoy: edicionEsDeHoy, fechaChile: fechaChile," +
     " secciones: function () { return DO_SECCIONES; }," +
     " destinatarios: function () { return { para: DIGEST_TO, cc: DIGEST_CC }; }," +
@@ -124,7 +129,7 @@ export async function generar({ salida, fecha, reintentos = 2, esperaSeg = 240, 
   const agente = cargarAgente();
   agente.configurar({ baseUrl, firma: FIRMA, ayudaFalla: AYUDA_FALLA });
   const hoy = fecha || agente.fechaChile(new Date());
-  const [principalSec, ...resto] = agente.secciones();
+  const [principalSec] = agente.secciones();
 
   // Si la edición de hoy aún no aparece, se espera y se reintenta (salvo que
   // la red del entorno bloquee el sitio: reintentar no cambia nada).
@@ -137,7 +142,7 @@ export async function generar({ salida, fecha, reintentos = 2, esperaSeg = 240, 
 
   let accion, msg, leidas;
   if (agente.edicionEsDeHoy(principal, hoy)) {
-    leidas = [principal, ...resto.map((sec) => agente.leerSeccion(sec))];
+    leidas = agente.leerEdicion(principal);
     msg = agente.construirReporte(leidas, hoy);
     accion = "reporte";
   } else {

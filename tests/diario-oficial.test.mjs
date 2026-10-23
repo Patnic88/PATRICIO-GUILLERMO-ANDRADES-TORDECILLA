@@ -50,7 +50,7 @@ let fetchLog = [];
 const UrlFetchApp = {
   fetch(url) {
     fetchLog.push(url);
-    const pagina = url.split("/").pop();
+    const pagina = url.split("?")[0].split("/").pop();
     const r = paginas[pagina];
     if (typeof r === "function") return r();
     const { code = 200, html = "" } = r || { code: 404, html: "Not found" };
@@ -95,6 +95,7 @@ const sandbox = new Function(
   " extraerEnlace, absolutizar, extraerFechaTexto, formatoEdicion, escapeHtml," +
   " construirReporte, construirAviso, opcionesCorreo, revisarDiarioOficial," +
   " enviarReporteAhora, instalarAgente, desinstalarAgente, leerSeccion, fetchSeccion," +
+  " leerEdicion, seccionServida," +
   " DO_SECCIONES, DO_PROP_ULTIMO_ENVIO, DIGEST_TO, DIGEST_CC };"
 );
 const fns = sandbox(Utilities, UrlFetchApp, MailApp, PropertiesService, ScriptApp, Logger);
@@ -443,6 +444,10 @@ test("revisar: envía una vez y no repite el mismo día", () => {
   assert.equal(fns.revisarDiarioOficial(MANANA), "enviado");
   assert.equal(enviados.length, 1);
   assert.equal(fetchLog.length, 4, "lee las 4 secciones");
+  assert.match(fetchLog[0], /\/edicionelectronica\/index\.php$/, "la principal va sin parámetros");
+  fetchLog.slice(1).forEach((u) => {
+    assert.match(u, /\.php\?date=20-10-2026&edition=99999$/, "las demás piden la misma edición: " + u);
+  });
   assert.equal(store[fns.DO_PROP_ULTIMO_ENVIO], HOY);
   assert.match(enviados[0].subject, /^📰 Diario Oficial 20-10-2026/);
   assert.equal(enviados[0].cc, "andradestordecilla.abogado@gmail.com");
@@ -507,6 +512,72 @@ test("desinstalarAgente: borra los activadores", () => {
   fns.instalarAgente();
   fns.desinstalarAgente();
   assert.equal(triggers.length, 0);
+});
+
+// ---------------------------------------------------------------------------
+// Estructura real del sitio (copia del 23-10-2026, edición 44.581)
+// ---------------------------------------------------------------------------
+
+const REAL = fixture("normas-generales.real-2026-10-23.html");
+
+test("real: lee las 12 Normas Generales de la edición 44.581", () => {
+  const r = fns.parseSeccion(REAL);
+  assert.equal(r.estado, "ok");
+  assert.equal(r.fecha, "23-10-2026");
+  assert.equal(r.edicion, "44581");
+  assert.equal(r.items.length, 12);
+  const primera = r.items[0];
+  assert.equal(primera.rama, "PODER EJECUTIVO");
+  assert.equal(primera.ministerio, "MINISTERIO DE DEFENSA NACIONAL");
+  assert.equal(primera.cve, "2886293");
+  assert.equal(primera.pdfUrl, "https://www.diariooficial.interior.gob.cl/publicaciones/2026/10/23/44581/01/2886293.pdf");
+  assert.match(primera.titulo, /^Resolución exenta número 4\/3\/0132\/2264, de 2026\.- Aprueba la Sexta edición/);
+  const ultima = r.items[11];
+  assert.equal(ultima.rama, "OTRAS ENTIDADES");
+  assert.equal(ultima.ministerio, "MUNICIPALIDAD DE CAUQUENES");
+  assert.equal(ultima.cve, "2888714");
+});
+
+test("real: el menú marca index.php como sección activa", () => {
+  assert.equal(fns.seccionServida(REAL), "index.php");
+});
+
+test("seccionServida: sin enlace activo → ''", () => {
+  assert.equal(fns.seccionServida(HTML.generales), "");
+  assert.equal(fns.seccionServida('<a class="active" href="javascript:void(0)">x</a>'), "");
+});
+
+test("leerSeccion: si el sitio entrega otra sección, no se usa y se informa", () => {
+  // Pedir Avisos y recibir la página de Normas Generales (lo que hace el
+  // sitio cuando faltan fecha y edición).
+  paginas["avisos_destacados.php"] = { html: REAL };
+  const r = fns.leerSeccion(sec("avisos_destacados"), "?date=23-10-2026&edition=44581");
+  assert.equal(r.estado, "error");
+  assert.equal(r.items.length, 0);
+  assert.match(r.error, /entregó otra sección \(index\.php\) en vez de avisos_destacados\.php/);
+  assert.match(r.url, /avisos_destacados\.php\?date=23-10-2026&edition=44581$/);
+});
+
+test("leerEdicion: sin fecha/edición en la principal, pide las demás sin parámetros", () => {
+  const principal = { seccion: sec("normas_generales"), fecha: "", edicion: "", estado: "error", items: [] };
+  const res = fns.leerEdicion(principal);
+  assert.equal(res.length, 4);
+  assert.equal(res[0], principal);
+  fetchLog.forEach((u) => assert.doesNotMatch(u, /\?/));
+});
+
+test("parseSeccion: letras sueltas (índice alfabético) no son organismo", () => {
+  const html = '<table><tr><td class="title4">PODER JUDICIAL</td></tr><tr><td class="title5">O</td></tr>'
+    + '<tr class="content"><td>Publicación de prueba</td><td><a href="/publicaciones/2026/10/20/99999/07/9000501.pdf">CVE-9000501</a></td></tr></table>';
+  const r = fns.parseSeccion(html);
+  assert.equal(r.items[0].ministerio, "PODER JUDICIAL");
+  assert.equal(r.items[0].organismo, "");
+});
+
+test("absolutizar: http:// del Diario Oficial pasa a https://; otros sitios no se tocan", () => {
+  assert.equal(fns.absolutizar("http://www.diariooficial.interior.gob.cl/publicaciones/2026/10/23/44581/04/2888074.pdf"),
+    "https://www.diariooficial.interior.gob.cl/publicaciones/2026/10/23/44581/04/2888074.pdf");
+  assert.equal(fns.absolutizar("http://ejemplo.cl/a.pdf"), "http://ejemplo.cl/a.pdf");
 });
 
 console.log(`\n${pass} pasaron, ${fail} fallaron`);

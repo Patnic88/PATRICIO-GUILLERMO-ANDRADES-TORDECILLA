@@ -394,14 +394,20 @@ cámbialo por términos más acotados, por ejemplo `"municipalidad de los vilos"
 
 ### Limitaciones (léelas antes de confiar en el reporte)
 
-- **Estructura del sitio sin verificar en vivo.** El parser se escribió
-  según la estructura que documenta el repositorio público
-  [`stefanoseggio/diario-oficial-cl-monitor`](https://github.com/stefanoseggio/diario-oficial-cl-monitor),
-  una fuente secundaria. Desde el entorno donde se programó no había acceso
-  al Diario Oficial. Lo único verificado es el patrón de las rutas de los PDF
-  (`/publicaciones/AAAA/MM/DD/EDICIÓN/…/CVE.pdf`). La primera ejecución con
-  acceso al sitio (la rutina de Claude con el dominio permitido, o
-  `diagnosticarDiarioOficial` en Apps Script) es la verificación real.
+- **Estructura del sitio: verificada en vivo el 23-10-2026** (edición
+  N° 44.581) desde la rutina de Claude. Se leyeron 12 Normas Generales, 9
+  Avisos destacados, 15 Normas Particulares y 3 Publicaciones Judiciales.
+  `tests/fixtures/diario-oficial/normas-generales.real-2026-10-23.html` es
+  una copia de esa página para que los tests detecten cambios futuros.
+  Lo que se aprendió en vivo, y ya está incorporado:
+  - El sitio responde 403 al User-Agent por defecto de `curl`, así que el
+    ejecutor se identifica como `AgenteDiarioOficial/1.0`.
+  - La portada redirige a `index.php?date=DD-MM-AAAA&edition=NNNNN`.
+  - Las demás secciones deben pedirse con esa misma fecha y edición; sin
+    ellas el sitio devuelve las Normas Generales. Si eso llegara a pasar, el
+    agente lo detecta por el menú activo y lo informa en vez de repetir
+    contenido.
+  - Con **Apps Script** (servidores de Google) el acceso sigue sin probarse.
 - **Posible bloqueo.** El sitio podría responder con una página de
   verificación anti-bots a servidores de Google o de Claude. En ese caso el
   agente avisa ("no se pudo leer el sitio"); no inventa contenido.

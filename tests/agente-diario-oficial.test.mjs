@@ -33,7 +33,9 @@ function paginasOk() {
   };
 }
 
+let pedidas = [];
 const server = createServer((req, res) => {
+  pedidas.push(req.url);
   const pagina = req.url.split("?")[0].split("/").pop();
   const p = paginas[pagina];
   if (!p) { res.writeHead(404); res.end("no existe"); return; }
@@ -59,6 +61,7 @@ async function cli(args, script = CLI) {
 let pass = 0, fail = 0;
 async function test(name, fn) {
   paginas = paginasOk();
+  pedidas = [];
   try { await fn(); pass++; console.log("PASS:", name); }
   catch (e) { fail++; console.error("FAIL:", name, "\n  ", e.message); }
 }
@@ -75,6 +78,12 @@ await test("CLI: edición de hoy → reporte listo para enviar", async () => {
   assert.equal(json.fechaEdicion, "20-10-2026");
   assert.equal(json.secciones.length, 4);
   assert.deepEqual(json.secciones.map((s) => s.estado), ["ok", "ok", "ok", "sin_publicaciones"]);
+  assert.deepEqual(pedidas, [
+    "/edicionelectronica/index.php",
+    "/edicionelectronica/avisos_destacados.php?date=20-10-2026&edition=99999",
+    "/edicionelectronica/normas_particulares.php?date=20-10-2026&edition=99999",
+    "/edicionelectronica/publicaciones_judiciales.php?date=20-10-2026&edition=99999"
+  ]);
   const html = readFileSync(json.archivos.html, "utf8");
   const texto = readFileSync(json.archivos.texto, "utf8");
   assert.match(html, /⭐ Destacadas por tema/);

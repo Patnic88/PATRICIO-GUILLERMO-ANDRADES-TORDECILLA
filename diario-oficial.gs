@@ -42,10 +42,10 @@
 // Configuración
 // ---------------------------------------------------------------------------
 
-// Edición electrónica. Según el repositorio público
-// stefanoseggio/diario-oficial-cl-monitor (fuente secundaria), desde
-// septiembre de 2026 estas páginas muestran la edición del día sin
-// parámetros. Confírmalo con `diagnosticarDiarioOficial`.
+// Edición electrónica (verificado en vivo el 23-10-2026, edición 44.581):
+// la portada redirige a index.php?date=DD-MM-AAAA&edition=NNNNN (Normas
+// Generales del día). Las demás secciones necesitan esa misma fecha y
+// edición en la URL; sin ellas el sitio devuelve las Normas Generales.
 var DO_ORIGEN = "https://www.diariooficial.interior.gob.cl";
 var DO_BASE_URL = DO_ORIGEN + "/edicionelectronica/";
 var DO_TZ = "America/Santiago";
@@ -131,9 +131,7 @@ function revisarDiarioOficial(ahora) {
     return "aviso";
   }
 
-  var resultados = [principal].concat(DO_SECCIONES.slice(1).map(function (sec) {
-    return leerSeccion(sec);
-  }));
+  var resultados = leerEdicion(principal);
   enviarCorreo(construirReporte(resultados, hoy));
   props.setProperty(DO_PROP_ULTIMO_ENVIO, hoy);
   return "enviado";
@@ -147,7 +145,7 @@ function revisarDiarioOficial(ahora) {
 function enviarReporteAhora() {
   if (!DIGEST_TO) throw new Error("DIGEST_TO está vacío; edita diario-oficial.gs");
   var hoy = fechaChile(new Date());
-  var resultados = DO_SECCIONES.map(function (sec) { return leerSeccion(sec); });
+  var resultados = leerEdicion(leerSeccion(DO_SECCIONES[0]));
   enviarCorreo(construirReporte(resultados, hoy));
   // Si ya es la edición de hoy, el activador no la vuelve a enviar.
   if (edicionEsDeHoy(resultados[0], hoy)) {
@@ -162,8 +160,8 @@ function enviarReporteAhora() {
  * tu cuenta de Google (no envía correos).
  */
 function diagnosticarDiarioOficial() {
-  return DO_SECCIONES.map(function (sec) {
-    var r = leerSeccion(sec);
+  return leerEdicion(leerSeccion(DO_SECCIONES[0])).map(function (r) {
+    var sec = r.seccion;
     var lineas = [
       "== " + sec.nombre + " (" + r.url + ")",
       "HTTP " + r.http + " · " + r.largo + " caracteres · estado: " + r.estado
@@ -212,8 +210,22 @@ function desinstalarAgente() {
 // Lectura del sitio
 // ---------------------------------------------------------------------------
 
-function leerSeccion(sec) {
-  var url = DO_BASE_URL + sec.pagina;
+/**
+ * Lee las secciones restantes de la misma edición que `principal`
+ * (Normas Generales), pidiendo cada una con su fecha y número de edición.
+ * Devuelve [principal, ...demás secciones].
+ */
+function leerEdicion(principal) {
+  var consulta = principal.fecha && principal.edicion
+    ? "?date=" + principal.fecha + "&edition=" + principal.edicion
+    : "";
+  return [principal].concat(DO_SECCIONES.slice(1).map(function (sec) {
+    return leerSeccion(sec, consulta);
+  }));
+}
+
+function leerSeccion(sec, consulta) {
+  var url = DO_BASE_URL + sec.pagina + (consulta || "");
   var resp = fetchSeccion(url);
   var r = {
     seccion: sec, url: url, http: resp.http, error: resp.error,
@@ -221,6 +233,14 @@ function leerSeccion(sec) {
     largo: resp.html.length, muestra: resp.html.slice(0, 1500)
   };
   if (resp.error) return r;
+
+  // El menú marca con class="active" la sección que el sitio entregó. Si es
+  // otra (p. ej. redirigió a Normas Generales), no se usa: se informa.
+  var servida = seccionServida(resp.html);
+  if (servida && servida !== sec.pagina) {
+    r.error = "el sitio entregó otra sección (" + servida + ") en vez de " + sec.pagina;
+    return r;
+  }
 
   var p = parseSeccion(resp.html);
   r.estado = p.estado;
@@ -304,7 +324,8 @@ function parseSeccion(html) {
       res.encabezados++;
       if (titulo[1] === "3") { rama = texto; ministerio = ""; organismo = ""; }
       else if (titulo[1] === "4") { ministerio = texto; organismo = ""; }
-      else { organismo = texto; }
+      // Publicaciones Judiciales usa letras sueltas como índice alfabético.
+      else { organismo = texto.length > 1 ? texto : ""; }
       return;
     }
 
@@ -366,6 +387,17 @@ function parseSeccion(html) {
   return res;
 }
 
+/**
+ * Página de sección que el menú del sitio marca como activa
+ * (p. ej. "avisos_destacados.php"), o "" si no la encuentra.
+ */
+function seccionServida(html) {
+  var m = String(html || "").match(
+    /<a\b(?=[^>]*\bclass\s*=\s*["']active["'])[^>]*\bhref\s*=\s*["']([a-z_]+\.php)/i
+  );
+  return m ? m[1].toLowerCase() : "";
+}
+
 function nuevaPublicacion(titulo, rama, ministerio, organismo, enlace) {
   return {
     titulo: titulo, rama: rama, ministerio: ministerio, organismo: organismo,
@@ -385,6 +417,8 @@ function extraerEnlace(fragmento) {
 
 function absolutizar(href) {
   if (!href) return "";
+  // Algunos enlaces del sitio (p. ej. Avisos) vienen con http://.
+  if (/^http:\/\/(www\.)?diariooficial\.interior\.gob\.cl\//i.test(href)) return href.replace(/^http:/i, "https:");
   if (/^https?:\/\//i.test(href)) return href;
   if (/^\/\//.test(href)) return "https:" + href;
   if (href.charAt(0) === "/") return DO_ORIGEN + href;
