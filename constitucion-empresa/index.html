@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constituye tu empresa en línea</title>
+  <meta name="description" content="Constituye tu SpA, E.I.R.L. o Limitada en línea en el Registro de Empresas y Sociedades, con asesoría en cada paso." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <div class="franja-config" id="franjaConfig" role="status" hidden></div>
+
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <a href="#inicio" class="marca" data-marca></a>
+      <nav class="nav" aria-label="Secciones">
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#tipos">Tipos de empresa</a>
+        <a href="#precios">Precios</a>
+        <a href="#preguntas">Preguntas</a>
+      </nav>
+      <a href="#constituir" class="btn btn-primario btn-chico">Constituir mi empresa</a>
+    </div>
+  </header>
+
+  <main id="contenido" tabindex="-1">
+
+    <!-- INICIO ============================================================ -->
+    <section class="vista" id="v-inicio">
+      <div class="heroe">
+        <div class="heroe-in">
+          <p class="antetitulo">SpA · E.I.R.L. · Limitada</p>
+          <h1>Constituye tu empresa en línea, sin salir de casa</h1>
+          <p class="bajada">Completas un formulario guiado en unos minutos. Nosotros revisamos los datos,
+            redactamos el estatuto y lo ingresamos al Registro de Empresas y Sociedades. Tú y tus socios solo firman.</p>
+          <div class="heroe-acciones">
+            <a href="#constituir" class="btn btn-primario">Empezar ahora</a>
+            <a href="#como-funciona" class="btn btn-secundario">Ver el proceso</a>
+          </div>
+          <p class="nota-borrador" id="notaBorrador" hidden>Tienes una solicitud a medio llenar.
+            <a href="#constituir">Continuar donde la dejaste</a></p>
+        </div>
+      </div>
+
+      <section class="bloque" id="como-funciona" aria-labelledby="t-proceso">
+        <h2 id="t-proceso">Cómo funciona</h2>
+        <ol class="proceso">
+          <li>
+            <span class="num" aria-hidden="true">1</span>
+            <h3>Completa el formulario</h3>
+            <p>Eliges el tipo de empresa e ingresas los datos de los socios, el nombre, a qué se dedicará y quién la administrará.</p>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">2</span>
+            <h3>Revisamos y preparamos</h3>
+            <p>Revisamos el nombre y el objeto, redactamos el estatuto y llenamos el formulario en el Registro de Empresas y Sociedades.</p>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">3</span>
+            <h3>Cada socio firma</h3>
+            <p>Con Firma Electrónica Avanzada, en línea, o ante notario con el número de atención que entrega el Registro.</p>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">4</span>
+            <h3>Recibes el RUT</h3>
+            <p>Cuando todos firman, el Servicio de Impuestos Internos asigna el RUT de la empresa.</p>
+          </li>
+          <li>
+            <span class="num" aria-hidden="true">5</span>
+            <h3>Empiezas a operar</h3>
+            <p>Falta el aviso de inicio de actividades ante el SII, que es un trámite aparte. Podemos hacerlo por ti.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="bloque" id="tipos" aria-labelledby="t-tipos">
+        <h2 id="t-tipos">¿Qué tipo de empresa necesitas?</h2>
+        <div class="tarjetas-tipo" id="tarjetasTipo"></div>
+
+        <div class="orientador" aria-labelledby="t-orientador">
+          <h3 id="t-orientador">¿No sabes cuál elegir?</h3>
+          <div class="orientador-campos">
+            <label>¿Cuántas personas formarán la empresa?
+              <input type="number" id="oCantidad" min="1" max="999" inputmode="numeric" placeholder="Ej.: 2" />
+            </label>
+            <label class="check">
+              <input type="checkbox" id="oJuridica" />
+              Alguna de ellas es una empresa (persona jurídica)
+            </label>
+          </div>
+          <p class="orientador-res" id="oResultado" aria-live="polite">Responde y te mostramos qué tipos son posibles.</p>
+        </div>
+      </section>
+
+      <section class="bloque" id="requisitos" aria-labelledby="t-req">
+        <h2 id="t-req">Qué necesitas tener a mano</h2>
+        <ul class="requisitos">
+          <li><b>RUT y datos personales</b> de cada socio: nombre completo, nacionalidad, estado civil, profesión y domicilio.</li>
+          <li><b>Correo y teléfono</b> de cada socio, para coordinar la firma.</li>
+          <li><b>Cuánto aporta cada socio</b> al capital, en pesos.</li>
+          <li><b>A qué se dedicará la empresa</b> y en qué comuna tendrá su domicilio.</li>
+          <li><b>Una forma de firmar:</b> Firma Electrónica Avanzada, o ir a una notaría. Para comprar la firma en línea se necesita ClaveÚnica.</li>
+        </ul>
+      </section>
+
+      <section class="bloque" id="precios" aria-labelledby="t-precios">
+        <h2 id="t-precios">Precios</h2>
+        <p class="aclaracion">Constituir en el Registro de Empresas y Sociedades no tiene costo. Nuestro precio corresponde a la asesoría y la gestión.
+          El valor de la Firma Electrónica Avanzada o de la notaría lo paga cada socio a quien la emite.</p>
+        <div class="planes" id="planes"></div>
+        <h3 class="sub">Incluye</h3>
+        <ul class="incluye" id="incluye"></ul>
+      </section>
+
+      <section class="bloque" id="preguntas" aria-labelledby="t-faq">
+        <h2 id="t-faq">Preguntas frecuentes</h2>
+        <div class="faq">
+          <details>
+            <summary>¿Qué es el Registro de Empresas y Sociedades?</summary>
+            <p>Es el registro electrónico creado por la Ley N° 20.659, conocido como «Tu Empresa en un Día». Permite constituir empresas por internet.
+              Se ingresa únicamente con ClaveÚnica.</p>
+          </details>
+          <details>
+            <summary>¿Cuánto cuesta el trámite oficial?</summary>
+            <p>Constituir en el Registro no tiene costo. Los socios que no tienen Firma Electrónica Avanzada pagan el valor de la firma que usen:
+              la firma en línea o la notaría. Nuestro precio es por la asesoría y la gestión.</p>
+          </details>
+          <details>
+            <summary>¿Cómo firman los socios?</summary>
+            <p>Hay dos caminos. Con Firma Electrónica Avanzada, en formato token o en línea; la firma en línea se puede comprar en la misma plataforma
+              si el socio tiene ClaveÚnica. O ante notario: el socio firma con el número de atención que asigna el Registro y el notario firma
+              electrónicamente el formulario.</p>
+          </details>
+          <details>
+            <summary>¿Cuánto tiempo tienen los socios para firmar?</summary>
+            <p>Todos deben firmar dentro de un plazo contado desde la primera firma: <span data-plazo-firma></span>.</p>
+          </details>
+          <details>
+            <summary>¿Cuándo tengo el RUT de la empresa?</summary>
+            <p>Cuando todos los socios han firmado el formulario, el Servicio de Impuestos Internos asigna el RUT.</p>
+          </details>
+          <details>
+            <summary>¿Con eso ya puedo emitir facturas?</summary>
+            <p>No. Después de constituir la empresa hay que dar aviso de inicio de actividades ante el SII, y luego habilitar la facturación electrónica.
+              Puedes agregar ambos servicios en el formulario.</p>
+          </details>
+          <details>
+            <summary>¿Qué pasa con mis datos?</summary>
+            <p>Mientras llenas el formulario, los datos se guardan solo en este navegador. Nos llegan únicamente cuando decides enviarlos,
+              y los usamos solo para preparar la constitución. Puedes borrarlos cuando quieras desde el formulario.</p>
+          </details>
+        </div>
+        <p class="fuentes">Fuentes oficiales:
+          <a href="https://www.chileatiende.gob.cl/fichas/21409-tu-empresa-en-un-dia" target="_blank" rel="noopener">ChileAtiende – Tu Empresa en un Día</a> ·
+          <a href="https://www.registrodeempresasysociedades.cl/FAQ.aspx?seccion=9" target="_blank" rel="noopener">Registro de Empresas y Sociedades – Preguntas frecuentes</a> ·
+          <a href="https://www.bcn.cl/portal/leyfacil/recurso/procedimiento-simple-para-crear-empresas" target="_blank" rel="noopener">BCN Ley Fácil – Procedimiento simple para crear empresas</a>
+        </p>
+      </section>
+    </section>
+
+    <!-- ASISTENTE ========================================================= -->
+    <section class="vista" id="v-constituir" hidden aria-labelledby="t-asistente">
+      <div class="asistente">
+        <div class="asistente-cab">
+          <h1 id="t-asistente">Constituir mi empresa</h1>
+          <p class="privacidad">🔒 Tus datos se guardan solo en este navegador hasta que los envíes.</p>
+        </div>
+
+        <ol class="pasos" id="pasos" aria-label="Avance"></ol>
+
+        <div class="errores" id="errores" role="alert" tabindex="-1" hidden></div>
+
+        <form id="formulario" novalidate autocomplete="on">
+          <div id="paso"></div>
+        </form>
+
+        <div class="nav-pasos">
+          <button type="button" class="btn btn-secundario" id="btnAtras">← Atrás</button>
+          <button type="button" class="btn btn-primario" id="btnSiguiente">Siguiente →</button>
+        </div>
+
+        <p class="borrar"><button type="button" class="enlace" id="btnBorrar">Borrar mis datos y empezar de nuevo</button></p>
+      </div>
+    </section>
+
+    <!-- ENVIADO =========================================================== -->
+    <section class="vista" id="v-enviado" hidden aria-labelledby="t-enviado">
+      <div class="asistente">
+        <h1 id="t-enviado">¡Listo! Tu solicitud está preparada</h1>
+        <p>Si la enviaste por WhatsApp o correo, te contactaremos para revisar los datos y coordinar la firma.
+          Guarda una copia por si necesitas corregir algo.</p>
+        <div class="acciones-envio" id="accionesFinal"></div>
+        <p><a href="#inicio">Volver al inicio</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="pie-in">
+      <p><b data-marca></b> · <span data-prestador></span></p>
+      <p data-contacto></p>
+      <p class="pie-aviso">Este sitio no es el Registro de Empresas y Sociedades ni un servicio del Estado. El trámite oficial se realiza en
+        <a href="https://www.registrodeempresasysociedades.cl" target="_blank" rel="noopener">registrodeempresasysociedades.cl</a>.</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="logica.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

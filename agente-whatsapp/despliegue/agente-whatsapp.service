@@ -1,0 +1,25 @@
+# Alternativa sin Docker (servidor Linux con systemd). Requiere Node.js 22.13+
+# y un proxy HTTPS delante (Caddy o Nginx) que reenvíe a 127.0.0.1:3000.
+# Instalar: sudo cp despliegue/agente-whatsapp.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now agente-whatsapp
+[Unit]
+Description=Agente de WhatsApp - A & A juridico y contable
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=agente
+Group=agente
+WorkingDirectory=/opt/agente-whatsapp
+EnvironmentFile=/opt/agente-whatsapp/.env
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning src/servidor.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/agente-whatsapp/data
+
+[Install]
+WantedBy=multi-user.target
