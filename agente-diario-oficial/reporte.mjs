@@ -9,6 +9,11 @@
 // Uso:
 //   node reporte.mjs --salida <dir> [--fecha DD-MM-AAAA] [--reintentos 2]
 //                    [--espera-seg 240] [--base-url <url>]
+//   node reporte.mjs --salida <dir> --dias-anteriores 2   (envío cada dos días)
+//
+// Sin --dias-anteriores: reporte de la edición de hoy. Con --dias-anteriores N:
+// reporte de los N días anteriores completos, con todas sus ediciones
+// (1ª, 2ª…), para que un envío cada N días no deje ediciones fuera.
 //
 // Escribe en <dir>: reporte.html, reporte.txt y resultado.json. El mismo
 // JSON se imprime por stdout. Código de salida 0 = hay correo listo para
@@ -104,6 +109,7 @@ export function cargarAgente() {
     "Utilities", "UrlFetchApp", "Logger", "MailApp", "PropertiesService", "ScriptApp",
     codigo +
     "\nreturn { leerSeccion: leerSeccion, leerEdicion: leerEdicion, construirReporte: construirReporte," +
+    " leerDia: leerDia, diasAnteriores: diasAnteriores, construirReportePeriodo: construirReportePeriodo," +
     " construirAviso: construirAviso, edicionEsDeHoy: edicionEsDeHoy, fechaChile: fechaChile," +
     " secciones: function () { return DO_SECCIONES; }," +
     " destinatarios: function () { return { para: DIGEST_TO, cc: DIGEST_CC }; }," +
@@ -125,10 +131,11 @@ const esBloqueo = (r) => /bloqueado por la red del entorno/.test(r.error || "");
  * Lee el Diario Oficial y deja el correo listo en `salida`.
  * Devuelve el resumen que también se guarda en resultado.json.
  */
-export async function generar({ salida, fecha, reintentos = 2, esperaSeg = 240, baseUrl } = {}) {
+export async function generar({ salida, fecha, reintentos = 2, esperaSeg = 240, baseUrl, diasAnteriores = 0 } = {}) {
   const agente = cargarAgente();
   agente.configurar({ baseUrl, firma: FIRMA, ayudaFalla: AYUDA_FALLA });
   const hoy = fecha || agente.fechaChile(new Date());
+  if (diasAnteriores > 0) return generarPeriodo(agente, { salida, hoy, diasAnteriores });
   const [principalSec] = agente.secciones();
 
   // Si la edición de hoy aún no aparece, se espera y se reintenta (salvo que
@@ -151,25 +158,51 @@ export async function generar({ salida, fecha, reintentos = 2, esperaSeg = 240, 
     accion = "aviso";
   }
 
+  return guardar(agente, salida, msg, {
+    accion,
+    hoy,
+    fechaEdicion: principal.fecha || "",
+    edicion: principal.edicion || "",
+    secciones: leidas.map(resumenSeccion)
+  });
+}
+
+/**
+ * Reporte de los `diasAnteriores` días completos previos a `hoy`, con todas
+ * sus ediciones. Si no se pudo leer ningún día, prepara el aviso.
+ */
+function generarPeriodo(agente, { salida, hoy, diasAnteriores }) {
+  const dias = agente.diasAnteriores(hoy, diasAnteriores).map((f) => agente.leerDia(f));
+  const ninguno = dias.every((d) => d.error);
+  const msg = ninguno
+    ? agente.construirAviso({ estado: "error", error: dias[0].error, http: dias[0].http }, hoy)
+    : agente.construirReportePeriodo(dias);
+  return guardar(agente, salida, msg, {
+    accion: ninguno ? "aviso" : "reporte",
+    modo: "periodo",
+    hoy,
+    dias: dias.map((d) => ({
+      fecha: d.fecha,
+      http: d.http,
+      error: d.error || "",
+      ediciones: d.ediciones.map((e) => ({ edicion: e.edicion, secciones: e.resultados.map(resumenSeccion) }))
+    }))
+  });
+}
+
+const resumenSeccion = (r) => ({
+  id: r.seccion.id, estado: r.estado, http: r.http, error: r.error || "", publicaciones: r.items.length
+});
+
+/** Escribe reporte.html/.txt y resultado.json; devuelve el resumen. */
+function guardar(agente, salida, msg, datos) {
   mkdirSync(salida, { recursive: true });
   const archivos = { html: join(salida, "reporte.html"), texto: join(salida, "reporte.txt") };
   writeFileSync(archivos.html, msg.html);
   writeFileSync(archivos.texto, msg.plain);
-
   const { para, cc } = agente.destinatarios();
-  const resumen = {
-    accion,
-    asunto: msg.subject,
-    para: lista(para),
-    cc: lista(cc),
-    hoy,
-    fechaEdicion: principal.fecha || "",
-    edicion: principal.edicion || "",
-    archivos,
-    secciones: leidas.map((r) => ({
-      id: r.seccion.id, estado: r.estado, http: r.http, error: r.error || "", publicaciones: r.items.length
-    }))
-  };
+  const { accion, ...resto } = datos;
+  const resumen = { accion, asunto: msg.subject, para: lista(para), cc: lista(cc), ...resto, archivos };
   writeFileSync(join(salida, "resultado.json"), JSON.stringify(resumen, null, 2));
   return resumen;
 }
@@ -186,6 +219,7 @@ function leerArgs(argv) {
     else if (clave === "reintentos") o.reintentos = parseInt(valor, 10);
     else if (clave === "espera-seg") o.esperaSeg = parseInt(valor, 10);
     else if (clave === "base-url") o.baseUrl = valor;
+    else if (clave === "dias-anteriores") o.diasAnteriores = parseInt(valor, 10);
     else throw new Error("Opción desconocida: --" + clave);
   }
   if (!o.salida) o.salida = mkdtempSync(join(tmpdir(), "reporte-diario-oficial-"));

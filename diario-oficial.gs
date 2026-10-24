@@ -224,6 +224,65 @@ function leerEdicion(principal) {
   }));
 }
 
+/**
+ * Lee todas las ediciones publicadas en `fecha` (DD-MM-AAAA): la 1ª y las
+ * adicionales (44580-B, 44580-C…), según la página select_edition.php.
+ * Devuelve { fecha, url, http, error, ediciones: [{ fecha, edicion, resultados }] }.
+ */
+function leerDia(fecha) {
+  var url = DO_BASE_URL + "select_edition.php?date=" + fecha;
+  var resp = fetchSeccion(url);
+  var dia = { fecha: fecha, url: url, http: resp.http, error: resp.error, ediciones: [] };
+  if (resp.error) return dia;
+
+  var lista = parseEdiciones(resp.html, fecha);
+  // Sin ediciones, la página igual muestra la fecha ("Domingo 18 de Octubre
+  // de 2026"); si no la muestra, no es la página esperada.
+  if (!lista.length && extraerFechaTexto(limpiarTexto(resp.html)) !== fecha) {
+    dia.error = "página de ediciones no reconocida";
+    return dia;
+  }
+  dia.ediciones = lista.map(function (e) {
+    var consulta = "?date=" + fecha + "&edition=" + e.edicion + (e.v ? "&v=" + e.v : "");
+    var resultados = DO_SECCIONES.map(function (sec) { return leerSeccion(sec, consulta); });
+    var principal = resultados[0];
+    if (principal.fecha && principal.fecha !== fecha) {
+      principal.error = "la página entregada es del " + principal.fecha + ", no del " + fecha;
+      principal.estado = "error";
+      principal.items = [];
+    }
+    return { fecha: fecha, edicion: e.edicion, resultados: resultados };
+  });
+  return dia;
+}
+
+/** Ediciones de `fecha` enlazadas en select_edition.php: [{ edicion, v }]. */
+function parseEdiciones(html, fecha) {
+  var out = [], vistas = {}, m;
+  var re = /index\.php\?date=(\d{2}-\d{2}-\d{4})&(?:amp;)?edition=(\d+(?:-[A-Z])?)(?:&(?:amp;)?v=(\d+))?/gi;
+  while ((m = re.exec(String(html || "")))) {
+    if (m[1] !== fecha || vistas[m[2]]) continue;
+    vistas[m[2]] = true;
+    out.push({ edicion: m[2], v: m[3] || "" });
+  }
+  return out;
+}
+
+/** "01-03-2026", 1 → "28-02-2026". */
+function restarDias(fecha, n) {
+  var p = String(fecha).split("-");
+  var d = new Date(Date.UTC(+p[2], +p[1] - 1, +p[0] - n));
+  return ("0" + d.getUTCDate()).slice(-2) + "-" + ("0" + (d.getUTCMonth() + 1)).slice(-2)
+    + "-" + d.getUTCFullYear();
+}
+
+/** Los `n` días anteriores a `hoy`, del más antiguo al más reciente. */
+function diasAnteriores(hoy, n) {
+  var out = [];
+  for (var i = n; i >= 1; i--) out.push(restarDias(hoy, i));
+  return out;
+}
+
 function leerSeccion(sec, consulta) {
   var url = DO_BASE_URL + sec.pagina + (consulta || "");
   var resp = fetchSeccion(url);
@@ -294,7 +353,8 @@ function leerTexto(resp) {
 // ---------------------------------------------------------------------------
 
 // Rutas de los PDF: /publicaciones/AAAA/MM/DD/EDICION/SECCION/CVE.pdf
-var DO_RE_PDF = /\/publicaciones\/(\d{4})\/(\d{2})\/(\d{2})\/(\d+)\/\d+\/(\d+)\.pdf/i;
+// La edición puede llevar sufijo de letra (2ª edición del día: 44580-B).
+var DO_RE_PDF = /\/publicaciones\/(\d{4})\/(\d{2})\/(\d{2})\/(\d+(?:-[A-Z])?)\/\d+\/(\d+)\.pdf/i;
 
 /**
  * Lee la tabla de una sección de la edición electrónica.
@@ -562,8 +622,10 @@ function enlacePdfPlano(it) {
   return it.pdfUrl ? (it.cve ? "CVE-" + it.cve + " " : "") + it.pdfUrl : "(sin enlace al PDF)";
 }
 
+var DO_HTML_INICIO = '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1f2933;max-width:680px;">';
+
 /**
- * Arma el reporte a partir de los resultados de leerSeccion.
+ * Arma el reporte de una edición a partir de los resultados de leerSeccion.
  * Pura: no toca la red, el correo ni el reloj. Devuelve { subject, plain, html }.
  */
 function construirReporte(resultados, hoy) {
@@ -572,31 +634,11 @@ function construirReporte(resultados, hoy) {
   var edicion = "";
   resultados.forEach(function (r) { if (!edicion && r.edicion) edicion = r.edicion; });
 
-  // Coincidencias por publicación y agrupación de destacadas por tema.
-  var porTema = {}, nDestacadas = 0;
-  Object.keys(DO_TEMAS).forEach(function (t) { porTema[t] = []; });
-  resultados.forEach(function (r) {
-    r.items.forEach(function (it) {
-      it.temas = coincidencias(it);
-      if (!it.temas.length) return;
-      nDestacadas++;
-      porTema[it.temas[0].tema].push({ item: it, seccion: r.seccion.nombre });
-    });
-  });
-
-  var nGenerales = principal.estado === "ok" ? principal.items.length : 0;
-  var subject = "📰 Diario Oficial " + fechaEd
-    + (edicion ? " · Ed. N° " + formatoEdicion(edicion) : "")
-    + " — " + nDestacadas + (nDestacadas === 1 ? " destacada" : " destacadas")
-    + (principal.estado === "ok" || principal.estado === "sin_publicaciones"
-      ? " · " + nGenerales + (nGenerales === 1 ? " norma general" : " normas generales")
-      : " · Normas Generales no disponibles");
-
   var P = []; // texto plano
   var H = []; // HTML
   P.push("Diario Oficial — edición del " + fechaEd + (edicion ? " (N° " + formatoEdicion(edicion) + ")" : ""));
   P.push("Edición electrónica: " + DO_BASE_URL, "");
-  H.push('<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1f2933;max-width:680px;">');
+  H.push(DO_HTML_INICIO);
   H.push('<h2 style="margin:0 0 6px;color:#1b5e9b;">📰 Diario Oficial · ' + escapeHtml(fechaEd) + '</h2>');
   H.push('<p style="color:#69707d;margin:0 0 16px;">'
     + (edicion ? 'Edición N° ' + escapeHtml(formatoEdicion(edicion)) + ' · ' : '')
@@ -608,7 +650,106 @@ function construirReporte(resultados, hoy) {
     H.push('<p style="background:#fdecea;color:#8a1c12;padding:8px 12px;border-radius:6px;">⚠️ ' + escapeHtml(avisoFecha) + '</p>');
   }
 
-  // --- Destacadas por tema -------------------------------------------------
+  var nDestacadas = agregarDestacadas(P, H, resultados);
+  agregarSecciones(P, H, resultados, fechaEd);
+  agregarPie(P, H);
+
+  var nGenerales = principal.estado === "ok" ? principal.items.length : 0;
+  var subject = "📰 Diario Oficial " + fechaEd
+    + (edicion ? " · Ed. N° " + formatoEdicion(edicion) : "")
+    + " — " + nDestacadas + (nDestacadas === 1 ? " destacada" : " destacadas")
+    + (principal.estado === "ok" || principal.estado === "sin_publicaciones"
+      ? " · " + nGenerales + (nGenerales === 1 ? " norma general" : " normas generales")
+      : " · Normas Generales no disponibles");
+
+  return { subject: subject, plain: P.join("\n"), html: H.join("") };
+}
+
+/**
+ * Reporte de un período con todas sus ediciones (para el envío cada dos
+ * días). `dias`: resultados de leerDia, del más antiguo al más reciente.
+ * Pura. Devuelve { subject, plain, html, ediciones, destacadas, generales }.
+ */
+function construirReportePeriodo(dias) {
+  var desde = dias.length ? dias[0].fecha : "";
+  var hasta = dias.length ? dias[dias.length - 1].fecha : "";
+  var rango = desde === hasta ? desde : desde + " al " + hasta;
+
+  var ediciones = [], todos = [], nGenerales = 0;
+  dias.forEach(function (d) {
+    d.ediciones.forEach(function (e) {
+      var etiqueta = e.fecha + " · Ed. N° " + formatoEdicion(e.edicion);
+      e.resultados.forEach(function (r) { r.etiqueta = etiqueta; todos.push(r); });
+      if (e.resultados[0] && e.resultados[0].estado === "ok") nGenerales += e.resultados[0].items.length;
+      ediciones.push(e);
+    });
+  });
+  var lista = ediciones.map(function (e) {
+    return "N° " + formatoEdicion(e.edicion) + " (" + e.fecha + ")";
+  }).join(" · ");
+
+  var P = [], H = [];
+  P.push("Diario Oficial — del " + rango);
+  P.push(ediciones.length ? "Ediciones: " + lista : "Sin ediciones en el período.");
+  P.push("Edición electrónica: " + DO_BASE_URL, "");
+  H.push(DO_HTML_INICIO);
+  H.push('<h2 style="margin:0 0 6px;color:#1b5e9b;">📰 Diario Oficial · ' + escapeHtml(rango) + '</h2>');
+  H.push('<p style="color:#69707d;margin:0 0 16px;">'
+    + escapeHtml(ediciones.length ? "Ediciones: " + lista : "Sin ediciones en el período.") + ' · '
+    + '<a href="' + escapeHtml(DO_BASE_URL) + '" style="color:#1b5e9b;">Ver edición electrónica</a></p>');
+
+  // Días sin ediciones o que no se pudieron leer: siempre a la vista.
+  var notas = 0;
+  dias.forEach(function (d) {
+    if (d.error || !d.ediciones.length) notas++;
+    if (d.error) {
+      var fallo = "No se pudieron leer las ediciones del " + d.fecha + ": " + d.error
+        + (d.http && !/^HTTP /.test(d.error) ? " (HTTP " + d.http + ")" : "") + ".";
+      P.push("⚠️ " + fallo + " Revísalas en " + d.url);
+      H.push('<p style="background:#fdecea;color:#8a1c12;padding:8px 12px;border-radius:6px;">⚠️ '
+        + escapeHtml(fallo) + ' <a href="' + escapeHtml(d.url) + '" style="color:#8a1c12;">Revisar en el sitio</a></p>');
+    } else if (!d.ediciones.length) {
+      P.push(d.fecha + ": sin ediciones publicadas.");
+      H.push('<p style="color:#69707d;margin:0 0 8px;">' + escapeHtml(d.fecha) + ': sin ediciones publicadas.</p>');
+    }
+  });
+  if (notas) P.push("");
+
+  var nDestacadas = agregarDestacadas(P, H, todos);
+  ediciones.forEach(function (e) {
+    var titulo = "Edición N° " + formatoEdicion(e.edicion) + " · " + e.fecha;
+    P.push("", "########## " + titulo.toUpperCase() + " ##########");
+    H.push('<h2 style="margin:30px 0 4px;padding-top:10px;border-top:2px solid #1b5e9b;color:#1b5e9b;font-size:18px;">'
+      + escapeHtml(titulo) + '</h2>');
+    agregarSecciones(P, H, e.resultados, e.fecha);
+  });
+  agregarPie(P, H);
+
+  var subject = "📰 Diario Oficial " + rango + " · "
+    + ediciones.length + (ediciones.length === 1 ? " edición" : " ediciones")
+    + (ediciones.length
+      ? " — " + nDestacadas + (nDestacadas === 1 ? " destacada" : " destacadas")
+        + " · " + nGenerales + (nGenerales === 1 ? " norma general" : " normas generales")
+      : "");
+  return {
+    subject: subject, plain: P.join("\n"), html: H.join(""),
+    ediciones: ediciones.length, destacadas: nDestacadas, generales: nGenerales
+  };
+}
+
+/** Agrega "Destacadas por tema" a P/H. Devuelve cuántas publicaciones destaca. */
+function agregarDestacadas(P, H, resultados) {
+  var porTema = {}, nDestacadas = 0;
+  Object.keys(DO_TEMAS).forEach(function (t) { porTema[t] = []; });
+  resultados.forEach(function (r) {
+    r.items.forEach(function (it) {
+      it.temas = coincidencias(it);
+      if (!it.temas.length) return;
+      nDestacadas++;
+      porTema[it.temas[0].tema].push({ item: it, seccion: r.seccion.nombre, etiqueta: r.etiqueta || "" });
+    });
+  });
+
   P.push("=== DESTACADAS POR TEMA (" + nDestacadas + ") ===");
   H.push('<h3 style="margin:18px 0 8px;color:#14497a;border-bottom:1px solid #e3e8ef;padding-bottom:4px;">⭐ Destacadas por tema <span style="color:#69707d;font-weight:400;">(' + nDestacadas + ')</span></h3>');
   if (!nDestacadas) {
@@ -622,7 +763,7 @@ function construirReporte(resultados, hoy) {
     H.push('<h4 style="margin:14px 0 6px;color:#1f2933;">' + escapeHtml(tema) + ' <span style="color:#69707d;font-weight:400;">(' + lista.length + ')</span></h4>');
     lista.slice(0, DO_MAX_DESTACADAS_TEMA).forEach(function (d) {
       var it = d.item;
-      var meta = [d.seccion, it.ministerio, it.organismo].filter(Boolean).join(" · ");
+      var meta = [d.etiqueta, d.seccion, it.ministerio, it.organismo].filter(Boolean).join(" · ");
       var porque = it.temas.map(function (t) { return t.tema + ": \"" + t.palabra + "\""; }).join("; ");
       P.push("• " + it.titulo, "  " + meta, "  Coincide con " + porque, "  " + enlacePdfPlano(it), "");
       H.push('<div style="margin:0 0 10px;padding:8px 12px;background:#f4f6f9;border-left:3px solid #7b5bbf;border-radius:6px;">'
@@ -638,11 +779,15 @@ function construirReporte(resultados, hoy) {
       H.push('<p style="font-size:12px;color:#69707d;">' + escapeHtml(masD) + '</p>');
     }
   });
+  return nDestacadas;
+}
 
-  // --- Secciones -----------------------------------------------------------
+/** Agrega a P/H cada sección de una edición (completa o filtrada por temas). */
+function agregarSecciones(P, H, resultados, fechaEd) {
+  var principal = resultados[0];
   resultados.forEach(function (r) {
     var sec = r.seccion;
-    var linkSec = DO_BASE_URL + sec.pagina;
+    var linkSec = r.url || DO_BASE_URL + sec.pagina;
     var mostrar = sec.modo === "filtrada"
       ? r.items.filter(function (it) { return it.temas.length; })
       : r.items;
@@ -699,7 +844,10 @@ function construirReporte(resultados, hoy) {
     }
     P.push("");
   });
+}
 
+/** Pie con la fuente y el aviso de verificación; cierra el HTML. */
+function agregarPie(P, H) {
   var pie = "Fuente primaria: Diario Oficial de la República de Chile, edición electrónica. "
     + "Los títulos se transcriben literalmente; las destacadas se detectan por palabra clave de forma "
     + "automática y no constituyen análisis jurídico. Antes de citar, verifica el texto íntegro en el PDF (CVE).";
@@ -707,8 +855,6 @@ function construirReporte(resultados, hoy) {
   H.push('<p style="margin:24px 0 0;font-size:11px;color:#a0a8b3;">' + escapeHtml(pie)
     + '<br>' + escapeHtml(DO_FIRMA) + '</p>');
   H.push('</div>');
-
-  return { subject: subject, plain: P.join("\n"), html: H.join("") };
 }
 
 /**

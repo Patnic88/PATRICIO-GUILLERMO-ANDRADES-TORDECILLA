@@ -17,12 +17,21 @@ produce**. No resumas, no completes y no interpretes.
 
 ## Pasos
 
-1. Ejecuta el programa con un timeout de 600000 ms. Si la edición de hoy todavía no
-   aparece, el programa espera y reintenta, hasta unos 8 minutos:
+1. Ejecuta el programa con un timeout de 600000 ms. Hay dos modos:
 
-   ```bash
-   node <directorio de este skill>/reporte.mjs --salida <carpeta temporal>
-   ```
+   - **Período** (lo usa la rutina cada dos días): los N días anteriores completos,
+     con **todas** las ediciones de cada día (1ª, 2ª…):
+
+     ```bash
+     node <directorio de este skill>/reporte.mjs --salida <carpeta temporal> --dias-anteriores 2
+     ```
+
+   - **Edición de hoy** (cuando el usuario pide "lo de hoy"). Si la edición todavía no
+     aparece, el programa espera y reintenta, hasta unos 8 minutos:
+
+     ```bash
+     node <directorio de este skill>/reporte.mjs --salida <carpeta temporal>
+     ```
 
    En el repositorio `Patnic88/PATRICIO-GUILLERMO-ANDRADES-TORDECILLA` el programa
    está en `agente-diario-oficial/reporte.mjs`.
@@ -31,15 +40,17 @@ produce**. No resumas, no completes y no interpretes.
    - `accion`: `"reporte"` o `"aviso"`;
    - `asunto`, `para` y `cc`;
    - `archivos.html` y `archivos.texto`;
-   - `secciones`: estado de cada sección.
+   - `secciones` (edición de hoy) o `dias` (período): estado de lo leído.
 
-3. Lee **completos** `archivos.html` y `archivos.texto`. Envía **un solo** correo con
-   la herramienta de Gmail `send_message`:
+3. Lee **completo** `archivos.html`. Envía **un solo** correo con la herramienta de
+   Gmail `send_message`:
    - `to`: `para`;
    - `cc`: `cc`;
    - `subject`: `asunto`, tal cual;
-   - `htmlBody`: el contenido exacto de `archivos.html`;
-   - `body`: el contenido exacto de `archivos.texto`.
+   - `htmlBody`: el contenido exacto de `archivos.html`.
+
+   No envíes `body`: `archivos.texto` es la misma información en texto plano y queda
+   solo como respaldo (así no se transcribe dos veces un reporte largo).
 
    Copia los archivos sin cambiar nada. No resumas, no traduzcas y no agregues
    comentarios, normas, CVE ni conclusiones.

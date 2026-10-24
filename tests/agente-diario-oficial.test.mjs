@@ -36,8 +36,9 @@ function paginasOk() {
 let pedidas = [];
 const server = createServer((req, res) => {
   pedidas.push(req.url);
-  const pagina = req.url.split("?")[0].split("/").pop();
-  const p = paginas[pagina];
+  const conConsulta = req.url.split("/").pop();
+  const pagina = conConsulta.split("?")[0];
+  const p = paginas[conConsulta] || paginas[pagina];
   if (!p) { res.writeHead(404); res.end("no existe"); return; }
   res.writeHead(p.code || 200, { "Content-Type": "text/html; charset=utf-8" });
   res.end(p.html);
@@ -157,6 +158,38 @@ await test("Paquete: el .zip trae SKILL.md, reporte.mjs y diario-oficial.gs, y f
   // El reporte.mjs empaquetado usa su propia copia de diario-oficial.gs.
   const { json } = await cli(["--fecha", "20-10-2026"], join(extraido, "diario-oficial", "reporte.mjs"));
   assert.equal(json.accion, "reporte");
+});
+
+await test("CLI período: --dias-anteriores 2 lee todas las ediciones de los dos días anteriores", async () => {
+  const sel22 = fixture("select-edicion.real-2026-10-22.html");
+  const sel18 = fixture("select-edicion.real-2026-10-18.html");
+  paginas["select_edition.php?date=20-10-2026"] = {
+    html: sel22.replace(/22-10-2026/g, "20-10-2026").replace(/44580/g, "99999")
+  };
+  paginas["select_edition.php?date=19-10-2026"] = {
+    html: sel18.replace(/18 de Octubre de 2026/g, "19 de Octubre de 2026").replace(/18-10-2026/g, "19-10-2026")
+  };
+  const { code, json } = await cli(["--fecha", "21-10-2026", "--dias-anteriores", "2"]);
+  assert.equal(code, 0);
+  assert.equal(json.accion, "reporte");
+  assert.equal(json.modo, "periodo");
+  assert.match(json.asunto, /^📰 Diario Oficial 19-10-2026 al 20-10-2026 · 2 ediciones — \d+ destacadas · 8 normas generales$/);
+  assert.deepEqual(json.para, ["pandrades23@gmail.com"]);
+  assert.deepEqual(json.dias.map((d) => d.fecha), ["19-10-2026", "20-10-2026"]);
+  assert.deepEqual(json.dias[0].ediciones, []);
+  assert.deepEqual(json.dias[1].ediciones.map((e) => e.edicion), ["99999", "99999-B"]);
+  assert.ok(pedidas.includes("/edicionelectronica/normas_particulares.php?date=20-10-2026&edition=99999-B&v=2"));
+  const texto = readFileSync(json.archivos.texto, "utf8");
+  assert.match(texto, /19-10-2026: sin ediciones publicadas\./);
+  assert.match(texto, /EDICIÓN N° 99\.999-B · 20-10-2026/);
+});
+
+await test("CLI período: sitio caído en todos los días → aviso", async () => {
+  paginas["select_edition.php"] = { code: 403, html: "Forbidden" };
+  const { code, json } = await cli(["--fecha", "21-10-2026", "--dias-anteriores", "2"]);
+  assert.equal(code, 0);
+  assert.equal(json.accion, "aviso");
+  assert.match(json.asunto, /— no se pudo leer el sitio$/);
 });
 
 server.close();

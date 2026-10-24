@@ -252,9 +252,9 @@ Corre dos suites:
 
 ## 📰 Agente: Diario Oficial
 
-Revisa cada mañana la
+Revisa la
 [edición electrónica del Diario Oficial](https://www.diariooficial.interior.gob.cl/edicionelectronica/)
-y envía un reporte a **`pandrades23@gmail.com`**, con copia a
+y envía **cada dos días** un reporte a **`pandrades23@gmail.com`**, con copia a
 `andradestordecilla.abogado@gmail.com`.
 
 La lógica está en un solo archivo, `diario-oficial.gs`, y se puede usar de
@@ -266,19 +266,30 @@ dos formas:
 - **Google Apps Script (alternativa).** Corre en tu propia cuenta de
   Google. Ver "Alternativa: Apps Script" más abajo.
 
-### Rutina diaria de Claude
+### Rutina de Claude (cada dos días)
 
 - **Nombre:** "Reporte Diario Oficial".
-- **Horario:** todos los días a las **07:55**, hora de Chile.
+- **Horario:** cada dos días a las **07:55**, hora de Chile: los días impares
+  del mes (1, 3, 5… 29, 31).
+- **Qué cubre cada correo:** los **dos días anteriores completos**, con
+  **todas** las ediciones de cada día. Por ejemplo, el correo del 25-10 trae
+  el 23-10 y el 24-10.
+  - El sitio publica a veces una 2ª o 3ª edición en el día (por ejemplo, la
+    44.580-B del 22-10-2026 traía el Decreto N° 153, de 2026, de prórroga
+    del estado de excepción constitucional). Cubrir días ya cerrados evita
+    que se queden fuera.
+  - Después de un día 31 viene el 1: esos dos correos salen en días seguidos
+    y el del día 1 repite el día 30. No se pierde ningún día.
+  - Comando: `node agente-diario-oficial/reporte.mjs --dias-anteriores 2`.
 - **Funcionamiento:** la rutina se ejecuta en la **misma sesión de Claude
   donde se configuró**, porque esa sesión tiene el conector de Gmail. Las
   rutinas que abren una sesión nueva no traen conectores en esta cuenta.
-  Cada mañana Claude corre `node agente-diario-oficial/reporte.mjs`, que lee
-  el sitio y deja el correo listo en `reporte.html` y `reporte.txt`, y envía
-  ese contenido **sin modificarlo** con Gmail. Las instrucciones exactas que
-  sigue Claude están en `agente-diario-oficial/SKILL.md`.
+  En cada ejecución Claude corre `reporte.mjs`, que lee el sitio y deja el
+  correo listo en `reporte.html` y `reporte.txt`, y envía el HTML **sin
+  modificarlo** con Gmail. Las instrucciones exactas que sigue Claude están
+  en `agente-diario-oficial/SKILL.md`.
 - **No archives esa sesión:** si se archiva, la rutina deja de tener dónde
-  ejecutarse. La conversación crece un poco cada día; Claude la resume sola.
+  ejecutarse. La conversación crece un poco con cada reporte; Claude la resume sola.
 - **Alternativa con sesión limpia cada día:** crea la rutina tú mismo desde la
   pantalla de Routines de claude.ai, **con el conector de Gmail adjunto**.
   Usa como instrucción: "Ejecuta el agente del Diario Oficial siguiendo
@@ -414,8 +425,12 @@ cámbialo por términos más acotados, por ejemplo `"municipalidad de los vilos"
 - **Copia del correo en la rutina.** Claude envía por Gmail el contenido de
   `reporte.html`; sus instrucciones exigen copiarlo sin cambios, pero no hay
   una verificación automática byte a byte.
-- **Fuera de alcance**: ediciones extraordinarias y las secciones de marcas
-  y patentes, empresas y cooperativas y BOM.
+- **Ediciones adicionales del día** (44.580-B, 44.580-C…): el reporte cada
+  dos días las incluye. El modo "edición de hoy" (sin `--dias-anteriores`) y
+  el Apps Script leen solo la 1ª edición, porque las demás aparecen más
+  tarde.
+- **Fuera de alcance**: las secciones de marcas y patentes, empresas y
+  cooperativas y BOM.
 - **Destacar no es analizar.** La coincidencia es por palabra clave: el
   reporte sirve de radar. Antes de citar una norma, revisa el texto íntegro
   en el PDF (CVE).

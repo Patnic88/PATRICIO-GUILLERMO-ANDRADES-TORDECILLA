@@ -95,7 +95,8 @@ const sandbox = new Function(
   " extraerEnlace, absolutizar, extraerFechaTexto, formatoEdicion, escapeHtml," +
   " construirReporte, construirAviso, opcionesCorreo, revisarDiarioOficial," +
   " enviarReporteAhora, instalarAgente, desinstalarAgente, leerSeccion, fetchSeccion," +
-  " leerEdicion, seccionServida," +
+  " leerEdicion, seccionServida, leerDia, parseEdiciones, restarDias, diasAnteriores," +
+  " construirReportePeriodo," +
   " DO_SECCIONES, DO_PROP_ULTIMO_ENVIO, DIGEST_TO, DIGEST_CC };"
 );
 const fns = sandbox(Utilities, UrlFetchApp, MailApp, PropertiesService, ScriptApp, Logger);
@@ -578,6 +579,123 @@ test("absolutizar: http:// del Diario Oficial pasa a https://; otros sitios no s
   assert.equal(fns.absolutizar("http://www.diariooficial.interior.gob.cl/publicaciones/2026/10/23/44581/04/2888074.pdf"),
     "https://www.diariooficial.interior.gob.cl/publicaciones/2026/10/23/44581/04/2888074.pdf");
   assert.equal(fns.absolutizar("http://ejemplo.cl/a.pdf"), "http://ejemplo.cl/a.pdf");
+});
+
+// ---------------------------------------------------------------------------
+// Varias ediciones por día y reporte por período (envío cada dos días)
+// ---------------------------------------------------------------------------
+
+const SEL_22 = fixture("select-edicion.real-2026-10-22.html");
+const SEL_18 = fixture("select-edicion.real-2026-10-18.html");
+const REAL_B = fixture("normas-generales.real-2026-10-22-44580-B.html");
+
+test("real: select_edition lista la 1ª y la 2ª edición del 22-10", () => {
+  assert.deepEqual(fns.parseEdiciones(SEL_22, "22-10-2026"), [
+    { edicion: "44580", v: "1" },
+    { edicion: "44580-B", v: "2" }
+  ]);
+  assert.deepEqual(fns.parseEdiciones(SEL_22, "21-10-2026"), [], "solo la fecha pedida");
+});
+
+test("real: domingo 18-10 sin ediciones, pero la página muestra la fecha", () => {
+  assert.deepEqual(fns.parseEdiciones(SEL_18, "18-10-2026"), []);
+  assert.equal(fns.extraerFechaTexto(fns.limpiarTexto(SEL_18)), "18-10-2026");
+});
+
+test("real: la 2ª edición (44580-B) se lee con su fecha y número", () => {
+  const r = fns.parseSeccion(REAL_B);
+  assert.equal(r.estado, "ok");
+  assert.equal(r.fecha, "22-10-2026");
+  assert.equal(r.edicion, "44580-B");
+  assert.equal(r.items.length, 1);
+  assert.equal(r.items[0].cve, "2891566");
+  assert.match(r.items[0].titulo, /^Decreto número 153, de 2026\.- Prorroga declaración de estado de excepción/);
+  assert.equal(fns.formatoEdicion("44580-B"), "44.580-B");
+});
+
+test("restarDias / diasAnteriores: cambios de mes y de año", () => {
+  assert.equal(fns.restarDias("01-03-2026", 1), "28-02-2026");
+  assert.equal(fns.restarDias("01-01-2026", 2), "30-12-2025");
+  assert.deepEqual(fns.diasAnteriores("25-10-2026", 2), ["23-10-2026", "24-10-2026"]);
+});
+
+// Página de ediciones sintética para el 20-10 (los fixtures sintéticos son
+// de esa fecha, edición 99999).
+const SEL_20 = SEL_22.replace(/22-10-2026/g, "20-10-2026").replace(/44580/g, "99999");
+const SINT_B = '<table><tr><td class="title4">MINISTERIO DE PRUEBA</td></tr>'
+  + '<tr class="content"><td>NORMA DE PRUEBA B1: Decreto de prueba de la Contraloría</td>'
+  + '<td><a href="/publicaciones/2026/10/20/99999-B/01/9000901.pdf">Ver PDF (CVE-9000901)</a></td></tr></table>';
+
+test("leerDia: lee todas las ediciones del día, cada sección con su edición", () => {
+  paginas["select_edition.php"] = { html: SEL_20 };
+  const d = fns.leerDia("20-10-2026");
+  assert.equal(d.error, "");
+  assert.deepEqual(d.ediciones.map((e) => e.edicion), ["99999", "99999-B"]);
+  assert.equal(d.ediciones[0].resultados.length, 4);
+  assert.equal(d.ediciones[0].resultados[0].items.length, 4);
+  assert.ok(fetchLog.includes("https://www.diariooficial.interior.gob.cl/edicionelectronica/index.php?date=20-10-2026&edition=99999-B&v=2"));
+  assert.ok(fetchLog.includes("https://www.diariooficial.interior.gob.cl/edicionelectronica/avisos_destacados.php?date=20-10-2026&edition=99999&v=1"));
+});
+
+test("leerDia: día sin ediciones (la página muestra la fecha) → sin error", () => {
+  paginas["select_edition.php"] = { html: SEL_18 };
+  const d = fns.leerDia("18-10-2026");
+  assert.equal(d.error, "");
+  assert.deepEqual(d.ediciones, []);
+  assert.equal(fetchLog.length, 1);
+});
+
+test("leerDia: página ajena o caída → error, no 'sin ediciones'", () => {
+  paginas["select_edition.php"] = { html: "<html>Verificando…</html>" };
+  assert.equal(fns.leerDia("18-10-2026").error, "página de ediciones no reconocida");
+  paginas["select_edition.php"] = { code: 503, html: "" };
+  assert.equal(fns.leerDia("18-10-2026").error, "HTTP 503");
+});
+
+test("leerDia: edición entregada con otra fecha → no se usa", () => {
+  paginas["select_edition.php"] = { html: SEL_22.replace(/44580/g, "99999") };
+  const d = fns.leerDia("22-10-2026"); // los fixtures sintéticos son del 20-10
+  const p = d.ediciones[0].resultados[0];
+  assert.equal(p.estado, "error");
+  assert.equal(p.items.length, 0);
+  assert.match(p.error, /es del 20-10-2026, no del 22-10-2026/);
+});
+
+const ediciones20 = () => {
+  paginas["select_edition.php"] = { html: SEL_20 };
+  const d = fns.leerDia("20-10-2026");
+  d.ediciones[1].resultados[0] = { ...resultado("normas_generales", SINT_B), url: "x" };
+  return d;
+};
+
+test("construirReportePeriodo: asunto, ediciones y día sin publicaciones", () => {
+  const r = fns.construirReportePeriodo([{ fecha: "19-10-2026", error: "", ediciones: [] }, ediciones20()]);
+  assert.equal(r.subject, "📰 Diario Oficial 19-10-2026 al 20-10-2026 · 2 ediciones — 9 destacadas · 5 normas generales");
+  assert.equal(r.ediciones, 2);
+  assert.match(r.plain, /^Diario Oficial — del 19-10-2026 al 20-10-2026\nEdiciones: N° 99\.999 \(20-10-2026\) · N° 99\.999-B \(20-10-2026\)/);
+  assert.match(r.plain, /19-10-2026: sin ediciones publicadas\./);
+  assert.match(r.plain, /########## EDICIÓN N° 99\.999 · 20-10-2026 ##########/);
+  assert.match(r.plain, /########## EDICIÓN N° 99\.999-B · 20-10-2026 ##########/);
+  assert.match(r.html, /<h2[^>]*>Edición N° 99\.999-B · 20-10-2026<\/h2>/);
+});
+
+test("construirReportePeriodo: destacadas de todas las ediciones, con su edición", () => {
+  const r = fns.construirReportePeriodo([ediciones20()]);
+  assert.match(r.plain, /=== DESTACADAS POR TEMA \(9\) ===/);
+  assert.match(r.plain, /20-10-2026 · Ed\. N° 99\.999-B · Normas Generales · MINISTERIO DE PRUEBA\n  Coincide con Contraloría \/ probidad: "contraloria"/);
+  assert.match(r.plain, /20-10-2026 · Ed\. N° 99\.999 · Normas Generales · MINISTERIO DE PRUEBA DEL INTERIOR/);
+  assert.equal((r.plain.match(/Fuente primaria/g) || []).length, 1, "un solo pie");
+  assert.equal((r.html.match(/<\/div>$/) || []).length, 1);
+});
+
+test("construirReportePeriodo: día que no se pudo leer queda a la vista", () => {
+  const r = fns.construirReportePeriodo([
+    { fecha: "21-10-2026", error: "HTTP 503", http: 503, url: "https://x/select_edition.php?date=21-10-2026", ediciones: [] },
+    { fecha: "22-10-2026", error: "", ediciones: [] }
+  ]);
+  assert.equal(r.subject, "📰 Diario Oficial 21-10-2026 al 22-10-2026 · 0 ediciones");
+  assert.match(r.plain, /⚠️ No se pudieron leer las ediciones del 21-10-2026: HTTP 503\./);
+  assert.match(r.plain, /22-10-2026: sin ediciones publicadas\./);
 });
 
 console.log(`\n${pass} pasaron, ${fail} fallaron`);
