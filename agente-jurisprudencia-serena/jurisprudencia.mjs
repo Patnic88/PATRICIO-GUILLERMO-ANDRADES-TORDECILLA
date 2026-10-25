@@ -43,6 +43,9 @@ const ENTIDADES = {
 export function textoPlano(html) {
   return String(html || "")
     .replace(/<br\s*\/?>/gi, " ")
+    // Las etiquetas de formato (negrita, cursiva, enlaces) no separan palabras:
+    // "“<strong>SE CONFIRMA</strong>" se lee "“SE CONFIRMA", como en el navegador.
+    .replace(/<\/?(?:strong|b|em|i|u|span|a|sup|sub|small|font)\b[^>]*>/gi, "")
     .replace(/<[^>]+>/g, " ")
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => {
       if (e[0] !== "#") return ENTIDADES[e] ?? m;
@@ -172,6 +175,50 @@ export function parsearNoticia(html) {
   parrafos = parrafos.filter(Boolean);
   if (!parrafos.length) return { estado: "desconocida" };
   return { estado: "ok", titulo, fechaTexto, bajada, parrafos };
+}
+
+// ---------------------------------------------------------------------------
+// Texto de la página (modo navegador: lo que Claude lee en la pestaña)
+// ---------------------------------------------------------------------------
+
+const lineasDe = (texto) => String(texto || "").split(/\r?\n/)
+  .map((l) => l.replace(/[\s\u00a0]+/g, " ").trim()).filter(Boolean);
+
+/**
+ * Lista leída como texto: cada nota es una línea de título seguida de su
+ * fecha ("22-10-2026 03:10"). El texto no trae enlaces, así que id y url
+ * quedan vacíos hasta que se lea la nota.
+ */
+export function parsearListaTexto(texto) {
+  if (esVerificacionHumana(texto)) return { estado: "verificacion", items: [] };
+  if (esRechazo(texto)) return { estado: "rechazada", items: [] };
+  const lineas = lineasDe(texto);
+  const items = [];
+  for (let i = 1; i < lineas.length; i++) {
+    const f = lineas[i].match(/^(\d{2})-(\d{2})-(\d{4})(?:\s+\d{1,2}:\d{2})?$/);
+    if (f && !/^\d{2}-\d{2}-\d{4}/.test(lineas[i - 1])) {
+      items.push({ id: null, url: "", titulo: lineas[i - 1], fechaNota: `${f[3]}-${f[2]}-${f[1]}` });
+    }
+  }
+  return items.length ? { estado: "ok", items } : { estado: "desconocida", items: [] };
+}
+
+/**
+ * Nota leída como texto: el título es la línea anterior a la fecha
+ * ("22-octubre-2026"), la bajada la línea siguiente y luego los párrafos,
+ * hasta "Volver" o el pie del sitio.
+ */
+export function parsearNoticiaTexto(texto) {
+  if (esVerificacionHumana(texto)) return { estado: "verificacion" };
+  if (esRechazo(texto)) return { estado: "rechazada" };
+  const lineas = lineasDe(texto).filter((l) => !/^(URL|Fuente)\s*:/i.test(l));
+  const iFecha = lineas.findIndex((l) => /^\d{1,2}-[a-záéíóú]+-\d{4}$/i.test(l));
+  if (iFecha < 1) return { estado: "desconocida" };
+  let fin = lineas.findIndex((l, i) => i > iFecha && /^(Volver|ACERCA DEL PODER JUDICIAL)$/i.test(l));
+  if (fin < 0) fin = lineas.length;
+  const cuerpo = lineas.slice(iFecha + 1, fin).filter((l) => !/^(Video|Compartir|Imagen)$/i.test(l));
+  if (cuerpo.length < 2) return { estado: "desconocida" };
+  return { estado: "ok", titulo: lineas[iFecha - 1], fechaTexto: lineas[iFecha], bajada: cuerpo[0], parrafos: cuerpo.slice(1) };
 }
 
 // ---------------------------------------------------------------------------
@@ -341,7 +388,9 @@ export function extraerFicha(item, noticia, confirmacion = confirmarCorte(notici
     bajada,
     parrafos,
     citas: buscarCitas(parrafos),
-    normas: buscarNormas(todo)
+    normas: buscarNormas(todo),
+    // "html": página guardada tal cual; "texto": texto que Claude copió desde la pestaña.
+    lectura: noticia.origen === "texto" ? "texto" : "html"
   };
   Object.assign(ficha, puntuar(ficha));
   ficha.pendientes = pendientes(ficha);
@@ -355,6 +404,7 @@ function pendientes(f) {
   p.push(`Fecha de la sentencia: la nota no la informa. La fecha disponible (${f.fechaNotaTexto}) es la de publicación de la nota; no presentarla como fecha del fallo.`);
   p.push("Estado del fallo: la nota no dice si está firme. Puede ser revisado por la Corte Suprema; revisar en la Oficina Judicial Virtual con el rol.");
   p.push("Texto íntegro: el agente leyó la nota de prensa, no la sentencia. Todo lo que no esté en la nota no se afirma.");
+  if (f.lectura === "texto") p.push("La nota se guardó como texto copiado por Claude desde la pestaña: contrasta las citas del carrusel con la página antes de publicar.");
   if (f.normas.length) p.push("Normas mencionadas en la nota (" + f.normas.join("; ") + "): confirmar el texto vigente en LeyChile antes de citarlas como ley.");
   return p;
 }
@@ -780,11 +830,11 @@ export function construirReporte(d) {
     }
     if (d.noLeidas.length) {
       h.push(`<h2 style="${estilo.h2}">No leídas (revisar a mano)</h2><ul style="font-size:13px">${d.noLeidas.map((x) =>
-        `<li>${x.item.fechaNota ? isoATexto(x.item.fechaNota) + " · " : ""}${E(x.item.titulo)} — <i>${E(x.motivo)}</i><br><a href="${E(x.item.url)}">${E(x.item.url)}</a></li>`).join("")}</ul>`);
+        `<li>${x.item.fechaNota ? isoATexto(x.item.fechaNota) + " · " : ""}${E(x.item.titulo)} — <i>${E(x.motivo)}</i>${x.item.url ? `<br><a href="${E(x.item.url)}">${E(x.item.url)}</a>` : ""}</li>`).join("")}</ul>`);
     }
     if (d.descartadas.length) {
       h.push(`<h2 style="${estilo.h2}">Descartadas (no son fallos de la Corte)</h2><ul style="font-size:12px;color:#55555c">${d.descartadas.map((x) =>
-        `<li>${isoATexto(x.item.fechaNota)} · ${E(x.item.titulo)} — ${E(x.motivo)} · <a href="${E(x.item.url)}">ver</a></li>`).join("")}</ul>`);
+        `<li>${isoATexto(x.item.fechaNota)} · ${E(x.item.titulo)} — ${E(x.motivo)}${x.item.url ? ` · <a href="${E(x.item.url)}">ver</a>` : ""}</li>`).join("")}</ul>`);
     }
   }
   h.push(`<h2 style="${estilo.h2}">Advertencias</h2><ul style="font-size:12px;color:#55555c">${ADVERTENCIAS.map((a) => `<li>${E(a)}</li>`).join("")}</ul>`);

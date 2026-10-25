@@ -11,7 +11,9 @@
 //   node reporte.mjs [--salida <dir>] [--dias-anteriores 7]
 //   node reporte.mjs --desde AAAA-MM-DD --hasta AAAA-MM-DD [--salida <dir>]
 //   node reporte.mjs --entrada <carpeta> [--salida <dir>]  (modo carpeta: notas
-//                                           guardadas a mano desde el navegador)
+//                                           guardadas desde el navegador, .html o .txt)
+//   node reporte.mjs --por-leer <carpeta>  (modo navegador: qué notas de la lista
+//                                           guardada hay que abrir)
 //   node reporte.mjs --componer <dir>      (vuelve a armar el reporte con los
 //                                           carruseles que Claude escribió)
 // Opciones: --hoy AAAA-MM-DD, --max-notas 12, --pausa-seg 15, --base-url <url>
@@ -113,7 +115,7 @@ async function procesarNotas(datos, items, leerNota, { maxNotas = 12, pausaSeg =
       continue;
     }
     if (r === null) { datos.noLeidas.push({ item, motivo: "La nota no está guardada en la carpeta" }); continue; }
-    const noticia = J.parsearNoticia(r.html);
+    const noticia = r.nota || J.parsearNoticia(r.html);
     if (noticia.estado === "rechazada" || noticia.estado === "verificacion") {
       detenido = noticia.estado === "rechazada"
         ? "El sitio rechazó la lectura (protección anti-bots); el agente se detuvo para no insistir"
@@ -180,45 +182,90 @@ export async function buscar({ hoy, periodo, maxNotas = 12, pausaSeg = 15, baseU
 }
 
 /**
- * Modo carpeta: páginas de pjud.cl que una persona abrió en su navegador
- * (pasando ella la verificación, si la hubo) y guardó como .html. Puede venir
- * la lista filtrada guardada y/o las notas. Sin período, procesa todo.
+ * Lee una carpeta con páginas de pjud.cl guardadas por una persona (Ctrl+S)
+ * o por Claude desde la pestaña (modo navegador): .html con el código de la
+ * página o .txt con su texto. Reconoce la lista y las notas; une la lista
+ * leída como texto (sin enlaces) con sus notas por el título.
  */
-export async function desdeCarpeta({ entrada, hoy, periodo = null }) {
+function leerCarpeta(entrada) {
   if (!existsSync(entrada) || !statSync(entrada).isDirectory()) throw new Error("No existe la carpeta " + entrada);
   const notas = new Map();
-  const deLista = new Map();
+  const lista = [];
   const ilegibles = [];
-  for (const nombre of readdirSync(entrada).filter((n) => /\.html?$/i.test(n)).sort()) {
-    const html = readFileSync(join(entrada, nombre), "utf8");
-    const l = J.parsearLista(html);
-    if (l.estado === "ok" && l.items.length) { l.items.forEach((it) => deLista.set(it.id, it)); continue; }
-    const nota = J.parsearNoticia(html);
-    const id = J.idDesdeHtml(html, nombre);
-    const fechaNota = nota.estado === "ok" ? J.fechaDesdeLiteral(nota.fechaTexto) : null;
-    const motivo = nota.estado === "verificacion" ? "La página guardada es la verificación humana del sitio, no la nota"
-      : nota.estado !== "ok" ? "No se reconoce como una nota de pjud.cl"
-      : !id ? "No se encontró el número de la nota en la página"
-      : !fechaNota && !deLista.has(id) ? "No se reconoce la fecha de la nota" : "";
-    if (motivo) { ilegibles.push({ item: { id: null, url: "", titulo: nombre, fechaNota: "" }, motivo }); continue; }
-    notas.set(id, { html, nota, fechaNota });
+  for (const nombre of readdirSync(entrada).filter((n) => /\.(html?|txt)$/i.test(n)).sort()) {
+    const contenido = readFileSync(join(entrada, nombre), "utf8");
+    const texto = /\.txt$/i.test(nombre);
+    const nota = texto ? { ...J.parsearNoticiaTexto(contenido), origen: "texto" } : J.parsearNoticia(contenido);
+    if (nota.estado === "ok") {
+      const id = J.idDesdeHtml(contenido, nombre);
+      const fechaNota = J.fechaDesdeLiteral(nota.fechaTexto);
+      const motivo = !id ? "No se encontró el número de la nota (falta la línea «URL: …» o el enlace)"
+        : !fechaNota ? "No se reconoce la fecha de la nota" : "";
+      if (motivo) ilegibles.push({ item: { id: null, url: "", titulo: nombre, fechaNota: "" }, motivo });
+      else notas.set(id, { nota, fechaNota });
+      continue;
+    }
+    const l = texto ? J.parsearListaTexto(contenido) : J.parsearLista(contenido);
+    if (l.estado === "ok") { lista.push(...l.items); continue; }
+    ilegibles.push({
+      item: { id: null, url: "", titulo: nombre, fechaNota: "" },
+      motivo: nota.estado === "verificacion" || l.estado === "verificacion"
+        ? "La página guardada es la verificación humana del sitio, no la nota"
+        : "No se reconoce como una página de pjud.cl"
+    });
+  }
+  const porTitulo = new Map([...notas].map(([id, n]) => [J.normalizar(n.nota.titulo), id]));
+  const urlDe = (id) => `${J.CONFIG.baseUrl}${J.CONFIG.rutaLista}/${id}`;
+  const items = new Map();
+  for (const it of lista) {
+    const id = it.id || porTitulo.get(J.normalizar(it.titulo)) || null;
+    const item = id ? { ...it, id, url: it.url || urlDe(id) } : it;
+    items.set(id || "titulo:" + J.normalizar(it.titulo), item);
   }
   for (const [id, n] of notas) {
-    if (!deLista.has(id)) {
-      deLista.set(id, { id, url: `${J.CONFIG.baseUrl}${J.CONFIG.rutaLista}/${id}`, titulo: n.nota.titulo, fechaNota: n.fechaNota });
-    }
+    if (!items.has(id)) items.set(id, { id, url: urlDe(id), titulo: n.nota.titulo, fechaNota: n.fechaNota });
   }
-  let items = [...deLista.values()];
-  if (!periodo) {
-    const fechas = items.map((it) => it.fechaNota).filter(Boolean).sort();
-    periodo = fechas.length ? { desde: fechas[0], hasta: fechas[fechas.length - 1] } : { desde: hoy, hasta: hoy };
-  }
-  items = enPeriodo(items, periodo);
+  return { notas, items: [...items.values()], ilegibles };
+}
+
+function periodoDe(items, periodo, hoy) {
+  if (periodo) return periodo;
+  const fechas = items.map((it) => it.fechaNota).filter(Boolean).sort();
+  return fechas.length ? { desde: fechas[0], hasta: fechas[fechas.length - 1] } : { desde: hoy, hasta: hoy };
+}
+
+/**
+ * Modo carpeta: procesa lo guardado. Sin período, procesa todo lo que haya.
+ * No usa la red.
+ */
+export async function desdeCarpeta({ entrada, hoy, periodo = null }) {
+  const c = leerCarpeta(entrada);
+  periodo = periodoDe(c.items, periodo, hoy);
+  const items = enPeriodo(c.items, periodo);
   const datos = datosVacios(hoy, periodo, "carpeta");
-  datos.fuente.total = deLista.size;
+  datos.fuente.total = c.items.length;
   datos.fuente.enPeriodo = items.length;
-  datos.noLeidas.push(...ilegibles);
-  return procesarNotas(datos, items, (item) => (notas.has(item.id) ? { http: 200, html: notas.get(item.id).html } : null));
+  datos.noLeidas.push(...c.ilegibles);
+  return procesarNotas(datos, items, (item) => (c.notas.has(item.id) ? { nota: c.notas.get(item.id).nota } : null));
+}
+
+/**
+ * Modo navegador, antes de abrir las notas: con la lista guardada, dice qué
+ * notas del período hay que abrir (las que pueden ser de la Corte) y cuáles
+ * ya están en la carpeta. Las demás quedan descartadas por el título.
+ */
+export function porLeer({ entrada, hoy, periodo = null }) {
+  const c = leerCarpeta(entrada);
+  periodo = periodoDe(c.items, periodo, hoy);
+  const res = { accion: "por-leer", periodo, abrir: [], guardadas: [], descartadas: [], ilegibles: c.ilegibles.map((x) => x.item.titulo) };
+  for (const it of enPeriodo(c.items, periodo)) {
+    const k = J.clasificarTitulo(it.titulo);
+    const fila = { titulo: it.titulo, fechaNota: it.fechaNota, url: it.url || null };
+    if (k.tipo === "otro") res.descartadas.push({ ...fila, motivo: k.motivo });
+    else if (it.id && c.notas.has(it.id)) res.guardadas.push(fila);
+    else res.abrir.push(fila);
+  }
+  return res;
 }
 
 // ---------------------------------------------------------------------------
@@ -303,6 +350,7 @@ function leerArgs(argv) {
     if (clave === "salida") o.salida = resolve(valor);
     else if (clave === "componer") o.componer = resolve(valor);
     else if (clave === "entrada") o.entrada = resolve(valor);
+    else if (clave === "por-leer") o.porLeer = resolve(valor);
     else if (clave === "dias-anteriores") o.diasAnteriores = parseInt(valor, 10);
     else if (["desde", "hasta", "hoy"].includes(clave)) {
       if (!FECHA.test(valor)) throw new Error(`--${clave} debe ser AAAA-MM-DD`);
@@ -324,9 +372,10 @@ export async function main(argv) {
     if (!o.desde || !o.hasta) throw new Error("Usa --desde y --hasta juntos");
     if (o.desde > o.hasta) throw new Error("--desde es posterior a --hasta");
     periodo = { desde: o.desde, hasta: o.hasta };
-  } else if (o.diasAnteriores > 0 || !o.entrada) {
+  } else if (o.diasAnteriores > 0 || !(o.entrada || o.porLeer)) {
     periodo = J.periodoAnterior(hoy, o.diasAnteriores > 0 ? o.diasAnteriores : 7);
   }
+  if (o.porLeer) return porLeer({ entrada: o.porLeer, hoy, periodo });
   const salida = o.salida || mkdtempSync(join(tmpdir(), "jurisprudencia-serena-"));
   const datos = o.entrada
     ? await desdeCarpeta({ entrada: o.entrada, hoy, periodo })

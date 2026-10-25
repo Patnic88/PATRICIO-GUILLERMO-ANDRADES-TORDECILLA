@@ -103,6 +103,56 @@ dentro del repositorio (carpeta ignorada por git) o una carpeta temporal.
 
 7. Termina con una sola línea: qué enviaste (`accion` y asunto) y a quién.
 
+## Modo navegador (Claude en Chrome)
+
+Para cuando pjud.cl pide verificación humana al navegador automatizado. Claude usa la
+pestaña de Chrome de Patricio y, si aparece el CAPTCHA, **se detiene y le pide que lo
+resuelva él**.
+
+Requisitos (según https://code.claude.com/docs/en/chrome):
+- Claude Code instalado **en el computador de Patricio**, con este repositorio
+  clonado y Node.js disponible.
+- Iniciado con `claude --chrome`, o con `/chrome` → "Enabled by default".
+- Extensión Claude in Chrome 1.0.36 o posterior, en Chrome o Edge, con la misma cuenta
+  de claude.ai (plan Pro, Max, Team o Enterprise).
+- No funciona en sesiones de Claude en la nube ni en WSL.
+- Es una sesión **atendida**: Patricio debe estar presente por si aparece el CAPTCHA.
+
+`<carpeta>` es una carpeta nueva, por ejemplo `salidas/navegador/<hoy>`.
+
+1. En la pestaña, abre `https://www.pjud.cl/prensa-y-comunicaciones/noticias-del-poder-judicial`.
+   Si aparece la verificación ("What code is in the image?"), detente y pide a
+   Patricio que la resuelva. No la resuelvas tú.
+2. Filtra: Jurisdicción **C.A de La Serena**, Tipo noticia **Noticias sobre fallos**,
+   y pulsa **Filtrar**.
+3. Guarda la lista:
+   - si tienes una herramienta para ejecutar JavaScript en la página, ejecuta
+     `<agente>/navegador/lista.js` con las fechas del período en su última línea y
+     guarda lo que devuelve en `<carpeta>/lista.html`;
+   - si no, lee el texto de la página y guárdalo **sin cambios** en `<carpeta>/lista.txt`.
+4. Pregunta qué notas abrir:
+   ```bash
+   node <agente>/reporte.mjs --por-leer <carpeta> --desde AAAA-MM-DD --hasta AAAA-MM-DD
+   ```
+   Abre **solo** las de `abrir`. Las `descartadas` son de otros tribunales.
+5. Por cada nota de `abrir`: haz clic en su título en la lista (o abre su `url`) y
+   espera a que cargue. Si aparece la verificación, detente y pide a Patricio que la
+   resuelva. Luego guárdala:
+   - con JavaScript: `<agente>/navegador/nota.js` → `<carpeta>/nota-<número>.html`;
+   - sin JavaScript: `<carpeta>/nota-<número>.txt`. La primera línea es
+     `URL: <dirección de la pestaña>`; debajo va el texto de la página **tal cual**, sin
+     corregir, resumir ni reordenar.
+
+   Deja unos 15 segundos entre una nota y otra.
+6. Procesa la carpeta y sigue con los pasos 3 a 7 de arriba:
+   ```bash
+   node <agente>/reporte.mjs --salida <salida> --entrada <carpeta> --desde AAAA-MM-DD --hasta AAAA-MM-DD
+   ```
+   Si la sesión no tiene Gmail, no envíes nada: entrega la ruta de `reporte.html`.
+
+Las fichas que vienen de `.txt` llevan un pendiente extra: el texto pasó por Claude, así
+que las citas se contrastan con la página antes de publicar.
+
 ## Renderizar las láminas (a pedido)
 
 Cuando Patricio pida "renderiza el carrusel del fallo <número de nota>":

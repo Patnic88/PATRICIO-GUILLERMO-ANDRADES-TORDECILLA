@@ -512,8 +512,28 @@ lectura web de Claude. El agente **no resuelve ni evade** esa verificación:
   Puedes guardar también la lista filtrada. Sin `--desde`/`--hasta`, procesa
   todas las notas de la carpeta.
 
+- **Modo navegador (Claude en Chrome):** Claude usa tu pestaña de Chrome y, si
+  aparece el CAPTCHA, se detiene para que lo resuelvas tú. Requiere:
+  - Claude Code instalado en tu computador, con este repositorio clonado y Node.js;
+  - iniciarlo con `claude --chrome`;
+  - la extensión Claude in Chrome 1.0.36 o posterior, en Chrome o Edge;
+  - un plan Pro, Max, Team o Enterprise.
+
+  No funciona desde una sesión de Claude en la nube. Según la documentación
+  (<https://code.claude.com/docs/en/chrome>), es una sesión **atendida**. Uso
+  semanal:
+  ```bash
+  cd PATRICIO-GUILLERMO-ANDRADES-TORDECILLA
+  claude --chrome
+  # luego, en Claude: "reporte de fallos de la Corte de La Serena de la semana pasada, en modo navegador"
+  ```
+  Los pasos exactos están en `agente-jurisprudencia-serena/SKILL.md` ("Modo
+  navegador"): guardar la lista, preguntar qué notas abrir con `--por-leer`,
+  guardar cada nota y procesar la carpeta con `--entrada`.
+
 Por eso **no hay rutina automática programada**: mientras pjud.cl exija la
-verificación, cada semana llegaría solo el aviso.
+verificación, cada semana llegaría solo el aviso. La documentación tampoco
+describe tareas programadas sin una persona presente que usen Chrome.
 
 El Portal Unificado de Sentencias (juris.pjud.cl) tampoco es accesible desde el
 entorno de Claude: responde 421 a través del proxy. Por eso el agente trabaja
@@ -545,7 +565,7 @@ Skill descargable para claude.ai:
 ### Pruebas
 
 `tests/agente-jurisprudencia-serena.test.mjs` corre dentro de `bash tests/run.sh`
-(27 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
+(29 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
 recortadas al contenido de la noticia, en `tests/fixtures/jurisprudencia-serena/`.
 La página de verificación humana es una reproducción **sintética**. Cubre:
 
@@ -556,6 +576,9 @@ La página de verificación humana es una reproducción **sintética**. Cubre:
 - el reporte;
 - el CLI con Chromium contra un servidor local: rechazo, CAPTCHA, tope de notas,
   modo carpeta y `--componer`;
+- el modo navegador: `navegador/lista.js` y `navegador/nota.js` ejecutados en una
+  pestaña; el texto visible de las 8 notas reales da la misma ficha que su HTML;
+  `--por-leer`;
 - el `.zip`.
 
 ### Pendiente de verificar antes de publicar cualquier carrusel

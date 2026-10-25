@@ -399,7 +399,94 @@ await test("validar-carrusel.mjs: código 0 si pasa, 2 si no", async () => {
   assert.equal(code, 2);
 });
 
-await test("paquete .zip: trae los cuatro archivos y el CLI funciona descomprimido", async () => {
+await test("modo navegador: lista.js y nota.js en una pestaña → archivos que --entrada procesa", async () => {
+  const { chromium } = (await import("node:module")).createRequire(import.meta.url)("playwright");
+  const codigo = (n) => readFileSync(join(ROOT, "agente-jurisprudencia-serena", "navegador", n), "utf8");
+  const navegador = await chromium.launch();
+  try {
+    const pagina = await navegador.newPage();
+    modo = {}; pedidas = [];
+    await pagina.goto(`${BASE}/prensa-y-comunicaciones/noticias-del-poder-judicial`);
+    const lista = await pagina.evaluate(codigo("lista.js").replace(/\("\d{4}-\d{2}-\d{2}", "\d{4}-\d{2}-\d{2}"\)\s*$/, '("2026-10-02", "2026-10-21")'));
+    assert.deepEqual(J.parsearLista(lista).items.map((x) => x.id), ["149489", "149156", "149032"]);
+    const entrada = join(tmp, "desde-navegador");
+    mkdirSync(entrada, { recursive: true });
+    writeFileSync(join(entrada, "lista.html"), lista);
+    for (const id of ["149489", "149032"]) {
+      await pagina.goto(`${BASE}/prensa-y-comunicaciones/noticias-del-poder-judicial/${id}`);
+      const html = await pagina.evaluate(codigo("nota.js"));
+      assert.equal(J.idDesdeHtml(html), id);
+      assert.deepEqual(J.parsearNoticia(html), J.parsearNoticia(noticiaHtml(id)));
+      writeFileSync(join(entrada, `nota-${id}.html`), html);
+    }
+    modo = { captcha: ["149156"] };
+    await pagina.goto(`${BASE}/prensa-y-comunicaciones/noticias-del-poder-judicial/149156`);
+    assert.equal(await pagina.evaluate(codigo("nota.js")), "VERIFICACION");
+    modo = { portadaCaptcha: true, listaRechazada: true };
+    assert.equal(await pagina.evaluate(codigo("lista.js")), "VERIFICACION");
+    const { json } = await cli(["--entrada", entrada, "--desde", "2026-10-02", "--hasta", "2026-10-21", "--hoy", "2026-10-25",
+      "--salida", join(tmp, "salida-navegador")], { conBase: false });
+    assert.deepEqual(json.fallos.map((f) => f.id).sort(), ["149032", "149489"]);
+    assert.equal(json.descartadas, 1, "la nota del ministro en visita se descarta por el título");
+    assert.equal(json.noLeidas, 0);
+  } finally {
+    await navegador.close();
+  }
+});
+
+await test("modo navegador por texto: lista y notas leídas como texto → --por-leer y --entrada", async () => {
+  const { chromium } = (await import("node:module")).createRequire(import.meta.url)("playwright");
+  const navegador = await chromium.launch();
+  const textoDe = async (url) => {
+    const p = await navegador.newPage();
+    await p.goto(url);
+    const t = await p.evaluate(() => document.body.innerText);
+    await p.close();
+    return t;
+  };
+  try {
+    // Las 8 notas reales: el texto visible da la misma ficha que el HTML.
+    for (const f of readdirSync(DIR).filter((n) => n.startsWith("noticia-"))) {
+      const texto = await textoDe("file://" + join(DIR, f));
+      assert.deepEqual(J.parsearNoticiaTexto(texto), J.parsearNoticia(fixture(f)), f);
+    }
+    assert.equal(J.parsearNoticiaTexto("Compartir\nTítulo\n26-junio-2026\nVideo\nBajada.\nPárrafo uno.\nVolver").bajada, "Bajada.");
+    assert.equal(J.parsearNoticiaTexto(CAPTCHA.replace(/<[^>]+>/g, "\n")).estado, "verificacion");
+
+    const listaTexto = await textoDe("file://" + join(DIR, "lista-fallos.real-2026-10-25.html"));
+    assert.deepEqual(J.parsearListaTexto(listaTexto).items.map((x) => [x.titulo, x.fechaNota]),
+      items.map((x) => [x.titulo, x.fechaNota]));
+
+    const entrada = join(tmp, "navegador-texto");
+    mkdirSync(entrada, { recursive: true });
+    writeFileSync(join(entrada, "lista.txt"), listaTexto);
+    const base = ["--desde", "2026-10-02", "--hasta", "2026-10-21", "--hoy", "2026-10-25"];
+    let r = await cli(["--por-leer", entrada, ...base], { conBase: false });
+    assert.deepEqual(r.json.abrir.map((x) => x.fechaNota), ["2026-10-20", "2026-10-05"]);
+    assert.equal(r.json.descartadas.length, 1);
+    assert.match(r.json.descartadas[0].motivo, /Ministro en visita/);
+
+    const url = "https://www.pjud.cl/prensa-y-comunicaciones/noticias-del-poder-judicial/149489";
+    writeFileSync(join(entrada, "nota-149489.txt"), `URL: ${url}\n` + await textoDe("file://" + join(DIR, "noticia-149489.real-2026-10-25.html")));
+    r = await cli(["--por-leer", entrada, ...base], { conBase: false });
+    assert.deepEqual(r.json.guardadas.map((x) => x.url), [url]);
+    assert.equal(r.json.abrir.length, 1);
+
+    r = await cli(["--entrada", entrada, ...base, "--salida", join(tmp, "salida-texto")], { conBase: false });
+    assert.deepEqual(r.json.fallos.map((f) => f.id), ["149489"]);
+    assert.equal(r.json.noLeidas, 1, "la nota del 05-10 sigue sin guardar");
+    assert.equal(r.json.descartadas, 1);
+    const ficha = JSON.parse(readFileSync(join(tmp, "salida-texto", "fichas", "2026-10-20_149489.json"), "utf8"));
+    assert.equal(ficha.url, url);
+    assert.equal(ficha.sala, "Primera Sala");
+    assert.equal(ficha.lectura, "texto");
+    assert.ok(ficha.pendientes.some((x) => /copiado por Claude/.test(x)));
+  } finally {
+    await navegador.close();
+  }
+});
+
+await test("paquete .zip: trae los archivos del agente y el CLI funciona descomprimido", async () => {
   const dist = join(tmp, "dist");
   await run("bash", [join(ROOT, "scripts", "empaquetar-agente-jurisprudencia-serena.sh"), dist]);
   const zip = join(dist, "agente-jurisprudencia-serena.zip");
@@ -408,6 +495,9 @@ await test("paquete .zip: trae los cuatro archivos y el CLI funciona descomprimi
     "jurisprudencia-ca-la-serena/",
     "jurisprudencia-ca-la-serena/SKILL.md",
     "jurisprudencia-ca-la-serena/jurisprudencia.mjs",
+    "jurisprudencia-ca-la-serena/navegador/",
+    "jurisprudencia-ca-la-serena/navegador/lista.js",
+    "jurisprudencia-ca-la-serena/navegador/nota.js",
     "jurisprudencia-ca-la-serena/reporte.mjs",
     "jurisprudencia-ca-la-serena/validar-carrusel.mjs"
   ]);

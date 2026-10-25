@@ -9,6 +9,7 @@
 #   jurisprudencia-ca-la-serena/reporte.mjs           ejecutor (lee pjud.cl y arma el reporte)
 #   jurisprudencia-ca-la-serena/jurisprudencia.mjs    lógica (filtro, fichas, puntaje, reporte)
 #   jurisprudencia-ca-la-serena/validar-carrusel.mjs  validador de carruseles
+#   jurisprudencia-ca-la-serena/navegador/*.js       fragmentos para el modo navegador
 #
 # Para instalarlo: claude.ai → Configuración → Capacidades → Skills → subir el .zip.
 
@@ -29,6 +30,10 @@ cp "$REPO_ROOT/agente-jurisprudencia-serena/SKILL.md" \
    "$REPO_ROOT/agente-jurisprudencia-serena/jurisprudencia.mjs" \
    "$REPO_ROOT/agente-jurisprudencia-serena/validar-carrusel.mjs" \
    "$TMP/jurisprudencia-ca-la-serena/"
+mkdir -p "$TMP/jurisprudencia-ca-la-serena/navegador"
+cp "$REPO_ROOT/agente-jurisprudencia-serena/navegador/lista.js" \
+   "$REPO_ROOT/agente-jurisprudencia-serena/navegador/nota.js" \
+   "$TMP/jurisprudencia-ca-la-serena/navegador/"
 
 rm -f "$ZIP"
 (cd "$TMP" && zip -qr -X "$ZIP" jurisprudencia-ca-la-serena)
