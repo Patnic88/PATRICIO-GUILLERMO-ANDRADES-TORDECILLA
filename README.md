@@ -565,9 +565,11 @@ Skill descargable para claude.ai:
 ### Pruebas
 
 `tests/agente-jurisprudencia-serena.test.mjs` corre dentro de `bash tests/run.sh`
-(31 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
+(36 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
 recortadas al contenido de la noticia, en `tests/fixtures/jurisprudencia-serena/`.
-La página de verificación humana es una reproducción **sintética**. Cubre:
+La página de verificación humana y la sentencia en PDF
+(`sentencia-149032.sintetico.pdf`, con rol y fecha ficticios) son reproducciones
+**sintéticas**. Cubre:
 
 - la criba de tribunales;
 - las fichas;
@@ -579,23 +581,44 @@ La página de verificación humana es una reproducción **sintética**. Cubre:
 - el modo navegador: `navegador/lista.js` y `navegador/nota.js` ejecutados en una
   pestaña; el texto visible de las 8 notas reales da la misma ficha que su HTML;
   `--por-leer`;
+- el rol: frases de búsqueda literales, fecha en letras, verificación de la sentencia
+  contra las citas (acepta la correcta; rechaza otra ficha, otra sala, un encabezado de
+  la Corte Suprema y un rol distinto al de la nota), `--incorporar-sentencia` y la
+  incorporación automática en `--entrada` con `.txt` y `.pdf`;
 - el `.zip`.
 
 ### Rol obligatorio
 
 Un carrusel no se publica sin rol. Si la nota no lo trae, el reporte marca el fallo
-como **Rol PENDIENTE** y da una frase textual del fallo para encontrar la sentencia en el
-Portal Unificado de Sentencias (juris.pjud.cl, pestaña Corte de Apelaciones). Hay que
-hacerlo desde el navegador de Patricio, porque el entorno de Claude no accede a ese
-portal. Una vez obtenido, se registra con su fuente:
+como **Rol PENDIENTE** y da hasta tres frases textuales del fallo para encontrar la
+sentencia en el Portal Unificado de Sentencias (juris.pjud.cl, pestaña Corte de
+Apelaciones). Hay que hacerlo desde el navegador de Patricio, porque el entorno de
+Claude no accede a ese portal.
+
+**Incorporar la sentencia (preferido).** Se guarda el texto de la sentencia (`.txt`,
+con la URL en la primera línea) o su PDF en la carpeta de entrada, con el nombre
+`sentencia-<número de nota>.txt`/`.pdf`, y se vuelve a ejecutar `--entrada`, o bien:
+
+```bash
+node agente-jurisprudencia-serena/reporte.mjs --incorporar-sentencia <salida> --nota <número> \
+  --sentencia sentencia-<número>.txt [--fuente-rol "<URL de la sentencia>"]
+```
+
+El programa solo toma el rol y la fecha si **al menos una cita textual de la nota aparece
+en la sentencia**, el texto es de la Corte de Apelaciones de La Serena, la sala coincide
+y el encabezado no es de la Corte Suprema. Si no, lo rechaza y dice por qué. La fecha
+la lee aunque esté en letras («La Serena, dieciséis de octubre de dos mil veintiséis»).
+El reporte muestra «verificado: N de M citas de la nota aparecen en la sentencia».
+
+**Registrar un rol confirmado a mano** (por ejemplo, leído en la OJV):
 
 ```bash
 node agente-jurisprudencia-serena/reporte.mjs --asignar-rol <salida> --nota <número> \
-  --rol Protección-1234-2026 --fuente-rol "<URL de la sentencia u OJV>" [--fecha-sentencia AAAA-MM-DD]
+  --rol Protección-1234-2026 --fuente-rol "OJV" [--fecha-sentencia AAAA-MM-DD]
 ```
 
-Ese comando actualiza la ficha, el carrusel y los captions (quita el
-`[VERIFICAR: rol en la OJV]` y, con él, la banda BORRADOR), y rehace el reporte.
+Las dos órdenes actualizan la ficha, el carrusel y los captions (quitan el
+`[VERIFICAR: rol en la OJV]` y, con él, la banda BORRADOR), y rehacen el reporte.
 
 ### Pendiente de verificar antes de publicar cualquier carrusel
 

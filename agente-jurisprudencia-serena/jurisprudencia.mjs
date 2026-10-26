@@ -400,27 +400,239 @@ export function extraerFicha(item, noticia, confirmacion = confirmarCorte(notici
   ficha.rolFuente = rolCorte ? "Nota de prensa del Poder Judicial" : null;
   ficha.fechaSentencia = null;
   ficha.documento = noticia.documento || null;
-  ficha.fraseBusqueda = fraseBusqueda(ficha);
+  ficha.frasesBusqueda = frasesBusqueda(ficha);
+  ficha.fraseBusqueda = ficha.frasesBusqueda[0] || null;
+  ficha.rolVerificacion = null;
   Object.assign(ficha, puntuar(ficha));
   ficha.pendientes = pendientes(ficha);
   return ficha;
 }
 
+// Palabras que no sirven para empezar ni terminar una frase de búsqueda.
+const VACIAS = new Set(("a al ante bajo con contra de del desde en entre hacia hasta la las lo los el un una unos unas y e o u "
+  + "que se su sus por para sin sobre tras es son fue era ha han ya no ni le les me mi este esta esto ese esa eso aquel "
+  + "aquella aquello como cuando donde pues si asi tal cual cuya cuyo cuyas cuyos mas tambien tanto toda todo todos todas "
+  + "dicha dicho dichos dichas misma mismo mismas mismos cada otra otro otras otros ello ella ellos ellas aquello").split(" "));
+// Vocabulario forense presente en casi cualquier sentencia: no distingue un fallo de otro.
+const FORENSE = new Set(("recurso recursos recurrente recurrentes recurrido recurridos recurrida recurridas sentencia resolucion "
+  + "tribunal corte sala articulo articulos considerando considerandos antecedentes autos fojas resuelve resuelto estima "
+  + "estimar corresponde procede procedente improcedente improcedencia acoge rechaza confirma revoca declara dispone "
+  + "efecto consecuencia conforme referido referida referidos referidas senalado senalada anterior anteriores presente "
+  + "respecto accion acciones constitucional garantia garantias derecho derechos ilegal arbitrario arbitraria legal "
+  + "actuar hechos acreditado acreditada vulneracion vulnerado").split(" "));
+const FORMULAS = /^(?:que asi las cosas|que respecto|por estas consideraciones|por tanto|en consecuencia|en efecto|por otra parte|sin embargo|ahora bien|asimismo|ademas|se acoge|se rechaza|se confirma|se revoca|de todo lo dicho|teniendo en cuenta|atendido|visto)\b/;
+
+const pesoPalabra = (w) => {
+  const n = normalizar(w).replace(/[^\p{L}\d]/gu, "");
+  if (!n || VACIAS.has(n)) return 0;
+  if (FORENSE.has(n)) return -1;
+  if (/\d/.test(n)) return 1;
+  return n.length >= 8 ? 2 : n.length >= 5 ? 1 : 0;
+};
+
 /**
- * Frase literal y distintiva del fallo (6 a 10 palabras) para encontrarlo en
- * el Portal Unificado de Sentencias: el texto de la sentencia la contiene.
+ * Frases literales y distintivas del fallo (6 a 10 palabras) para encontrarlo
+ * en el Portal Unificado de Sentencias: la sentencia las contiene tal cual.
+ * Devuelve hasta `max`, de citas distintas, ordenadas de más a menos
+ * distintiva. Empiezan y terminan en palabra con contenido; excluyen los
+ * incisos de la prensa ("–añade–") y las fórmulas forenses.
  */
-export function fraseBusqueda(f) {
-  // Se corta en puntuación, omisiones y en los incisos de la prensa ("–añade–"),
-  // que no están en la sentencia.
-  const tramos = f.citas.flatMap((c) => c.texto.split(/\s*(?:\(…\)|\(\.\.\.\)|[.;:“”"‘’–—()]|\s-|-\s)\s*/))
-    .map((t) => t.replace(/^[,\s–—-]+|[,\s–—-]+$/g, "").trim())
-    .map((t) => ({ t, palabras: t.split(/\s+/).filter(Boolean) }))
-    .filter((x) => x.palabras.length >= 6);
-  if (!tramos.length) return null;
-  const valor = (x) => x.palabras.filter((w) => w.length >= 7).length;
-  const mejor = tramos.sort((a, b) => valor(b) - valor(a) || a.palabras.length - b.palabras.length)[0];
-  return mejor.palabras.slice(0, 10).join(" ").replace(/[,]$/, "");
+export function frasesBusqueda(f, max = 3) {
+  const original = [f.bajada, ...f.parrafos].join(" ");
+  const candidatas = [];
+  f.citas.forEach((c, k) => {
+    const tramos = c.texto.split(/\s*(?:\(…\)|\(\.\.\.\)|[.;:“”"‘’–—()]|\s-|-\s)\s*/)
+      .map((t) => t.replace(/^[,\s–—-]+|[,\s–—-]+$/g, "").trim()).filter(Boolean);
+    for (const t of tramos) {
+      const palabras = t.split(/\s+/);
+      if (palabras.length < 6) continue;
+      const largo = Math.min(10, palabras.length);
+      for (let i = 0; i + largo <= palabras.length; i++) {
+        const fin = i + largo;
+        // Las frases que empiezan y terminan en un límite de cláusula se leen
+        // (y se buscan) mejor que las que cortan una expresión por la mitad.
+        const limites = (i === 0 || /,$/.test(palabras[i - 1]) ? 1 : 0) + (fin === palabras.length || /,$/.test(palabras[fin - 1]) ? 1 : 0);
+        let v = palabras.slice(i, fin);
+        while (v.length && pesoPalabra(v[0]) <= 0) v.shift();
+        while (v.length && (pesoPalabra(v[v.length - 1]) <= 0 || /,$/.test(v[v.length - 1]))) v.pop();
+        if (v.length < 6) continue;
+        const frase = v.join(" ");
+        if (FORMULAS.test(normalizar(frase)) || !original.includes(frase)) continue;
+        candidatas.push({ frase, cita: k, valor: v.reduce((a, w) => a + pesoPalabra(w), 0) + limites });
+      }
+    }
+  });
+  candidatas.sort((a, b) => b.valor - a.valor || a.frase.length - b.frase.length);
+  const elegidas = [];
+  const citasUsadas = new Set();
+  for (const c of candidatas) {
+    if (citasUsadas.has(c.cita)) continue;
+    if (elegidas.some((e) => normalizar(e).includes(normalizar(c.frase)) || normalizar(c.frase).includes(normalizar(e)))) continue;
+    elegidas.push(c.frase);
+    citasUsadas.add(c.cita);
+    if (elegidas.length >= max) break;
+  }
+  return elegidas;
+}
+
+/** Compatibilidad: la mejor frase de búsqueda, o null. */
+export const fraseBusqueda = (f) => frasesBusqueda(f, 1)[0] || null;
+
+// ---------------------------------------------------------------------------
+// Sentencia (texto del Portal Unificado, de la OJV o de un PDF)
+// ---------------------------------------------------------------------------
+
+const UNIDADES = { cero: 0, uno: 1, un: 1, una: 1, primero: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8,
+  nueve: 9, diez: 10, once: 11, doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18,
+  diecinueve: 19, veinte: 20, veintiuno: 21, veintiun: 21, veintidos: 22, veintitres: 23, veinticuatro: 24, veinticinco: 25,
+  veintiseis: 26, veintisiete: 27, veintiocho: 28, veintinueve: 29, treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60,
+  setenta: 70, ochenta: 80, noventa: 90 };
+const NUMERAL = "(?:\\d{1,2}|(?:treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa)(?:\\s+y\\s+(?:uno|un|dos|tres|cuatro|cinco|seis|siete|ocho|nueve))?|"
+  + Object.keys(UNIDADES).join("|") + ")";
+
+/** "treinta y uno" → 31; "dieciséis" → 16; "7" → 7. Sobre texto normalizado. */
+function numeroDesdeLetras(t) {
+  const n = normalizar(t).trim();
+  if (/^\d+$/.test(n)) return parseInt(n, 10);
+  const m = n.match(/^(\w+)(?:\s+y\s+(\w+))?$/);
+  if (!m || !(m[1] in UNIDADES)) return null;
+  return UNIDADES[m[1]] + (m[2] ? UNIDADES[m[2]] || 0 : 0);
+}
+
+/**
+ * Fecha escrita con números o con letras, como la encabezan las sentencias
+ * chilenas ("La Serena, dieciséis de octubre de dos mil veintiséis";
+ * "a veintiún días del mes de marzo del año dos mil veinticinco"; "16-10-2026").
+ * Devuelve AAAA-MM-DD o null. Con `cerca`, prefiere la fecha que sigue a ese texto.
+ */
+export function fechaDesdeLetras(texto, cerca = null) {
+  const n = normalizar(texto);
+  const meses = Object.keys(MESES).join("|");
+  const letras = new RegExp("(" + NUMERAL + ")\\s+(?:dias?\\s+)?(?:de\\s+|del\\s+mes\\s+de\\s+)?(" + meses + ")\\s+(?:de\\s+|del\\s+ano\\s+|del\\s+)?(\\d{4}|dos\\s+mil(?:\\s+" + NUMERAL + ")?)", "g");
+  const numerica = /\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b/g;
+  const encontradas = [];
+  for (const m of n.matchAll(letras)) {
+    const dia = numeroDesdeLetras(m[1]);
+    const mes = MESES[m[2]];
+    const anio = /^\d{4}$/.test(m[3]) ? parseInt(m[3], 10) : 2000 + (numeroDesdeLetras(m[3].replace(/^dos\s+mil\s*/, "")) || 0);
+    if (dia >= 1 && dia <= 31 && mes && anio >= 1990 && anio <= 2100) encontradas.push({ pos: m.index, iso: `${anio}-${mes}-${String(dia).padStart(2, "0")}` });
+  }
+  for (const m of n.matchAll(numerica)) {
+    const [dia, mes, anio] = [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+    if (dia >= 1 && dia <= 31 && mes >= 1 && mes <= 12 && anio >= 1990 && anio <= 2100) encontradas.push({ pos: m.index, iso: `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}` });
+  }
+  if (!encontradas.length) return null;
+  encontradas.sort((a, b) => a.pos - b.pos);
+  if (cerca) {
+    const pc = n.indexOf(normalizar(cerca));
+    if (pc >= 0) {
+      const despues = encontradas.find((x) => x.pos >= pc && x.pos - pc < 80);
+      if (despues) return despues.iso;
+    }
+  }
+  return encontradas[0].iso;
+}
+
+const ROL_SENTENCIA_RE = new RegExp("\\b(?:rol|ingreso|causa)(?:\\s+(?:de\\s+)?(?:ingreso|corte|n[uú]mero|unico))?\\s*(?:n\\s*[°º.]?|nº|no\\.?|num\\.?)?\\s*[:.]?\\s*"
+  + "((?:[A-Za-zÁÉÍÓÚáéíóúñ]+(?:\\s[A-Za-zÁÉÍÓÚáéíóúñ]+)?-)?" + NUM_ROL + ")", "gi");
+const ROL_PREFIJADO_RE = new RegExp("\\b((?:Protecci[oó]n|Amparo|Penal|Civil|Laboral|Familia|Cobranza|Contencioso(?:\\s+Administrativo)?|Reforma\\s+Laboral|Criminal)-" + NUM_ROL + ")\\b", "gi");
+
+/**
+ * Datos de una sentencia a partir de su texto: rol (el del encabezado si lo
+ * hay), fecha, si es de la Corte de Apelaciones de La Serena, sala y si el
+ * encabezado es de la Corte Suprema (otra causa, otro rol).
+ */
+export function parsearSentencia(texto) {
+  const t = String(texto || "").replace(/[\s ]+/g, " ").trim();
+  const roles = [];
+  for (const re of [ROL_PREFIJADO_RE, ROL_SENTENCIA_RE]) {
+    for (const m of t.matchAll(re)) roles.push({ rol: m[1].replace(/\s+/g, " "), pos: m.index, prefijado: /-\d/.test(m[1]) && /^[A-Za-z]/.test(m[1]) });
+  }
+  const vistos = new Map();
+  for (const r of roles) if (!vistos.has(r.rol)) vistos.set(r.rol, r);
+  const lista = [...vistos.values()].sort((a, b) => (b.prefijado - a.prefijado) || a.pos - b.pos);
+  const cabecera = t.slice(0, 1500);
+  const posSuprema = t.search(/Corte\s+Suprema/i);
+  const posSerena = t.search(/Corte\s+de\s+Apelaciones\s+de\s+La\s+Serena/i);
+  // En las sentencias chilenas la sala suele ir al final ("Pronunciada por la
+  // Primera Sala…"), así que se busca en todo el texto.
+  const salaM = t.match(/\b(Primera|Segunda|Tercera|Cuarta)\s+Sala\b/i);
+  return {
+    rol: lista.length ? lista[0].rol : null,
+    roles: lista.map((r) => r.rol),
+    fecha: fechaDesdeLetras(t, "La Serena,") || fechaDesdeLetras(cabecera),
+    tribunalLaSerena: posSerena >= 0 || /\bI(?:ltma|lustr[íi]sima)?\.?\s+Corte\b[\s\S]{0,40}La\s+Serena/i.test(t),
+    // Encabezado de la Corte Suprema: aparece en los primeros 600 caracteres y
+    // antes que la Corte de La Serena (que allí solo se cita como tribunal recurrido).
+    esSuprema: posSuprema >= 0 && posSuprema < 600 && (posSerena < 0 || posSuprema < posSerena),
+    sala: salaM ? salaM[1][0].toUpperCase() + salaM[1].slice(1).toLowerCase() + " Sala" : null,
+    largo: t.length
+  };
+}
+
+/** Ventanas de `n` palabras de un texto, para comparar citas con incisos de la prensa. */
+function ventanas(texto, n) {
+  const partes = texto.split(/\s*(?:\(…\)|\(\.\.\.\)|[–—]|\s-\s)\s*/).map((p) => p.trim()).filter(Boolean);
+  const out = [];
+  for (const p of partes) {
+    const w = p.split(/\s+/);
+    if (w.length <= n) { if (w.length >= 6) out.push(p); continue; }
+    for (let i = 0; i + n <= w.length; i++) out.push(w.slice(i, i + n).join(" "));
+  }
+  return out;
+}
+
+/**
+ * ¿Este texto es la sentencia de la ficha? Exige que al menos una cita
+ * textual de la nota aparezca en el texto (ventanas de 10 palabras, sin
+ * incisos) y que el texto sea de la Corte de Apelaciones de La Serena.
+ */
+export function verificarSentencia(ficha, texto) {
+  const p = parsearSentencia(texto);
+  const n = normalizar(String(texto || ""));
+  const citasCoincidentes = ficha.citas.filter((c) => ventanas(c.texto, 10).some((v) => n.includes(normalizar(v)))).length;
+  const frases = frasesBusqueda(ficha, 3);
+  const frasesCoincidentes = frases.filter((f) => n.includes(normalizar(f))).length;
+  const motivos = [];
+  if (!ficha.citas.length) motivos.push("La nota no trae citas textuales: no se puede comprobar automáticamente que esta sea la sentencia. Confírmalo a mano y usa --asignar-rol.");
+  else if (!citasCoincidentes) motivos.push(`Ninguna de las ${ficha.citas.length} citas textuales de la nota aparece en el texto.`);
+  if (!p.tribunalLaSerena) motivos.push("El texto no menciona a la Corte de Apelaciones de La Serena.");
+  if (p.esSuprema) motivos.push("El encabezado es de la Corte Suprema: es otra causa, con otro rol.");
+  if (p.sala && ficha.sala && p.sala !== ficha.sala) motivos.push(`La sala del texto (${p.sala}) no coincide con la de la nota (${ficha.sala}).`);
+  if (!p.rol) motivos.push("No encontré un rol en el texto.");
+  const avisos = [];
+  if (p.rol) {
+    const anio = parseInt(p.rol.slice(-4), 10);
+    const anioNota = parseInt(ficha.fechaNota.slice(0, 4), 10);
+    if (anio > anioNota || anio < anioNota - 3) avisos.push(`El año del rol (${anio}) queda lejos del de la nota (${anioNota}): revísalo.`);
+  }
+  if (!p.fecha) avisos.push("No encontré la fecha de la sentencia en el texto.");
+  return { coincide: motivos.length === 0, rol: p.rol, roles: p.roles, fecha: p.fecha, sala: p.sala, tribunalLaSerena: p.tribunalLaSerena,
+    citasCoincidentes, totalCitas: ficha.citas.length, frasesCoincidentes, totalFrases: frases.length, motivos, avisos };
+}
+
+/**
+ * Incorpora a la ficha el rol (y la fecha) leídos en el texto de su
+ * sentencia, solo si la verificación pasa. `fuente` es de dónde salió el
+ * texto (URL del Portal Unificado, OJV, nombre del archivo).
+ */
+export function incorporarSentencia(ficha, texto, { fuente }) {
+  const v = verificarSentencia(ficha, texto);
+  if (!v.coincide) {
+    const e = new Error("La sentencia no se incorporó: " + v.motivos.join(" "));
+    e.verificacion = v;
+    throw e;
+  }
+  if (ficha.rol && ficha.rol !== v.rol && !v.roles.includes(ficha.rol)) {
+    const e = new Error(`El rol del texto (${v.rol}) no coincide con el que informa la nota (${ficha.rol}).`);
+    e.verificacion = v;
+    throw e;
+  }
+  const g = aplicarRol(ficha, { rol: ficha.rol || v.rol, fuente, fechaSentencia: v.fecha });
+  g.rolVerificacion = { fuente: String(fuente).trim(), citasCoincidentes: v.citasCoincidentes, totalCitas: v.totalCitas,
+    frasesCoincidentes: v.frasesCoincidentes, totalFrases: v.totalFrases, sala: v.sala, avisos: v.avisos };
+  g.pendientes = pendientes(g);
+  return g;
 }
 
 const ROL_VALIDO = new RegExp("^(?:[A-Za-zÁÉÍÓÚáéíóúñ]+-)?" + NUM_ROL + "$");
@@ -435,7 +647,7 @@ export function aplicarRol(f, { rol, fuente, fechaSentencia = null }) {
   if (!String(fuente || "").trim()) throw new Error("Falta la fuente del rol (por ejemplo, la URL de la sentencia en el Portal Unificado o «OJV»)");
   if (fechaSentencia && !/^\d{4}-\d{2}-\d{2}$/.test(fechaSentencia)) throw new Error("La fecha de la sentencia debe ser AAAA-MM-DD");
   const g = { ...f, rol: r, rolTexto: `${r} (según ${String(fuente).trim()})`, rolFuente: String(fuente).trim(),
-    fechaSentencia: fechaSentencia || f.fechaSentencia || null };
+    fechaSentencia: fechaSentencia || f.fechaSentencia || null, rolVerificacion: null };
   Object.assign(g, puntuar(g));
   g.pendientes = pendientes(g);
   return g;
@@ -445,9 +657,11 @@ export function aplicarRol(f, { rol, fuente, fechaSentencia = null }) {
 function pendientes(f) {
   const p = [];
   if (!f.rol) {
+    const frases = (f.frasesBusqueda || []).map((x) => `«${x}»`).join(" o ");
     p.push("Rol: la nota no lo informa y es obligatorio para publicar. Búscalo en el Portal Unificado de Sentencias"
-      + (f.fraseBusqueda ? ` con la frase «${f.fraseBusqueda}»` : "")
-      + " y regístralo con --asignar-rol. Mientras tanto el carrusel lleva [VERIFICAR: rol en la OJV] y sale con banda BORRADOR.");
+      + (frases ? ` con la frase ${frases}` : "")
+      + ", guarda el texto de la sentencia e incorpóralo con --incorporar-sentencia (o regístralo con --asignar-rol)."
+      + " Mientras tanto el carrusel lleva [VERIFICAR: rol en la OJV] y sale con banda BORRADOR.");
   }
   if (!f.fechaSentencia) {
     p.push(`Fecha de la sentencia: la nota no la informa. La fecha disponible (${f.fechaNotaTexto}) es la de publicación de la nota; no presentarla como fecha del fallo.`);
@@ -537,7 +751,7 @@ export function puntuar(f) {
     puntaje += 1;
     motivos.push({ puntos: 1, texto: `Resultado con mensaje práctico (${f.resultado})` });
   }
-  if (f.rol) { puntaje += 1; motivos.push({ puntos: 1, texto: "La nota informa el rol (se puede citar)" }); }
+  if (f.rol) { puntaje += 1; motivos.push({ puntos: 1, texto: "Rol disponible (se puede citar)" }); }
   if (f.citas.length >= 2) { puntaje += 1; motivos.push({ puntos: 1, texto: `${f.citas.length} citas textuales del fallo` }); }
   const cuidado = coincidencias(texto, CUIDADO);
   const delicado = coincidencias(texto, DELICADO);
@@ -795,7 +1009,8 @@ function datosFichaHtml(f) {
     ["Tribunal", E(`${f.tribunal}${f.sala ? " — " + f.sala : ""}`)],
     ["Rol", f.rol
       ? `${E(f.rol)} <span style="${estilo.dato}">${f.rolFuente && f.rolFuente !== "Nota de prensa del Poder Judicial"
-        ? `(fuente: ${E(f.rolFuente)})` : `(según la nota: «${E(f.rolTexto)}»)`}</span>`
+        ? `(fuente: ${E(f.rolFuente)}${f.rolVerificacion ? ` · <span style="${estilo.ok}">verificado</span>: ${f.rolVerificacion.citasCoincidentes} de ${f.rolVerificacion.totalCitas} citas de la nota aparecen en la sentencia` : " · sin verificación automática"})`
+        : `(según la nota: «${E(f.rolTexto)}»)`}</span>`
       : `<span style="${estilo.mal}">PENDIENTE — obligatorio para publicar</span> · la nota no lo informa`],
     ...(f.fechaSentencia ? [["Fecha de la sentencia", isoATexto(f.fechaSentencia)]] : []),
     ["Acción o recurso", E(f.accion || "—")],
@@ -847,12 +1062,14 @@ function recomendadoHtml(f, i, carrusel) {
 
 /** Instrucciones para obtener el rol que la nota no trae. */
 function cajaRol(f) {
+  const frases = (f.frasesBusqueda || []).map((x) => `<li><b>«${E(x)}»</b></li>`).join("");
   return `<div style="${estilo.aviso}"><b>Cómo obtener el rol:</b> en el Portal Unificado de Sentencias
-(<a href="https://juris.pjud.cl/busqueda?Corte_Suprema">juris.pjud.cl</a>, pestaña «Corte de Apelaciones»)
-busca ${f.fraseBusqueda ? `la frase textual del fallo <b>«${E(f.fraseBusqueda)}»</b>` : "por las palabras del título"}
-y confirma que la sentencia es de la Corte de Apelaciones de La Serena${f.sala ? ", " + E(f.sala) : ""}.
-${f.documento ? `También revisa el documento adjunto a la nota. ` : ""}Luego pide a Claude registrarlo
-(«el rol del fallo ${E(f.id)} es …», con la URL de la sentencia): el reporte y el carrusel se actualizan solos.</div>`;
+(<a href="https://juris.pjud.cl/busqueda?Corte_Suprema">juris.pjud.cl</a>, pestaña «Corte de Apelaciones») busca
+${frases ? `una de estas frases textuales del fallo:<ul style="margin:4px 0">${frases}</ul>` : "las palabras del título. "}
+Abre la sentencia de la Corte de Apelaciones de La Serena${f.sala ? ", " + E(f.sala) : ""}, y guarda su texto
+(o su PDF) en la carpeta de entrada con el nombre <code>sentencia-${E(f.id)}.txt</code>. El agente comprueba que las
+citas de la nota están en ese texto, toma el rol y la fecha de la sentencia y quita el BORRADOR del carrusel.
+${f.documento ? `También revisa el documento adjunto a la nota. ` : ""}Si prefieres, pide a Claude: «el rol del fallo ${E(f.id)} es …», con la URL de la sentencia.</div>`;
 }
 
 function fichaCortaHtml(f) {
@@ -902,6 +1119,10 @@ export function construirReporte(d) {
         `<li>${isoATexto(x.item.fechaNota)} · ${E(x.item.titulo)} — ${E(x.motivo)}${x.item.url ? ` · <a href="${E(x.item.url)}">ver</a>` : ""}</li>`).join("")}</ul>`);
     }
   }
+  if (d.sentencias && d.sentencias.length) {
+    h.push(`<h2 style="${estilo.h2}">Sentencias en la carpeta</h2><ul style="font-size:13px">${d.sentencias.map((x) =>
+      `<li><b>${E(x.archivo)}</b> — ${x.estado === "incorporada" ? `<span style="${estilo.ok}">incorporada</span> a la nota ${E(x.nota)}: rol ${E(x.rol)}${x.fecha ? ", sentencia del " + isoATexto(x.fecha) : ""}` : `<span style="${estilo.mal}">${E(x.estado)}</span>`}${x.detalle ? ` · ${E(x.detalle)}` : ""}</li>`).join("")}</ul>`);
+  }
   h.push(`<h2 style="${estilo.h2}">Advertencias</h2><ul style="font-size:12px;color:#55555c">${ADVERTENCIAS.map((a) => `<li>${E(a)}</li>`).join("")}</ul>`);
   h.push(`<p style="font-size:12px;color:#85858c">Generado por el agente Jurisprudencia C.A. La Serena (Claude). Para convertir un recomendado en láminas, pide a Claude: «renderiza el carrusel del fallo &lt;número de nota&gt;».</p>`);
   h.push("</div>");
@@ -920,7 +1141,7 @@ function construirMarkdown(d, asunto, recomendados, otros, carruseles) {
       recomendados.forEach((f, i) => {
         l.push(`### ${i + 1}. ${f.titulo}`, "");
         l.push(`- ${f.tribunal}${f.sala ? " — " + f.sala : ""} · ${f.rol ? "Rol " + f.rol + (f.rolFuente ? ` (${f.rolFuente})` : "") : "**Rol PENDIENTE** (obligatorio para publicar)"} · ${f.accion || "acción no informada"} · ${f.resultado || ""}`);
-        if (!f.rol && f.fraseBusqueda) l.push(`- Buscar el rol en juris.pjud.cl (Corte de Apelaciones) con la frase: «${f.fraseBusqueda}»`);
+        if (!f.rol && f.frasesBusqueda && f.frasesBusqueda.length) l.push(`- Buscar el rol en juris.pjud.cl (Corte de Apelaciones) con: ${f.frasesBusqueda.map((x) => `«${x}»`).join(" · ")}`);
         l.push(`- Nota del ${f.fechaNotaTexto}: ${f.url}`);
         l.push(`- Puntaje ${f.puntaje}: ${f.motivos.map((m) => `${m.puntos > 0 ? "+" : ""}${m.puntos} ${m.texto}`).join("; ")}`, "");
         l.push(`> ${f.bajada}`, "");
@@ -947,6 +1168,11 @@ function construirMarkdown(d, asunto, recomendados, otros, carruseles) {
       d.descartadas.forEach((x) => l.push(`- ${isoATexto(x.item.fechaNota)} · ${x.item.titulo} — ${x.motivo}`));
       l.push("");
     }
+  }
+  if (d.sentencias && d.sentencias.length) {
+    l.push("## Sentencias en la carpeta", "");
+    d.sentencias.forEach((x) => l.push(`- ${x.archivo} — ${x.estado}${x.nota ? ` (nota ${x.nota}, rol ${x.rol})` : ""}${x.detalle ? ` · ${x.detalle}` : ""}`));
+    l.push("");
   }
   l.push("## Advertencias", "", ...ADVERTENCIAS.map((a) => `- ${a}`), "");
   return l.join("\n");

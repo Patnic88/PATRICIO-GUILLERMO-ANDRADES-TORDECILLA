@@ -128,7 +128,82 @@ await test("confirmación con el texto: Corte Suprema, ministro en visita o sin 
   assert.equal(J.parsearNoticia("<html><h1>otra</h1></html>").estado, "desconocida");
 });
 
-await test("rol: frase de búsqueda literal y registro con fuente obligatoria", () => {
+// Sentencia SINTÉTICA (rol y fecha ficticios) que reproduce las citas de la nota 149489.
+function sentenciaSintetica(f, { rol = "Protección-2187-2026", sala = "Primera Sala", ciudad = "La Serena", corte = "Corte de Apelaciones de La Serena" } = {}) {
+  return [`${ciudad}, dieciséis de octubre de dos mil veintiséis.`, "VISTOS:",
+    "Comparece don (…), en favor de su hijo menor de edad, e interpone recurso de protección en contra de don (…).",
+    ...f.citas.map((c, i) => `${i + 1}°) Que, ${c.texto}.`),
+    "Y visto lo dispuesto en el artículo 20 de la Constitución Política de la República, SE ACOGE el recurso, sin costas.",
+    `Regístrese y archívese. Rol N° ${rol}.`,
+    `Pronunciada por la ${sala} de la ${corte}, integrada por los ministros Felipe Pulgar, Marcela Sandoval y Roxana Camus.`].join("\n");
+}
+const SENTENCIA_149489 = sentenciaSintetica(ficha("149489"));
+
+await test("frases de búsqueda: hasta 3 por fallo, literales, de 6 a 10 palabras, sin muletillas en los bordes", () => {
+  const vacias = new Set(["y", "e", "o", "de", "del", "la", "el", "los", "las", "que", "a", "al", "en", "con", "por", "para", "se", "su", "sus", "un", "una", "lo"]);
+  for (const f of readdirSync(DIR).filter((n) => n.startsWith("noticia-"))) {
+    const fi = ficha(f.match(/\d+/)[0]);
+    assert.ok(fi.frasesBusqueda.length >= 1 && fi.frasesBusqueda.length <= 3, f);
+    assert.equal(fi.fraseBusqueda, fi.frasesBusqueda[0]);
+    for (const fr of fi.frasesBusqueda) {
+      const w = fr.split(" ");
+      assert.ok(w.length >= 6 && w.length <= 10, `${f}: «${fr}»`);
+      assert.ok([fi.bajada, ...fi.parrafos].join(" ").includes(fr), `${f}: frase no literal «${fr}»`);
+      assert.ok(!/[–—]/.test(fr), `${f}: incluye un inciso de la prensa`);
+      assert.ok(!vacias.has(J.normalizar(w[0])) && !vacias.has(J.normalizar(w[w.length - 1])), `${f}: borde vacío «${fr}»`);
+      assert.ok(!/^(que así las cosas|por estas consideraciones|se acoge|se rechaza)/i.test(fr), `${f}: fórmula «${fr}»`);
+    }
+  }
+  const f = ficha("149489");
+  assert.ok(f.frasesBusqueda.some((x) => /WhatsApp|chat grupal|reiterativ|delito grave/i.test(x)), JSON.stringify(f.frasesBusqueda));
+});
+
+await test("fecha de la sentencia: en letras (como la encabezan los fallos) y en números", () => {
+  assert.equal(J.fechaDesdeLetras("La Serena, dieciséis de octubre de dos mil veintiséis."), "2026-10-16");
+  assert.equal(J.fechaDesdeLetras("a veintiún días del mes de marzo del año dos mil veinticinco"), "2025-03-21");
+  assert.equal(J.fechaDesdeLetras("treinta y uno de diciembre de dos mil veinticuatro"), "2024-12-31");
+  assert.equal(J.fechaDesdeLetras("La Serena, primero de junio de dos mil veintiséis"), "2026-06-01");
+  assert.equal(J.fechaDesdeLetras("Santiago, 7 de abril de 2026"), "2026-04-07");
+  assert.equal(J.fechaDesdeLetras("dictada el 07/04/2026"), "2026-04-07");
+  assert.equal(J.fechaDesdeLetras("sin fecha aquí"), null);
+  // Con «cerca», prefiere la fecha del encabezado y no una citada en el cuerpo.
+  assert.equal(J.fechaDesdeLetras("el 9 de septiembre de 2026 publicó el mensaje. La Serena, veinte de octubre de dos mil veintiséis.", "La Serena,"), "2026-10-20");
+});
+
+await test("sentencia: rol, fecha, tribunal y sala; verificación por citas; incorporación", () => {
+  const f = ficha("149489");
+  const p = J.parsearSentencia(SENTENCIA_149489);
+  assert.equal(p.rol, "Protección-2187-2026");
+  assert.equal(p.fecha, "2026-10-16");
+  assert.equal(p.tribunalLaSerena, true);
+  assert.equal(p.sala, "Primera Sala");
+  assert.equal(p.esSuprema, false);
+  const v = J.verificarSentencia(f, SENTENCIA_149489);
+  assert.equal(v.coincide, true, JSON.stringify(v.motivos));
+  assert.equal(v.citasCoincidentes, 6);
+  assert.equal(v.frasesCoincidentes, 3);
+  const g = J.incorporarSentencia(f, SENTENCIA_149489, { fuente: "https://juris.pjud.cl/ejemplo" });
+  assert.equal(g.rol, "Protección-2187-2026");
+  assert.equal(g.fechaSentencia, "2026-10-16");
+  assert.equal(g.rolFuente, "https://juris.pjud.cl/ejemplo");
+  assert.deepEqual([g.rolVerificacion.citasCoincidentes, g.rolVerificacion.totalCitas], [6, 6]);
+  assert.ok(!g.pendientes.some((x) => /^Rol:|^Fecha de la sentencia/.test(x)));
+  // Rechazos: otra ficha, Corte Suprema, otra sala, texto sin rol, rol distinto al de la nota.
+  assert.throws(() => J.incorporarSentencia(ficha("149032"), SENTENCIA_149489, { fuente: "x" }), /Ninguna de las 11 citas/);
+  const suprema = "Santiago, veinte de octubre de dos mil veintiséis. Corte Suprema. Rol N° 45.678-2026. VISTOS: Se trae a la vista el recurso de apelación contra la sentencia de la Corte de Apelaciones de La Serena. "
+    + f.citas[0].texto + ". Se confirma la sentencia apelada.";
+  assert.throws(() => J.incorporarSentencia(f, suprema, { fuente: "x" }), /encabezado es de la Corte Suprema/);
+  assert.throws(() => J.incorporarSentencia(f, sentenciaSintetica(f, { sala: "Segunda Sala" }), { fuente: "x" }), /sala del texto \(Segunda Sala\) no coincide/);
+  assert.throws(() => J.incorporarSentencia(f, SENTENCIA_149489.replace(/Rol N° [^.]+\./, ""), { fuente: "x" }), /No encontré un rol/);
+  const conRol = ficha("143842");
+  assert.throws(() => J.incorporarSentencia(conRol, sentenciaSintetica(conRol, { rol: "Protección-5555-2026", sala: "Segunda Sala" }), { fuente: "x" }), /no coincide con el que informa la nota \(71-2025\)/);
+  // Mismo rol que la nota: se incorpora la fecha y la verificación.
+  const ok = J.incorporarSentencia(conRol, sentenciaSintetica(conRol, { rol: "71-2025", sala: "Segunda Sala" }), { fuente: "x" });
+  assert.equal(ok.rol, "71-2025");
+  assert.equal(ok.fechaSentencia, "2026-10-16");
+});
+
+await test("rol: registro manual con fuente obligatoria", () => {
   for (const f of readdirSync(DIR).filter((n) => n.startsWith("noticia-"))) {
     const fi = ficha(f.match(/\d+/)[0]);
     assert.ok(fi.fraseBusqueda && fi.fraseBusqueda.split(" ").length >= 6, f);
@@ -434,10 +509,57 @@ await test("CLI --asignar-rol: el rol con su fuente reemplaza el [VERIFICAR] del
   assert.match(spec, /Rol Protección-9999-2026/);
   assert.match(readFileSync(join(carpeta, "captions.md"), "utf8"), /rol Protección-9999-2026/);
   const html = readFileSync(r.json.archivos.html, "utf8");
-  assert.match(html, /Protección-9999-2026 <span[^>]*>\(fuente: https:\/\/juris\.pjud\.cl\/ejemplo\)/);
+  assert.match(html, /Protección-9999-2026 <span[^>]*>\(fuente: https:\/\/juris\.pjud\.cl\/ejemplo · sin verificación automática\)/);
   assert.match(html, /Fecha de la sentencia<\/td><td[^>]*>01-10-2026/);
   const v = await run("node", [VALIDAR, carpeta]);
   assert.ok(!JSON.parse(v.stdout).avisos.some((a) => /BORRADOR/.test(a)));
+});
+
+await test("CLI --incorporar-sentencia: toma rol y fecha del texto y quita el BORRADOR; rechaza la sentencia equivocada", async () => {
+  const otra = join(tmp, "copia-incorporar");
+  await run("cp", ["-r", salidaOk, otra]);
+  const archivo = join(tmp, "sentencia-149489.txt");
+  writeFileSync(archivo, "URL: https://juris.pjud.cl/sentencia/ejemplo\n" + SENTENCIA_149489);
+  let r = await cli(["--incorporar-sentencia", otra, "--nota", "149032", "--sentencia", archivo], { conBase: false });
+  assert.notEqual(r.code, 0);
+  assert.match(r.json.error, /Ninguna de las 11 citas/);
+  r = await cli(["--incorporar-sentencia", otra, "--nota", "149489", "--sentencia", archivo], { conBase: false });
+  assert.equal(r.code, 0, JSON.stringify(r.json));
+  const fallo = r.json.fallos.find((x) => x.id === "149489");
+  assert.equal(fallo.rol, "Protección-2187-2026");
+  assert.ok(!r.json.sinRol.some((x) => x.id === "149489"));
+  assert.deepEqual(r.json.sentencias.map((x) => [x.archivo, x.estado, x.nota, x.rol, x.fecha]),
+    [["sentencia-149489.txt", "incorporada", "149489", "Protección-2187-2026", "2026-10-16"]]);
+  const carpeta = join(otra, "carruseles", "2026-10-20_149489");
+  assert.ok(!readFileSync(join(carpeta, "spec.base.json"), "utf8").includes("[VERIFICAR"));
+  const html = readFileSync(r.json.archivos.html, "utf8");
+  assert.match(html, /Protección-2187-2026 <span[^>]*>\(fuente: https:\/\/juris\.pjud\.cl\/sentencia\/ejemplo · <span[^>]*>verificado<\/span>: 6 de 6 citas/);
+  assert.match(html, /Fecha de la sentencia<\/td><td[^>]*>16-10-2026/);
+  assert.match(html, /Sentencias en la carpeta/);
+});
+
+await test("CLI --entrada: incorpora sola las sentencias guardadas (.txt y .pdf) y explica las que no calzan", async () => {
+  const entrada = join(tmp, "entrada-con-sentencias");
+  mkdirSync(entrada, { recursive: true });
+  copyFileSync(join(DIR, "noticia-149489.real-2026-10-25.html"), join(entrada, "nota-149489.html"));
+  copyFileSync(join(DIR, "noticia-149032.real-2026-10-25.html"), join(entrada, "nota-149032.html"));
+  copyFileSync(join(DIR, "noticia-143842.real-2026-10-25.html"), join(entrada, "nota-143842.html"));
+  writeFileSync(join(entrada, "sentencia-149489.txt"), "URL: https://juris.pjud.cl/sentencia/ejemplo\n" + SENTENCIA_149489);
+  copyFileSync(join(DIR, "sentencia-149032.sintetico.pdf"), join(entrada, "sentencia-149032.pdf"));
+  writeFileSync(join(entrada, "otra-sentencia.txt"), sentenciaSintetica({ citas: [{ texto: "texto que no corresponde a ninguna de las notas guardadas en esta carpeta de prueba" }] }, { rol: "Civil-77-2026" }).repeat(6));
+  const { code, json } = await cli(["--entrada", entrada, "--hoy", "2026-10-25", "--salida", join(tmp, "salida-con-sentencias")], { conBase: false });
+  assert.equal(code, 0, JSON.stringify(json));
+  const porId = Object.fromEntries(json.fallos.map((f) => [f.id, f.rol]));
+  assert.equal(porId["149489"], "Protección-2187-2026");
+  assert.equal(porId["149032"], "Protección-9032-2026", "rol leído del PDF con pdftotext");
+  assert.equal(porId["143842"], "71-2025", "el rol de la nota se conserva");
+  const estados = Object.fromEntries(json.sentencias.map((x) => [x.archivo, x.estado]));
+  assert.deepEqual(estados, { "sentencia-149489.txt": "incorporada", "sentencia-149032.pdf": "incorporada", "otra-sentencia.txt": "sin coincidencia" });
+  assert.equal(json.sentencias.find((x) => x.archivo === "sentencia-149032.pdf").fecha, "2026-10-01");
+  assert.deepEqual(json.sinRol, []);
+  const html = readFileSync(json.archivos.html, "utf8");
+  assert.match(html, /sentencia-149032\.pdf<\/b> — <span[^>]*>incorporada<\/span> a la nota 149032: rol Protección-9032-2026, sentencia del 01-10-2026/);
+  assert.match(html, /otra-sentencia\.txt<\/b> — <span[^>]*>sin coincidencia<\/span>/);
 });
 
 await test("validar-carrusel.mjs: código 0 si pasa, 2 si no", async () => {
@@ -549,6 +671,7 @@ await test("paquete .zip: trae los archivos del agente y el CLI funciona descomp
     "jurisprudencia-ca-la-serena/navegador/",
     "jurisprudencia-ca-la-serena/navegador/lista.js",
     "jurisprudencia-ca-la-serena/navegador/nota.js",
+    "jurisprudencia-ca-la-serena/navegador/sentencia.js",
     "jurisprudencia-ca-la-serena/reporte.mjs",
     "jurisprudencia-ca-la-serena/validar-carrusel.mjs"
   ]);

@@ -33,6 +33,7 @@ cp "$REPO_ROOT/agente-jurisprudencia-serena/SKILL.md" \
 mkdir -p "$TMP/jurisprudencia-ca-la-serena/navegador"
 cp "$REPO_ROOT/agente-jurisprudencia-serena/navegador/lista.js" \
    "$REPO_ROOT/agente-jurisprudencia-serena/navegador/nota.js" \
+   "$REPO_ROOT/agente-jurisprudencia-serena/navegador/sentencia.js" \
    "$TMP/jurisprudencia-ca-la-serena/navegador/"
 
 rm -f "$ZIP"
