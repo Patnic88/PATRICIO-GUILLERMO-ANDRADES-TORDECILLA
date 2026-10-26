@@ -351,6 +351,19 @@ export function porLeer({ entrada, hoy, periodo = null }) {
 // ---------------------------------------------------------------------------
 
 const json = (x) => JSON.stringify(x, null, 2) + "\n";
+const MARCADOR_ROL = "[VERIFICAR: rol en la OJV]";
+
+/** Con el rol ya incorporado, el carrusel y los captions dejan de llevar el marcador. */
+function propagarRol(dir, f) {
+  if (!f.rol) return;
+  for (const nombre of ["spec.base.json", "spec.json", "captions.md"]) {
+    const r = join(dir, nombre);
+    if (!existsSync(r)) continue;
+    const antes = readFileSync(r, "utf8");
+    const despues = antes.split(MARCADOR_ROL).join(f.rol);
+    if (despues !== antes) writeFileSync(r, despues);
+  }
+}
 
 /**
  * Escribe fichas, carpetas de carrusel y el reporte. Devuelve el resumen.
@@ -369,6 +382,7 @@ export function guardar(salida, datos) {
     writeFileSync(join(dir, "ficha.json"), json(f));
     writeFileSync(join(dir, "brief.md"), J.construirBrief(f));
     if (!existsSync(join(dir, "spec.base.json"))) writeFileSync(join(dir, "spec.base.json"), json(J.specBase(f)));
+    propagarRol(dir, f);
   }
   const rep = J.construirReporte(datos);
   const archivos = { html: join(salida, "reporte.html"), markdown: join(salida, "reporte.md") };
@@ -407,6 +421,7 @@ export function componer(salida) {
   for (const id of datos.recomendados) {
     const f = datos.fallos.find((x) => x.id === id);
     const dir = join(salida, "carruseles", J.slugFicha(f));
+    propagarRol(dir, f);
     const specRuta = join(dir, "spec.json");
     if (!existsSync(specRuta)) continue;
     const spec = JSON.parse(readFileSync(specRuta, "utf8"));
@@ -448,17 +463,8 @@ function actualizarRol(salida, nota, cambiar, archivo = null) {
     datos.sentencias = (datos.sentencias || []).filter((x) => x.archivo !== archivo);
     datos.sentencias.push({ archivo, estado: "incorporada", nota: f.id, rol: f.rol, fecha: f.fechaSentencia, detalle: f.rolVerificacion.avisos.join(" ") });
   }
-  const dir = join(salida, "carruseles", J.slugFicha(f));
-  if (existsSync(dir)) {
-    writeFileSync(join(dir, "ficha.json"), json(f));
-    writeFileSync(join(dir, "brief.md"), J.construirBrief(f));
-    for (const nombre of ["spec.base.json", "spec.json", "captions.md"]) {
-      const r = join(dir, nombre);
-      if (existsSync(r)) writeFileSync(r, readFileSync(r, "utf8").split("[VERIFICAR: rol en la OJV]").join(f.rol));
-    }
-  }
   writeFileSync(ruta, json(datos));
-  return componer(salida);
+  return componer(salida); // guardar() propaga el rol al carrusel
 }
 
 // ---------------------------------------------------------------------------

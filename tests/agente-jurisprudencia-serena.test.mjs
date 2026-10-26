@@ -560,6 +560,11 @@ await test("CLI --entrada: incorpora sola las sentencias guardadas (.txt y .pdf)
   const html = readFileSync(json.archivos.html, "utf8");
   assert.match(html, /sentencia-149032\.pdf<\/b> — <span[^>]*>incorporada<\/span> a la nota 149032: rol Protección-9032-2026, sentencia del 01-10-2026/);
   assert.match(html, /otra-sentencia\.txt<\/b> — <span[^>]*>sin coincidencia<\/span>/);
+  // Volver a ejecutar sobre la misma salida propaga el rol a un carrusel ya escrito.
+  const carpeta = join(tmp, "salida-con-sentencias", "carruseles", "2026-10-20_149489");
+  writeFileSync(join(carpeta, "spec.json"), JSON.stringify({ slides: [{ tipo: "cita", texto: "x", fuente: "C. A. de La Serena · Rol [VERIFICAR: rol en la OJV]" }] }));
+  await cli(["--entrada", entrada, "--hoy", "2026-10-25", "--salida", join(tmp, "salida-con-sentencias")], { conBase: false });
+  assert.match(readFileSync(join(carpeta, "spec.json"), "utf8"), /Rol Protección-2187-2026/);
 });
 
 await test("validar-carrusel.mjs: código 0 si pasa, 2 si no", async () => {
