@@ -31,7 +31,7 @@ const AQUI = dirname(fileURLToPath(import.meta.url));
 // identifica con su propio nombre.
 const USER_AGENT = "AgenteDiarioOficial/1.0 (reporte diario personal)";
 
-const FIRMA = "Generado por el agente Diario Oficial (rutina diaria de Claude).";
+const FIRMA = "Generado por el agente Diario Oficial (rutina de Claude).";
 const AYUDA_FALLA = "Si se repite, revisa que www.diariooficial.interior.gob.cl esté permitido "
   + "en la red del entorno de Claude (Network access → Allowed domains).";
 

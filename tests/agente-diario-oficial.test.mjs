@@ -88,7 +88,7 @@ await test("CLI: edición de hoy → reporte listo para enviar", async () => {
   const html = readFileSync(json.archivos.html, "utf8");
   const texto = readFileSync(json.archivos.texto, "utf8");
   assert.match(html, /⭐ Destacadas por tema/);
-  assert.match(html, /rutina diaria de Claude/, "firma del ejecutor de Claude");
+  assert.match(html, /agente Diario Oficial \(rutina de Claude\)/, "firma del ejecutor de Claude");
   assert.doesNotMatch(html, /tu cuenta de Google/);
   assert.match(texto, /=== NORMAS GENERALES \(4\) ===/);
   assert.deepEqual(JSON.parse(readFileSync(join(salida, "resultado.json"), "utf8")), json);
