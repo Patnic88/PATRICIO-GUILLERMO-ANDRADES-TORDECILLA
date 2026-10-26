@@ -128,6 +128,33 @@ await test("confirmación con el texto: Corte Suprema, ministro en visita o sin 
   assert.equal(J.parsearNoticia("<html><h1>otra</h1></html>").estado, "desconocida");
 });
 
+await test("rol: frase de búsqueda literal y registro con fuente obligatoria", () => {
+  for (const f of readdirSync(DIR).filter((n) => n.startsWith("noticia-"))) {
+    const fi = ficha(f.match(/\d+/)[0]);
+    assert.ok(fi.fraseBusqueda && fi.fraseBusqueda.split(" ").length >= 6, f);
+    assert.ok([fi.bajada, ...fi.parrafos].join(" ").includes(fi.fraseBusqueda), `${f}: frase no literal «${fi.fraseBusqueda}»`);
+    assert.ok(!/[–—]/.test(fi.fraseBusqueda), `${f}: incluye un inciso de la prensa`);
+  }
+  const f = ficha("149489");
+  assert.match(f.pendientes[0], /obligatorio para publicar/);
+  assert.throws(() => J.aplicarRol(f, { rol: "sin número", fuente: "OJV" }), /formato no reconocido/);
+  assert.throws(() => J.aplicarRol(f, { rol: "Protección-9999-2026", fuente: "" }), /Falta la fuente/);
+  const g = J.aplicarRol(f, { rol: "Rol N° Protección-9999-2026", fuente: "https://juris.pjud.cl/ejemplo", fechaSentencia: "2026-10-16" });
+  assert.equal(g.rol, "Protección-9999-2026");
+  assert.equal(g.rolFuente, "https://juris.pjud.cl/ejemplo");
+  assert.equal(g.puntaje, f.puntaje + 1);
+  assert.ok(!g.pendientes.some((p) => /^Rol:|^Fecha de la sentencia/.test(p)));
+  assert.match(J.fuenteCita(g), /Rol Protección-9999-2026/);
+  const conRol = J.extraerFicha(items.find((x) => x.id === "149489"), {
+    ...J.parsearNoticia(noticiaHtml("149489")),
+    parrafos: ["En fallo unánime (causa rol Protección-1234-2026), la Primera Sala del tribunal de alzada acogió el recurso."]
+  });
+  assert.equal(conRol.rol, "Protección-1234-2026", "rol de 4 dígitos sin punto");
+  const doc = J.parsearNoticia(noticiaHtml("149489").replace("</body>",
+    '<a href="/prensa-y-comunicaciones/docs/download/119467">Descargar sentencia</a></body>'));
+  assert.equal(doc.documento, "https://www.pjud.cl/prensa-y-comunicaciones/docs/download/119467");
+});
+
 await test("verificación humana (CAPTCHA): se reconoce en la lista y en la nota", () => {
   assert.equal(J.esVerificacionHumana(CAPTCHA), true);
   assert.equal(J.parsearLista(CAPTCHA).estado, "verificacion");
@@ -387,6 +414,30 @@ await test("CLI --componer: valida el carrusel escrito y lo incluye en el report
   const html = readFileSync(json.archivos.html, "utf8");
   assert.match(html, /validado contra la ficha/);
   assert.match(html, /Una paciente quedó en el limbo/);
+});
+
+await test("CLI --asignar-rol: el rol con su fuente reemplaza el [VERIFICAR] del carrusel y del reporte", async () => {
+  const otra = join(tmp, "copia-asignar");
+  await run("cp", ["-r", salidaOk, otra]);
+  const carpeta = join(otra, "carruseles", "2026-10-05_149032");
+  let r = await cli(["--asignar-rol", otra, "--nota", "149032", "--rol", "sin-rol"], { conBase: false });
+  assert.notEqual(r.code, 0, "rol inválido");
+  r = await cli(["--asignar-rol", otra, "--nota", "149032", "--rol", "Protección-9999-2026"], { conBase: false });
+  assert.match(r.json.error, /Falta la fuente/);
+  r = await cli(["--asignar-rol", otra, "--nota", "149032", "--rol", "Protección-9999-2026",
+    "--fuente-rol", "https://juris.pjud.cl/ejemplo", "--fecha-sentencia", "2026-10-01"], { conBase: false });
+  assert.equal(r.code, 0, JSON.stringify(r.json));
+  assert.deepEqual(r.json.recomendados.find((x) => x.id === "149032").carrusel, { ok: true, errores: [] });
+  assert.ok(!r.json.sinRol.some((x) => x.id === "149032"));
+  const spec = readFileSync(join(carpeta, "spec.json"), "utf8");
+  assert.ok(!spec.includes("[VERIFICAR"), "sin banda BORRADOR");
+  assert.match(spec, /Rol Protección-9999-2026/);
+  assert.match(readFileSync(join(carpeta, "captions.md"), "utf8"), /rol Protección-9999-2026/);
+  const html = readFileSync(r.json.archivos.html, "utf8");
+  assert.match(html, /Protección-9999-2026 <span[^>]*>\(fuente: https:\/\/juris\.pjud\.cl\/ejemplo\)/);
+  assert.match(html, /Fecha de la sentencia<\/td><td[^>]*>01-10-2026/);
+  const v = await run("node", [VALIDAR, carpeta]);
+  assert.ok(!JSON.parse(v.stdout).avisos.some((a) => /BORRADOR/.test(a)));
 });
 
 await test("validar-carrusel.mjs: código 0 si pasa, 2 si no", async () => {

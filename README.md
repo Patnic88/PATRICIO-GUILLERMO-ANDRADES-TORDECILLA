@@ -565,7 +565,7 @@ Skill descargable para claude.ai:
 ### Pruebas
 
 `tests/agente-jurisprudencia-serena.test.mjs` corre dentro de `bash tests/run.sh`
-(29 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
+(31 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
 recortadas al contenido de la noticia, en `tests/fixtures/jurisprudencia-serena/`.
 La página de verificación humana es una reproducción **sintética**. Cubre:
 
@@ -581,9 +581,26 @@ La página de verificación humana es una reproducción **sintética**. Cubre:
   `--por-leer`;
 - el `.zip`.
 
+### Rol obligatorio
+
+Un carrusel no se publica sin rol. Si la nota no lo trae, el reporte marca el fallo
+como **Rol PENDIENTE** y da una frase textual del fallo para encontrar la sentencia en el
+Portal Unificado de Sentencias (juris.pjud.cl, pestaña Corte de Apelaciones). Hay que
+hacerlo desde el navegador de Patricio, porque el entorno de Claude no accede a ese
+portal. Una vez obtenido, se registra con su fuente:
+
+```bash
+node agente-jurisprudencia-serena/reporte.mjs --asignar-rol <salida> --nota <número> \
+  --rol Protección-1234-2026 --fuente-rol "<URL de la sentencia u OJV>" [--fecha-sentencia AAAA-MM-DD]
+```
+
+Ese comando actualiza la ficha, el carrusel y los captions (quita el
+`[VERIFICAR: rol en la OJV]` y, con él, la banda BORRADOR), y rehace el reporte.
+
 ### Pendiente de verificar antes de publicar cualquier carrusel
 
-- **Rol:** la mayoría de las notas no lo informan → `[VERIFICAR: rol en la OJV]`.
+- **Rol:** la mayoría de las notas no lo informan → `[VERIFICAR: rol en la OJV]` hasta
+  registrarlo con `--asignar-rol`.
 - **Fecha:** la del reporte es la de la **nota**, no la de la sentencia.
 - **Firmeza:** la nota no dice si el fallo está firme.
 - **Normas:** las normas mencionadas se revisan en LeyChile antes de citarlas.

@@ -149,9 +149,39 @@ Requisitos (según https://code.claude.com/docs/en/chrome):
    node <agente>/reporte.mjs --salida <salida> --entrada <carpeta> --desde AAAA-MM-DD --hasta AAAA-MM-DD
    ```
    Si la sesión no tiene Gmail, no envíes nada: entrega la ruta de `reporte.html`.
+7. Para cada fallo de `sinRol`, busca el rol en el Portal Unificado y regístralo (ver
+   "Rol obligatorio"). Después repite `--componer` y el envío.
 
 Las fichas que vienen de `.txt` llevan un pendiente extra: el texto pasó por Claude, así
 que las citas se contrastan con la página antes de publicar.
+
+## Rol obligatorio
+
+Un carrusel no se publica sin el rol de la causa. Muchas notas del Poder Judicial no lo
+informan: el reporte las marca como **Rol PENDIENTE**, y `resultado.json` las lista en
+`sinRol`, con una `fraseBusqueda` (frase textual del fallo).
+
+- **Obtenerlo (modo navegador):** en la pestaña de Patricio, abre
+  `https://juris.pjud.cl/busqueda?Corte_Suprema`, pasa a la pestaña **Corte de
+  Apelaciones** y busca la `fraseBusqueda` (si aparece un reCAPTCHA, pide a Patricio
+  que lo resuelva).
+  - Abre la sentencia que coincida y confirma tres cosas: que la frase aparece en el
+    texto, que el tribunal es la Corte de Apelaciones de La Serena y que la sala
+    coincide con la ficha.
+  - Si la nota trae un `documento` adjunto, revísalo también.
+  - Si no hay una coincidencia clara, no asignes ningún rol: queda pendiente.
+- **Obtenerlo (Patricio):** si él lo trae de la OJV o del expediente, usa como fuente lo
+  que diga, por ejemplo «OJV, informado por Patricio».
+- **Registrarlo:**
+  ```bash
+  node <agente>/reporte.mjs --asignar-rol <salida> --nota <número de nota> --rol <rol> \
+    --fuente-rol "<URL de la sentencia o fuente>" [--fecha-sentencia AAAA-MM-DD]
+  ```
+  Esto actualiza la ficha y cambia el `[VERIFICAR: rol en la OJV]` del carrusel y de los
+  captions por el rol. Luego vuelve a validar y rehace el reporte. Después vuelve a
+  generar las láminas: ya salen sin la banda BORRADOR.
+- **Nunca** deduzcas un rol de memoria ni de un fallo parecido, ni lo tomes de un medio
+  que no muestre la sentencia.
 
 ## Renderizar las láminas (a pedido)
 

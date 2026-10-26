@@ -16,11 +16,14 @@
   const despues = (el) => titulo.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING;
   const fecha = [...document.querySelectorAll("span.text-muted")].find(despues);
   const bajada = document.querySelector("blockquote.wp-block-quote");
+  // Documento adjunto a la nota (a veces la sentencia, que trae el rol).
+  const adjuntos = [...document.querySelectorAll('a[href*="/prensa-y-comunicaciones/docs/download/"]')];
   return [
     `<!-- ${location.href} -->`,
     titulo.outerHTML,
     fecha ? fecha.outerHTML : "",
     bajada ? bajada.outerHTML : "",
-    cuerpo.outerHTML
+    cuerpo.outerHTML,
+    ...adjuntos.map((a) => a.outerHTML)
   ].join("\n");
 })()

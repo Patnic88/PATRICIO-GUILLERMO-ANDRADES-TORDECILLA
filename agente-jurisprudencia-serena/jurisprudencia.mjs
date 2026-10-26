@@ -174,7 +174,9 @@ export function parsearNoticia(html) {
   if (!parrafos.length) parrafos = cuerpo.split(/<br\s*\/?>\s*<br\s*\/?>/i).map(textoPlano);
   parrafos = parrafos.filter(Boolean);
   if (!parrafos.length) return { estado: "desconocida" };
-  return { estado: "ok", titulo, fechaTexto, bajada, parrafos };
+  const doc = s.match(/href="((?:https?:\/\/www\.pjud\.cl)?\/prensa-y-comunicaciones\/docs\/download\/\d+)"/i);
+  const documento = doc ? (doc[1].startsWith("http") ? doc[1] : CONFIG.baseUrl + doc[1]) : null;
+  return { estado: "ok", titulo, fechaTexto, bajada, parrafos, ...(documento ? { documento } : {}) };
 }
 
 // ---------------------------------------------------------------------------
@@ -289,7 +291,10 @@ const ACCIONES = [
   "acción constitucional", "solicitud de extradición", "desafuero", "apelación"
 ];
 
-const ROL_RE = /\b(?:causa\s+)?rol(?:\s+de\s+ingreso)?(?:\s+(?:N\s*[°º.]|n[uú]m(?:ero|\.)|Corte))?\s*[:°º]?\s*((?:[A-Za-zÁÉÍÓÚáéíóúñ]+-)?\d{1,3}(?:\.\d{3})*-\d{4})\b/gi;
+// Número de rol: con punto de miles ("1.069-2025") o sin él ("1234-2026").
+const NUM_ROL = "(?:\\d{1,3}(?:\\.\\d{3})+|\\d{1,6})-\\d{4}";
+const ROL_RE = new RegExp("\\b(?:causa\\s+)?rol(?:\\s+de\\s+ingreso)?(?:\\s+(?:N\\s*[°º.]|n[uú]m(?:ero|\\.)|Corte))?\\s*[:°º]?\\s*"
+  + "((?:[A-Za-zÁÉÍÓÚáéíóúñ]+-)?" + NUM_ROL + ")\\b", "gi");
 
 function buscarRoles(parrafos) {
   const roles = [];
@@ -392,16 +397,61 @@ export function extraerFicha(item, noticia, confirmacion = confirmarCorte(notici
     // "html": página guardada tal cual; "texto": texto que Claude copió desde la pestaña.
     lectura: noticia.origen === "texto" ? "texto" : "html"
   };
+  ficha.rolFuente = rolCorte ? "Nota de prensa del Poder Judicial" : null;
+  ficha.fechaSentencia = null;
+  ficha.documento = noticia.documento || null;
+  ficha.fraseBusqueda = fraseBusqueda(ficha);
   Object.assign(ficha, puntuar(ficha));
   ficha.pendientes = pendientes(ficha);
   return ficha;
 }
 
+/**
+ * Frase literal y distintiva del fallo (6 a 10 palabras) para encontrarlo en
+ * el Portal Unificado de Sentencias: el texto de la sentencia la contiene.
+ */
+export function fraseBusqueda(f) {
+  // Se corta en puntuación, omisiones y en los incisos de la prensa ("–añade–"),
+  // que no están en la sentencia.
+  const tramos = f.citas.flatMap((c) => c.texto.split(/\s*(?:\(…\)|\(\.\.\.\)|[.;:“”"‘’–—()]|\s-|-\s)\s*/))
+    .map((t) => t.replace(/^[,\s–—-]+|[,\s–—-]+$/g, "").trim())
+    .map((t) => ({ t, palabras: t.split(/\s+/).filter(Boolean) }))
+    .filter((x) => x.palabras.length >= 6);
+  if (!tramos.length) return null;
+  const valor = (x) => x.palabras.filter((w) => w.length >= 7).length;
+  const mejor = tramos.sort((a, b) => valor(b) - valor(a) || a.palabras.length - b.palabras.length)[0];
+  return mejor.palabras.slice(0, 10).join(" ").replace(/[,]$/, "");
+}
+
+const ROL_VALIDO = new RegExp("^(?:[A-Za-zÁÉÍÓÚáéíóúñ]+-)?" + NUM_ROL + "$");
+
+/**
+ * Registra el rol de un fallo cuya nota no lo traía. Exige la fuente (dónde
+ * se leyó: URL de la sentencia, OJV…). Devuelve la ficha actualizada.
+ */
+export function aplicarRol(f, { rol, fuente, fechaSentencia = null }) {
+  const r = String(rol || "").trim().replace(/^rol\s*(?:N\s*[°º.]\s*)?/i, "");
+  if (!ROL_VALIDO.test(r)) throw new Error(`Rol con formato no reconocido: «${rol}» (ejemplos: 1234-2026, Protección-1234-2026, 1.069-2025)`);
+  if (!String(fuente || "").trim()) throw new Error("Falta la fuente del rol (por ejemplo, la URL de la sentencia en el Portal Unificado o «OJV»)");
+  if (fechaSentencia && !/^\d{4}-\d{2}-\d{2}$/.test(fechaSentencia)) throw new Error("La fecha de la sentencia debe ser AAAA-MM-DD");
+  const g = { ...f, rol: r, rolTexto: `${r} (según ${String(fuente).trim()})`, rolFuente: String(fuente).trim(),
+    fechaSentencia: fechaSentencia || f.fechaSentencia || null };
+  Object.assign(g, puntuar(g));
+  g.pendientes = pendientes(g);
+  return g;
+}
+
 /** Lo que la nota NO permite afirmar: se verifica antes de publicar. */
 function pendientes(f) {
   const p = [];
-  if (!f.rol) p.push("Rol: la nota no lo informa. En el carrusel va como [VERIFICAR: rol en la OJV] y sale con banda BORRADOR hasta confirmarlo.");
-  p.push(`Fecha de la sentencia: la nota no la informa. La fecha disponible (${f.fechaNotaTexto}) es la de publicación de la nota; no presentarla como fecha del fallo.`);
+  if (!f.rol) {
+    p.push("Rol: la nota no lo informa y es obligatorio para publicar. Búscalo en el Portal Unificado de Sentencias"
+      + (f.fraseBusqueda ? ` con la frase «${f.fraseBusqueda}»` : "")
+      + " y regístralo con --asignar-rol. Mientras tanto el carrusel lleva [VERIFICAR: rol en la OJV] y sale con banda BORRADOR.");
+  }
+  if (!f.fechaSentencia) {
+    p.push(`Fecha de la sentencia: la nota no la informa. La fecha disponible (${f.fechaNotaTexto}) es la de publicación de la nota; no presentarla como fecha del fallo.`);
+  }
   p.push("Estado del fallo: la nota no dice si está firme. Puede ser revisado por la Corte Suprema; revisar en la Oficina Judicial Virtual con el rol.");
   p.push("Texto íntegro: el agente leyó la nota de prensa, no la sentencia. Todo lo que no esté en la nota no se afirma.");
   if (f.lectura === "texto") p.push("La nota se guardó como texto copiado por Claude desde la pestaña: contrasta las citas del carrusel con la página antes de publicar.");
@@ -644,7 +694,8 @@ const sinVerificar = (t) => String(t).replace(/\[VERIFICAR[^\]]*\]/g, " ");
 export function validarCarrusel(spec, ficha, captions = null) {
   const errores = [];
   const avisos = [];
-  const fuenteTexto = [ficha.titulo, ficha.bajada, ...ficha.parrafos, ficha.fechaNotaTexto, ficha.sala, ficha.rol].filter(Boolean).join(" \n ");
+  const fuenteTexto = [ficha.titulo, ficha.bajada, ...ficha.parrafos, ficha.fechaNotaTexto, ficha.sala, ficha.rol,
+    ficha.fechaSentencia ? isoATexto(ficha.fechaSentencia) : ""].filter(Boolean).join(" \n ");
   const fuenteNorm = normalizar(fuenteTexto);
   const permitidos = new Set(numeros(fuenteTexto));
 
@@ -743,13 +794,16 @@ function datosFichaHtml(f) {
   const filas = [
     ["Tribunal", E(`${f.tribunal}${f.sala ? " — " + f.sala : ""}`)],
     ["Rol", f.rol
-      ? `${E(f.rol)} <span style="${estilo.dato}">(según la nota: «${E(f.rolTexto)}»)</span>`
-      : `<span style="${estilo.mal}">No informado en la nota</span> → [VERIFICAR: rol en la OJV]`],
+      ? `${E(f.rol)} <span style="${estilo.dato}">${f.rolFuente && f.rolFuente !== "Nota de prensa del Poder Judicial"
+        ? `(fuente: ${E(f.rolFuente)})` : `(según la nota: «${E(f.rolTexto)}»)`}</span>`
+      : `<span style="${estilo.mal}">PENDIENTE — obligatorio para publicar</span> · la nota no lo informa`],
+    ...(f.fechaSentencia ? [["Fecha de la sentencia", isoATexto(f.fechaSentencia)]] : []),
     ["Acción o recurso", E(f.accion || "—")],
     ["Resultado", E(f.resultado || "—")],
     ["Votación", E(f.votacion || "—")],
     ["Integración", E(f.integracion || "—")],
-    ["Nota publicada", `${f.fechaNotaTexto} · <a href="${E(f.url)}">${E(f.url)}</a>`]
+    ["Nota publicada", `${f.fechaNotaTexto} · <a href="${E(f.url)}">${E(f.url)}</a>`],
+    ...(f.documento ? [["Documento adjunto", `<a href="${E(f.documento)}">${E(f.documento)}</a> (puede traer el rol)`]] : [])
   ];
   return `<table style="border-collapse:collapse;font-size:13px">${filas.map(([k, v]) =>
     `<tr><td style="padding:2px 10px 2px 0;color:#55555c;vertical-align:top;white-space:nowrap">${k}</td><td style="padding:2px 0">${v}</td></tr>`).join("")}</table>`;
@@ -770,6 +824,7 @@ function recomendadoHtml(f, i, carrusel) {
   h.push(`<div style="${estilo.tarjeta}">`);
   h.push(`<h3 style="${estilo.h3}">${i + 1}. ${E(f.titulo)}</h3>`);
   h.push(datosFichaHtml(f));
+  if (!f.rol) h.push(cajaRol(f));
   h.push(`<p style="font-size:13px;margin:8px 0 2px"><b>Por qué sirve para un carrusel</b> (puntaje ${f.puntaje}):</p><ul style="font-size:13px;margin:2px 0">${f.motivos.map((m) => `<li>${m.puntos > 0 ? "+" : ""}${m.puntos} · ${E(m.texto)}</li>`).join("")}</ul>`);
   h.push(`<p style="font-size:13px;margin:8px 0 2px"><b>Bajada de la nota</b> (literal):</p><div style="${estilo.cita}">${E(f.bajada)}</div>`);
   if (f.citas.length) {
@@ -790,8 +845,18 @@ function recomendadoHtml(f, i, carrusel) {
   return h.join("\n");
 }
 
+/** Instrucciones para obtener el rol que la nota no trae. */
+function cajaRol(f) {
+  return `<div style="${estilo.aviso}"><b>Cómo obtener el rol:</b> en el Portal Unificado de Sentencias
+(<a href="https://juris.pjud.cl/busqueda?Corte_Suprema">juris.pjud.cl</a>, pestaña «Corte de Apelaciones»)
+busca ${f.fraseBusqueda ? `la frase textual del fallo <b>«${E(f.fraseBusqueda)}»</b>` : "por las palabras del título"}
+y confirma que la sentencia es de la Corte de Apelaciones de La Serena${f.sala ? ", " + E(f.sala) : ""}.
+${f.documento ? `También revisa el documento adjunto a la nota. ` : ""}Luego pide a Claude registrarlo
+(«el rol del fallo ${E(f.id)} es …», con la URL de la sentencia): el reporte y el carrusel se actualizan solos.</div>`;
+}
+
 function fichaCortaHtml(f) {
-  return `<div style="${estilo.tarjeta}"><b>${E(f.titulo)}</b><br><span style="${estilo.dato}">${f.fechaNotaTexto} · ${E(f.sala || "Sala no informada")} · ${f.rol ? "Rol " + E(f.rol) : "rol no informado"} · ${E(f.accion || "acción no informada")} · puntaje ${f.puntaje}${f.temas.length ? " · " + E(f.temas.map((t) => t.nombre).join(", ")) : ""}</span><br><a href="${E(f.url)}">${E(f.url)}</a></div>`;
+  return `<div style="${estilo.tarjeta}"><b>${E(f.titulo)}</b><br><span style="${estilo.dato}">${f.fechaNotaTexto} · ${E(f.sala || "Sala no informada")} · ${f.rol ? "Rol " + E(f.rol) : "rol PENDIENTE"} · ${E(f.accion || "acción no informada")} · puntaje ${f.puntaje}${f.temas.length ? " · " + E(f.temas.map((t) => t.nombre).join(", ")) : ""}</span><br><a href="${E(f.url)}">${E(f.url)}</a></div>`;
 }
 
 /**
@@ -854,7 +919,8 @@ function construirMarkdown(d, asunto, recomendados, otros, carruseles) {
       l.push("## ⭐ Recomendados para carrusel", "");
       recomendados.forEach((f, i) => {
         l.push(`### ${i + 1}. ${f.titulo}`, "");
-        l.push(`- ${f.tribunal}${f.sala ? " — " + f.sala : ""} · ${f.rol ? "Rol " + f.rol : "rol no informado → [VERIFICAR: rol en la OJV]"} · ${f.accion || "acción no informada"} · ${f.resultado || ""}`);
+        l.push(`- ${f.tribunal}${f.sala ? " — " + f.sala : ""} · ${f.rol ? "Rol " + f.rol + (f.rolFuente ? ` (${f.rolFuente})` : "") : "**Rol PENDIENTE** (obligatorio para publicar)"} · ${f.accion || "acción no informada"} · ${f.resultado || ""}`);
+        if (!f.rol && f.fraseBusqueda) l.push(`- Buscar el rol en juris.pjud.cl (Corte de Apelaciones) con la frase: «${f.fraseBusqueda}»`);
         l.push(`- Nota del ${f.fechaNotaTexto}: ${f.url}`);
         l.push(`- Puntaje ${f.puntaje}: ${f.motivos.map((m) => `${m.puntos > 0 ? "+" : ""}${m.puntos} ${m.texto}`).join("; ")}`, "");
         l.push(`> ${f.bajada}`, "");
@@ -868,7 +934,7 @@ function construirMarkdown(d, asunto, recomendados, otros, carruseles) {
     }
     if (otros.length) {
       l.push("## Otros fallos de la Corte", "");
-      otros.forEach((f) => l.push(`- ${f.fechaNotaTexto} · ${f.titulo} · ${f.rol ? "Rol " + f.rol : "sin rol"} · puntaje ${f.puntaje} · ${f.url}`));
+      otros.forEach((f) => l.push(`- ${f.fechaNotaTexto} · ${f.titulo} · ${f.rol ? "Rol " + f.rol : "rol PENDIENTE"} · puntaje ${f.puntaje} · ${f.url}`));
       l.push("");
     }
     if (d.noLeidas.length) {

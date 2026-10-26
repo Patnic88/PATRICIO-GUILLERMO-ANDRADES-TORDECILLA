@@ -16,6 +16,8 @@
 //                                           guardada hay que abrir)
 //   node reporte.mjs --componer <dir>      (vuelve a armar el reporte con los
 //                                           carruseles que Claude escribió)
+//   node reporte.mjs --asignar-rol <dir> --nota <número> --rol <rol> --fuente-rol <fuente>
+//                    [--fecha-sentencia AAAA-MM-DD]   (rol que la nota no traía)
 // Opciones: --hoy AAAA-MM-DD, --max-notas 12, --pausa-seg 15, --base-url <url>
 //
 // pjud.cl protege el sitio: rechaza lecturas seguidas y puede pedir una
@@ -302,6 +304,7 @@ export function guardar(salida, datos, { carpetasCarrusel = true } = {}) {
     periodo: datos.periodo,
     fuente: datos.fuente,
     fallos: datos.fallos.map((f) => ({ id: f.id, titulo: f.titulo, fechaNota: f.fechaNota, rol: f.rol, puntaje: f.puntaje })),
+    sinRol: datos.fallos.filter((f) => !f.rol).map((f) => ({ id: f.id, titulo: f.titulo, sala: f.sala, fraseBusqueda: f.fraseBusqueda || null })),
     recomendados: datos.recomendados.map((id) => ({
       id,
       carpeta: carpetas[id],
@@ -334,6 +337,32 @@ export function componer(salida) {
   return guardar(salida, datos, { carpetasCarrusel: false });
 }
 
+/**
+ * Registra el rol que la nota no traía (leído en la sentencia, en el Portal
+ * Unificado o en la OJV), con su fuente. Actualiza la ficha, cambia el
+ * [VERIFICAR: rol en la OJV] del carrusel por el rol y rehace el reporte.
+ */
+export function asignarRol(salida, { nota, rol, fuente, fechaSentencia = null }) {
+  const ruta = join(salida, "datos.json");
+  if (!existsSync(ruta)) throw new Error("No existe " + ruta + ": primero ejecuta la búsqueda.");
+  const datos = JSON.parse(readFileSync(ruta, "utf8"));
+  const i = datos.fallos.findIndex((f) => f.id === String(nota));
+  if (i < 0) throw new Error(`No hay un fallo con la nota ${nota} en ${salida}`);
+  const f = J.aplicarRol(datos.fallos[i], { rol, fuente, fechaSentencia });
+  datos.fallos[i] = f;
+  const dir = join(salida, "carruseles", J.slugFicha(f));
+  if (existsSync(dir)) {
+    writeFileSync(join(dir, "ficha.json"), json(f));
+    writeFileSync(join(dir, "brief.md"), J.construirBrief(f));
+    for (const nombre of ["spec.base.json", "spec.json", "captions.md"]) {
+      const r = join(dir, nombre);
+      if (existsSync(r)) writeFileSync(r, readFileSync(r, "utf8").split("[VERIFICAR: rol en la OJV]").join(f.rol));
+    }
+  }
+  writeFileSync(ruta, json(datos));
+  return componer(salida);
+}
+
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
@@ -351,6 +380,14 @@ function leerArgs(argv) {
     else if (clave === "componer") o.componer = resolve(valor);
     else if (clave === "entrada") o.entrada = resolve(valor);
     else if (clave === "por-leer") o.porLeer = resolve(valor);
+    else if (clave === "asignar-rol") o.asignarRol = resolve(valor);
+    else if (clave === "nota") o.nota = valor;
+    else if (clave === "rol") o.rol = valor;
+    else if (clave === "fuente-rol") o.fuenteRol = valor;
+    else if (clave === "fecha-sentencia") {
+      if (!FECHA.test(valor)) throw new Error("--fecha-sentencia debe ser AAAA-MM-DD");
+      o.fechaSentencia = valor;
+    }
     else if (clave === "dias-anteriores") o.diasAnteriores = parseInt(valor, 10);
     else if (["desde", "hasta", "hoy"].includes(clave)) {
       if (!FECHA.test(valor)) throw new Error(`--${clave} debe ser AAAA-MM-DD`);
@@ -366,6 +403,10 @@ function leerArgs(argv) {
 export async function main(argv) {
   const o = leerArgs(argv);
   if (o.componer) return componer(o.componer);
+  if (o.asignarRol) {
+    if (!o.nota || !o.rol) throw new Error("Usa --asignar-rol <salida> --nota <número> --rol <rol> --fuente-rol <fuente>");
+    return asignarRol(o.asignarRol, { nota: o.nota, rol: o.rol, fuente: o.fuenteRol, fechaSentencia: o.fechaSentencia });
+  }
   const hoy = o.hoy || J.hoyChile();
   let periodo = null;
   if (o.desde || o.hasta) {
