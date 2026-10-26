@@ -460,6 +460,136 @@ el CLI real contra un servidor local con los mismos fixtures y cubre:
 
 ---
 
+## ⚖️ Agente: Jurisprudencia C.A. La Serena → carruseles de Instagram
+
+Carpeta [`agente-jurisprudencia-serena/`](agente-jurisprudencia-serena/SKILL.md).
+Trabaja **solo** con fallos de la **Corte de Apelaciones de La Serena** y prepara
+el material para carruseles de Choapa Justa (@choapajusta).
+
+### Qué hace
+
+1. **Fuente.** Lee la lista "Noticias sobre fallos" de pjud.cl con el filtro
+   Jurisdicción = C.A de La Serena. Ese filtro también trae juzgados, TOP y
+   ministros en visita de la región.
+2. **Filtro estricto.** Se queda solo con las decisiones de una sala de la
+   Corte: primero por el título y después con el texto de la nota. Lo demás va
+   a "Descartadas", con el motivo. En las 69 notas de 2026 revisadas, 21 eran
+   de la Corte.
+3. **Ficha literal** de cada fallo, con los datos copiados de la nota: sala,
+   integración, rol (si la nota lo trae), acción, resultado, votación, citas
+   textuales y normas mencionadas. Lo que la nota no dice queda como pendiente:
+   rol, fecha de la sentencia y si está firme.
+4. **Puntaje** para elegir hasta 3 fallos recomendados para carrusel. Suben:
+   provincia de Choapa, municipal, salud, educación, laboral, servicios básicos,
+   redes sociales, recurso de protección y rol informado. Bajan los temas
+   delicados. El reporte muestra cada motivo.
+5. **Base del carrusel** para el skill `carrusel-juridico-choapajusta`:
+   `spec.base.json`, con la cita literal y las fuentes ya puestas, y `brief.md`.
+   Claude redacta el resto usando solo la ficha.
+6. **Validador anti-invención** (`validar-carrusel.mjs`). Rechaza el carrusel si:
+   - una cita no es literal;
+   - aparece una cifra que no está en la nota;
+   - se nombra un organismo ausente de la nota (por ejemplo, Corte Suprema);
+   - falta el rol en la fuente;
+   - queda un `[REDACTAR]`.
+   Sin rol, las láminas salen con la banda BORRADOR.
+7. **Reporte por correo** a `pandrades23@gmail.com` (CC
+   `andradestordecilla.abogado@gmail.com`), con los recomendados, el guion
+   validado, los captions, los otros fallos, los no leídos y los descartados.
+
+### ⚠️ Limitación actual: pjud.cl pide verificación humana
+
+El 25-10-2026, pjud.cl mostró un **CAPTCHA** ("What code is in the image?") al
+navegador automatizado del agente. También se lo mostró a la herramienta de
+lectura web de Claude. El agente **no resuelve ni evade** esa verificación:
+
+- **Modo sitio:** si aparece el CAPTCHA, envía un **aviso** y no lee nada más.
+- **Modo carpeta (funciona hoy):** tú abres las notas en tu navegador (pasas la
+  verificación tú mismo) y las guardas con Ctrl+S en una carpeta. Luego:
+  ```bash
+  node agente-jurisprudencia-serena/reporte.mjs --entrada <carpeta> --salida <dir>
+  ```
+  Puedes guardar también la lista filtrada. Sin `--desde`/`--hasta`, procesa
+  todas las notas de la carpeta.
+
+- **Modo navegador (Claude en Chrome):** Claude usa tu pestaña de Chrome y, si
+  aparece el CAPTCHA, se detiene para que lo resuelvas tú. Requiere:
+  - Claude Code instalado en tu computador, con este repositorio clonado y Node.js;
+  - iniciarlo con `claude --chrome`;
+  - la extensión Claude in Chrome 1.0.36 o posterior, en Chrome o Edge;
+  - un plan Pro, Max, Team o Enterprise.
+
+  No funciona desde una sesión de Claude en la nube. Según la documentación
+  (<https://code.claude.com/docs/en/chrome>), es una sesión **atendida**. Uso
+  semanal:
+  ```bash
+  cd PATRICIO-GUILLERMO-ANDRADES-TORDECILLA
+  claude --chrome
+  # luego, en Claude: "reporte de fallos de la Corte de La Serena de la semana pasada, en modo navegador"
+  ```
+  Los pasos exactos están en `agente-jurisprudencia-serena/SKILL.md` ("Modo
+  navegador"): guardar la lista, preguntar qué notas abrir con `--por-leer`,
+  guardar cada nota y procesar la carpeta con `--entrada`.
+
+Por eso **no hay rutina automática programada**: mientras pjud.cl exija la
+verificación, cada semana llegaría solo el aviso. La documentación tampoco
+describe tareas programadas sin una persona presente que usen Chrome.
+
+El Portal Unificado de Sentencias (juris.pjud.cl) tampoco es accesible desde el
+entorno de Claude: responde 421 a través del proxy. Por eso el agente trabaja
+con las notas de prensa, no con el texto íntegro de las sentencias.
+
+### Uso
+
+```bash
+# Semana anterior, desde el sitio (envía aviso si hay CAPTCHA)
+node agente-jurisprudencia-serena/reporte.mjs --salida salidas/jurisprudencia-serena/hoy --dias-anteriores 7
+
+# Notas guardadas a mano
+node agente-jurisprudencia-serena/reporte.mjs --entrada <carpeta> --salida salidas/jurisprudencia-serena/hoy
+
+# Validar un carrusel y rehacer el reporte con él
+node agente-jurisprudencia-serena/validar-carrusel.mjs salidas/jurisprudencia-serena/hoy/carruseles/<fecha>_<nota>
+node agente-jurisprudencia-serena/reporte.mjs --componer salidas/jurisprudencia-serena/hoy
+```
+
+Las instrucciones completas para Claude están en
+[`agente-jurisprudencia-serena/SKILL.md`](agente-jurisprudencia-serena/SKILL.md).
+En Claude Code también está el subagente `.claude/agents/jurisprudencia-ca-la-serena.md`.
+`salidas/` está en `.gitignore`.
+
+Skill descargable para claude.ai:
+`bash scripts/empaquetar-agente-jurisprudencia-serena.sh` genera
+`dist/agente-jurisprudencia-serena.zip`.
+
+### Pruebas
+
+`tests/agente-jurisprudencia-serena.test.mjs` corre dentro de `bash tests/run.sh`
+(29 pruebas). Usa páginas **reales** de pjud.cl capturadas el 25-10-2026,
+recortadas al contenido de la noticia, en `tests/fixtures/jurisprudencia-serena/`.
+La página de verificación humana es una reproducción **sintética**. Cubre:
+
+- la criba de tribunales;
+- las fichas;
+- el puntaje;
+- el validador;
+- el reporte;
+- el CLI con Chromium contra un servidor local: rechazo, CAPTCHA, tope de notas,
+  modo carpeta y `--componer`;
+- el modo navegador: `navegador/lista.js` y `navegador/nota.js` ejecutados en una
+  pestaña; el texto visible de las 8 notas reales da la misma ficha que su HTML;
+  `--por-leer`;
+- el `.zip`.
+
+### Pendiente de verificar antes de publicar cualquier carrusel
+
+- **Rol:** la mayoría de las notas no lo informan → `[VERIFICAR: rol en la OJV]`.
+- **Fecha:** la del reporte es la de la **nota**, no la de la sentencia.
+- **Firmeza:** la nota no dice si el fallo está firme.
+- **Normas:** las normas mencionadas se revisan en LeyChile antes de citarlas.
+
+---
+
 ## 🎯 Radar Dropshipping
 
 En la carpeta [`dropshipping/`](dropshipping/README.md) hay una app independiente
