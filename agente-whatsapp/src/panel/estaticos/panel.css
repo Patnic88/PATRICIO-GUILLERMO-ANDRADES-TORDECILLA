@@ -1,0 +1,38 @@
+:root { --fondo:#f6f7f9; --texto:#1d2330; --suave:#5d6677; --borde:#d9dde5; --acento:#1f4e79; --ok:#1e7b46; --alta:#b3261e; --media:#a05a00; --tarjeta:#fff; }
+@media (prefers-color-scheme: dark) { :root { --fondo:#14171c; --texto:#e7e9ee; --suave:#a3aab8; --borde:#323844; --acento:#7fb0e0; --ok:#5cc58b; --alta:#ff8a80; --media:#f0b45a; --tarjeta:#1d2129; } }
+* { box-sizing: border-box; }
+body { margin:0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fondo); color: var(--texto); }
+header { padding: 10px 16px; border-bottom: 1px solid var(--borde); }
+nav { display:flex; flex-wrap:wrap; gap: 4px 14px; padding: 8px 16px; border-bottom:1px solid var(--borde); background: var(--tarjeta); }
+nav a { color: var(--acento); text-decoration:none; }
+main { padding: 16px; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: .2rem 0 1rem; } h2 { font-size: 1.1rem; margin-top: 1.6rem; } h3 { margin: 0 0 .5rem; font-size: 1rem; }
+.banda { padding: 6px 16px; font-weight: 600; font-size: .9rem; }
+.banda.prueba { background: #fff3cd; color: #5c4400; } .banda.produccion { background: #d1f0dc; color: #0d4a26; }
+.tarjetas { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.tarjeta b { font-size: 1.1rem; }
+.tabla { overflow-x:auto; } table { width:100%; border-collapse: collapse; background: var(--tarjeta); }
+th, td { text-align:left; padding: 6px 8px; border-bottom: 1px solid var(--borde); vertical-align: top; font-size: .9rem; }
+th { color: var(--suave); font-weight: 600; }
+code { font-size: .8rem; word-break: break-all; }
+label { display:block; margin: 6px 0; } input, select, textarea { font: inherit; width: 100%; padding: 6px; border:1px solid var(--borde); border-radius:6px; background: var(--fondo); color: var(--texto); }
+input[type=checkbox] { width:auto; } form.en-linea { display:inline-block; margin: 2px 0; } form.en-linea label { display:inline-block; } form.en-linea input, form.en-linea select { width:auto; }
+button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--acento); background: var(--acento); color: #fff; cursor:pointer; margin-top: 4px; }
+button.secundario, button.enlace { background: transparent; color: var(--acento); } button.enlace { border: none; padding: 0; margin: 0; }
+.etiqueta { display:inline-block; padding: 1px 7px; border-radius: 10px; font-size: .78rem; border:1px solid var(--borde); }
+.etiqueta.alta, .etiqueta.urgente { color: var(--alta); border-color: var(--alta); } .etiqueta.media, .etiqueta.prioritaria { color: var(--media); border-color: var(--media); }
+.etiqueta.ok { color: var(--ok); border-color: var(--ok); } .etiqueta.humano { color: var(--media); border-color: var(--media); }
+.contador { background: var(--alta); color:#fff; border-radius: 9px; padding: 0 6px; font-size: .75rem; }
+.aviso { background: #e8f1fb; color:#123a5e; padding: 10px; border-radius: 6px; } .error { color: var(--alta); } .vacio { color: var(--suave); }
+.pin { font-size: 1.4rem; letter-spacing: 3px; }
+.chat { display:flex; flex-direction:column; gap: 8px; max-height: 60vh; overflow-y:auto; padding: 8px; background: var(--tarjeta); border:1px solid var(--borde); border-radius: 8px; margin-bottom: 10px; }
+.burbuja { max-width: 80%; padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
+.burbuja.entrante { align-self:flex-start; background: var(--fondo); border:1px solid var(--borde); }
+.burbuja.saliente { align-self:flex-end; background: #dcf3e3; color:#10291a; } .burbuja.saliente.patricio { background:#e3e9f8; color:#121f3d; }
+.burbuja .meta { font-size: .72rem; opacity: .7; margin-bottom: 2px; }
+.fila { display:flex; flex-wrap: wrap; gap: 12px; }
+.simulador { display:grid; grid-template-columns: 2fr 1fr; gap: 16px; } @media (max-width: 800px) { .simulador { grid-template-columns: 1fr; } }
+.traza { font-size: .82rem; border-left: 3px solid var(--acento); padding-left: 8px; margin-bottom: 8px; word-break: break-word; }
+.login { max-width: 360px; }
+.kb.pendiente { border-left: 4px solid var(--alta); } .kb.borrador { border-left: 4px solid var(--media); } .kb.aprobado { border-left: 4px solid var(--ok); }

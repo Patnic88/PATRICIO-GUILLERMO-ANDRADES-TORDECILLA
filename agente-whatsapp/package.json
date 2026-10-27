@@ -1,0 +1,20 @@
+{
+  "name": "agente-whatsapp-aa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agente de atención por WhatsApp de A & A jurídico y contable",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/servidor.js",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "demo": "node --disable-warning=ExperimentalWarning scripts/demo.js",
+    "clave": "node scripts/generar-clave.js",
+    "respaldo": "node --disable-warning=ExperimentalWarning scripts/respaldo.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.137.0"
+  }
+}

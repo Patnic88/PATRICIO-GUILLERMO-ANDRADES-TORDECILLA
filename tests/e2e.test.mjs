@@ -20,10 +20,9 @@ const assert = (cond, msg) => {
   console[cond ? "log" : "error"](cond ? "PASS:" : "FAIL:", msg);
 };
 
-const browser = await chromium.launch({
-  executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
-  headless: !HEAD
-});
+// Playwright encuentra solo el Chromium preinstalado del entorno; una ruta
+// fija con la versión se rompe cuando el entorno lo actualiza.
+const browser = await chromium.launch({ headless: !HEAD });
 const ctx = await browser.newContext({ viewport: { width: 1200, height: 950 } });
 const page = await ctx.newPage();
 

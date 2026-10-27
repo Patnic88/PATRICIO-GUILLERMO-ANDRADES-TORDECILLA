@@ -1,0 +1,6 @@
+# Respaldo diario a las 03:17 (hora del servidor). Copie los respaldos a otro
+# lugar (disco externo o almacenamiento en la nube) además de dejarlos aquí.
+# Docker:
+17 3 * * * cd /opt/agente-whatsapp && docker compose exec -T agente node --disable-warning=ExperimentalWarning scripts/respaldo.js
+# systemd (sin Docker):
+# 17 3 * * * cd /opt/agente-whatsapp && /usr/bin/node --disable-warning=ExperimentalWarning scripts/respaldo.js
