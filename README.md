@@ -531,6 +531,12 @@ lectura web de Claude. El agente **no resuelve ni evade** esa verificación:
   navegador"): guardar la lista, preguntar qué notas abrir con `--por-leer`,
   guardar cada nota y procesar la carpeta con `--entrada`.
 
+  Atajo: en esa sesión escribe `/fallos-la-serena` (opcionalmente con las fechas,
+  `/fallos-la-serena 2026-10-20 2026-10-26`). El comando está en
+  `.claude/commands/fallos-la-serena.md` y hace el recorrido completo: notas,
+  sentencias y rol, carruseles y reporte. Cuando aparezca el CAPTCHA o el
+  reCAPTCHA, Claude se detiene y te pide resolverlo.
+
 Por eso **no hay rutina automática programada**: mientras pjud.cl exija la
 verificación, cada semana llegaría solo el aviso. La documentación tampoco
 describe tareas programadas sin una persona presente que usen Chrome.
